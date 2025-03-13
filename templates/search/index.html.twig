@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche - Entr'aide 2.0{% endblock %}
+
+{% block body %}
+    <section class="search">
+        <h2>Rechercher une compétence</h2>
+        {{ form_start(searchForm) }}
+            {{ form_widget(searchForm.query) }}
+            <button type="submit" class="btn">Rechercher</button>
+        {{ form_end(searchForm) }}
+
+        <div class="results">
+            <h3>Résultats</h3>
+            {% if results is not empty %}
+                <ul>
+                    {% for user in results %}
+                        <li>
+                            {{ user.name }} - {{ user.skills|join(', ') }}
+                            <a href="{{ path('app_message_new', {id: user.id}) }}" class="btn">Contacter</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun résultat trouvé</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - Entr'aide 2.0{% endblock %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block body %}
+    <section class="contact-form">
+        <h2>Contactez les développeurs</h2>
+        
+        {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_row(form.name) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form_row(form.email) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form_row(form.subject) }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form_row(form.message) }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

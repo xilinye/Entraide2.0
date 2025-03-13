@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messagerie - Entr'aide 2.0{% endblock %}
+
+{% block body %}
+    <section class="messaging">
+        <h2>Messagerie</h2>
+        <div class="messaging-container">
+            <div class="conversations">
+                <h3>Conversations</h3>
+                <ul>
+                    {% for conversation in conversations %}
+                        <li>
+                            {{ conversation.participant.name }}
+                            <a href="{{ path('app_message_thread', {id: conversation.id}) }}" class="btn">Ouvrir</a>
+                        </li>
+                    {% else %}
+                        <li>Aucune conversation</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="chat">
+                {% if currentThread %}
+                    <h3>Conversation avec {{ currentThread.participant.name }}</h3>
+                    <div class="messages">
+                        {% for message in currentThread.messages %}
+                            <div class="message {% if message.sender == app.user %}sent{% else %}received{% endif %}">
+                                <p>{{ message.content }}</p>
+                                <small>{{ message.createdAt|date('d/m/Y H:i') }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form_start(messageForm) }}
+                        {{ form_widget(messageForm.content) }}
+                        <button type="submit" class="btn">Envoyer</button>
+                    {{ form_end(messageForm) }}
+                {% else %}
+                    <p>Sélectionnez une conversation pour commencer</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

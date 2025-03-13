@@ -1,0 +1,193 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+
+nav ul, footer ul {
+    list-style-type: none;
+    padding-left: 0; 
+}
+
+
+nav ul li, footer ul li {
+    display: inline-block; 
+    margin-right: 1rem; 
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    transition : color 0.3s;
+}
+nav ul li a :hover{
+    color: #ffcc00;
+}
+footer ul li a{
+    color:#4CAF50;
+    text-decoration:none;
+    transition : color 0.3s;
+}
+footer ul li a:hover{
+    color: #ffcc00;
+}
+main {
+    padding: 2rem;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn:hover {
+    background-color: #45a049;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.hero {
+    text-align: center;
+    padding: 2rem;
+    background-color: #e8f5e9;
+    border-radius: 10px;
+}
+
+.profile, .search, .messaging {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.messaging {
+    display: flex;
+    gap: 2rem;
+}
+
+.conversations, .chat {
+    flex: 1;
+}
+
+.messages {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    height: 200px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.needs-validation .form-control {
+    margin-bottom: 1rem;
+}
+
+.form-check-label {
+    margin-left: 0.5rem;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    border-color: #45a049;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.contact-form h2 {
+    margin-bottom: 1.5rem;
+    color: #4CAF50;
+}
+.contact-form .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+.contact-form .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+.auth-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+.auth-form h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 2rem;
+}
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #444;
+}
+
+.auth-form .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+.auth-form .form-check {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}

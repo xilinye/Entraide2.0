@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil - Entr'aide 2.0{% endblock %}
+
+{% block body %}
+    <section class="profile">
+        <h2>Mon Profil</h2>
+        <div class="user-info">
+            <p>Nom : {{ app.user.name }}</p>
+            <p>Email : {{ app.user.email }}</p>
+        </div>
+        
+        <div class="skills">
+            <h3>Mes compétences</h3>
+            <ul>
+                {% for skill in app.user.skills %}
+                    <li>
+                        {{ skill.name }} ({{ skill.category.name }})
+                        <a href="{{ path('app_skill_edit', {id: skill.id}) }}" class="btn">Modifier</a>
+                    </li>
+                {% else %}
+                    <li>Aucune compétence enregistrée</li>
+                {% endfor %}
+            </ul>
+            <a href="{{ path('app_skill_new') }}" class="btn">Ajouter une compétence</a>
+        </div>
+    </section>
+{% endblock %}

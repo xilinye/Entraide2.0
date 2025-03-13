@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - Entr'aide 2.0{% endblock %}
+
+{% block body %}
+    <section class="auth-form">
+        <h2>Connexion</h2>
+        <form method="post">
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <input type="email" name="email" placeholder="Adresse e-mail" required autofocus>
+            <input type="password" name="password" placeholder="Mot de passe" required>
+            <button type="submit" class="btn">Se connecter</button>
+        </form>
+        <p><a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a></p>
+        <p>Pas de compte ? <a href="{{ path('app_register') }}">S'inscrire</a></p>
+    </section>
+{% endblock %}

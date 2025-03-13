@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - Entr'aide 2.0{% endblock %}
+
+{% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
+
+{% block body %}
+    <section class="auth-form">
+        <h2>Inscription</h2>
+        {{ form_start(registrationForm, {
+            attr: { class: 'needs-validation' }
+        }) }}
+            
+            <div class="mb-3">
+                {{ form_row(registrationForm.email, {
+                    label: 'Adresse email',
+                    attr: { placeholder: 'exemple@email.com' }
+                }) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_row(registrationForm.plainPassword, {
+                    label: 'Mot de passe',
+                    attr: { placeholder: '••••••••' }
+                }) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_row(registrationForm.name, {
+                    label: 'Nom complet',
+                    attr: { placeholder: 'Jean Dupont' }
+                }) }}
+            </div>
+
+            <div class="mb-3 form-check form-check-inline">
+            {{ form_row(registrationForm.agreeTerms, {
+                label: 'J\'accepte les conditions d\'utilisation',
+                label_attr: {'class': 'form-check-label'},
+                attr: {'class': 'form-check-input'},
+                row_attr: {'class': 'd-flex align-items-center gap-2'}
+            }) }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+            
+        {{ form_end(registrationForm) }}
+    </section>
+{% endblock %}
