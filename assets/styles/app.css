@@ -168,7 +168,7 @@ a:hover {
     animation: pulse 2s infinite;
 }
 
-/*page de connexion et d'inscription*/
+/*page de connexion, d'inscription et renvoyer*/
 .auth-card {
     border-radius: 15px;
     overflow: hidden;
