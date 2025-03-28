@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions d'utilisation - Entr'Aide 2.0{% endblock %}
+
+{% block body %}
+
+<div class="card shadow-lg">
+    <div class="card-header text-white" style="background-color: #4CAF50;">
+        <h2 class="mb-0 display-5 fw-bold">Conditions Générales d'Utilisation</h2>
+    </div>
+    <div class="card-body legal-content px-lg-5 py-4">
+        <article class="mb-5">
+            <h3>1. Acceptation des conditions</h3>
+            <p class="ps-4">
+                En utilisant Entr'Aide 2.0, vous acceptez sans réserve les présentes conditions générales.<br>
+                Nous nous réservons le droit de modifier ces conditions à tout moment.
+            </p>
+        </article>
+
+        <article class="mb-5">
+            <h3>2. Responsabilités des utilisateurs</h3>
+            <ul class="list-responsibilities ps-4">
+                <li>Fournir des informations exactes et à jour</li>
+                <li>Respecter les autres membres de la communauté</li>
+                <li>Ne pas utiliser la plateforme à des fins commerciales</li>
+                <li>Signaler tout contenu inapproprié</li>
+            </ul>
+        </article>
+
+        <article class="mb-5">
+            <h3>3. Propriété intellectuelle</h3>
+            <p class="ps-4">
+                Les contenus publiés sur le blog restent la propriété de leurs auteurs.<br>
+                La plateforme se réserve le droit de modérer ou supprimer tout contenu inapproprié.
+            </p>
+        </article>
+
+        <article class="mb-5">
+            <h3>4. Données personnelles</h3>
+            <p class="ps-4">
+                Nous nous engageons à protéger vos données conformément au RGPD.<br>
+                Consultez notre <a href="{{ path('app_page_privacy') }}">politique de confidentialité</a>.
+            </p>
+        </article>
+
+        <article class="mb-5">
+            <h3>5. Modifications</h3>
+            <p class="ps-4">
+                Les CGU peuvent être mises à jour périodiquement. La version en vigueur est toujours disponible sur cette page.
+            </p>
+        </article>
+
+        <div class="alert alert-info mt-4">
+            <h4 class="alert-heading fs-5">📬 Questions ?</h4>
+            <p class="mb-0">
+                Contactez-nous via notre <a href="{{ path('app_page_contact') }}">formulaire de contact</a>
+                pour toute question relative aux conditions d'utilisation.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

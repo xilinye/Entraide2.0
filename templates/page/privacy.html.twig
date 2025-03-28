@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de confidentialité - Entr'Aide 2.0{% endblock %}
+
+{% block body %}
+
+<div class="card shadow-lg">
+    <div class="card-header text-white" style="background-color: #4CAF50;">
+        <h2 class="mb-0 display-5 fw-bold">Politique de Confidentialité</h2>
+    </div>
+    <div class="card-body legal-content px-lg-5 py-4">
+        <article class="mb-5">
+            <h3>1. Collecte des données</h3>
+            <p class="ps-4">
+                Nous collectons uniquement les données nécessaires au bon fonctionnement de la plateforme :<br>
+                pseudonyme, email et compétences déclarées. Aucune donnée sensible n'est stockée.
+            </p>
+        </article>
+
+        <article class="mb-5">
+            <h3>2. Utilisation des données</h3>
+            <div class="ps-4">
+                <p>Vos données sont utilisées pour :</p>
+                <ul>
+                    <li>Faciliter les échanges entre membres</li>
+                    <li>Personnaliser votre expérience utilisateur</li>
+                    <li>Envoyer des notifications essentielles</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="mb-5">
+            <h3>3. Protection des données</h3>
+            <div class="ps-4">
+                <p>Nous utilisons des mesures de sécurité conformes au RGPD :</p>
+                <ul>
+                    <li>Chiffrement des mots de passe</li>
+                    <li>Accès restreint aux données</li>
+                    <li>Hébergement sécurisé en UE</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="mb-5">
+            <h3>4. Vos droits</h3>
+            <div class="ps-4">
+                <p>Conformément au RGPD, vous pouvez :</p>
+                <ul>
+                    <li>Accéder à vos données</li>
+                    <li>Demander leur rectification</li>
+                    <li>Demander leur suppression</li>
+                </ul>
+                <p>Contactez-nous via le <a href="{{ path('app_page_contact') }}">formulaire de contact</a>.</p>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}
