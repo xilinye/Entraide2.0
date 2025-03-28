@@ -1,20 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProfileController!{% endblock %}
+{% block title %}Mon Profil - Entr'Aide 2.0{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg profile-card">
+                <div class="card-header text-white py-4" style="background-color: #4CAF50;">
+                    <h2 class="h3 mb-0 fw-bold"><i class="bi bi-person-circle me-2"></i>Mon Profil</h2>
+                </div>
+                <div class="card-body px-lg-5 py-4">
+                    <div class="text-center mb-5">
+                        <h2 class="mb-3 fw-bold">{{ user.pseudo }}</h2>
+                        <p class="text-muted lead">{{ user.email }}</p>
+                    </div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="d-grid gap-3">
+                                <a href="{{ path('app_profile_skills') }}" 
+                                   class="btn btn-primary btn-lg rounded-pill fw-semibold">
+                                    <i class="bi bi-tools me-2"></i>Compétences
+                                </a>
+                                <form action="{{ path('app_logout') }}" method="post">
+                                    <button type="submit" 
+                                            class="btn btn-outline-danger w-100 btn-lg rounded-pill fw-semibold">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/home/celine/Entraide2.0/src/Controller/ProfileController.php</code></li>
-        <li>Your template at <code>/home/celine/Entraide2.0/templates/profile/index.html.twig</code></li>
-    </ul>
+                        <div class="col-md-8">
+                            <div class="card h-100 border-#4CAF50">
+                                <div class="card-header bg-#4CAF50-10 py-3">
+                                    <h3 class="h5 mb-0 fw-bold"><i class="bi bi-patch-check me-2"></i>Mes Compétences</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if user.skills|length > 0 %}
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for skill in user.skills %}
+                                                <span class="skill-badge">{{ skill.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info mb-0">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Vous n'avez aucune compétence enregistrée.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

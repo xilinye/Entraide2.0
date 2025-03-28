@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des compétences - Admin{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="card shadow-lg skill-card">
+        <!-- Section Ajout de compétence -->
+        <div class="card-header text-white py-3" style="background-color: #4CAF50;">
+            <h2 class="h5 mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Ajouter une compétence</h2>
+        </div>
+        <div class="card-body px-lg-5 py-4">
+            {{ form_start(form) }}
+                {{ form_row(form.name, {
+                    label: 'Nom de la compétence',
+                    attr: {
+                        class: 'form-control form-control-lg rounded-3',
+                        placeholder: 'Ex: Développement Web'
+                    },
+                    row_attr: {class: 'mb-4'}
+                }) }}
+                <button class="btn btn-primary btn-lg rounded-pill fw-semibold">
+                    <i class="bi bi-save me-2"></i>Enregistrer
+                </button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <!-- Section Liste des compétences -->
+    <div class="card shadow-lg skill-card mt-4">
+        <div class="card-header text-white py-3" style="background-color: #4CAF50;">
+            <h2 class="h5 mb-0 fw-bold"><i class="bi bi-list-task me-2"></i>Liste des compétences</h2>
+        </div>
+        <div class="card-body px-lg-5 py-4">
+            <div class="table-responsive">
+                <table class="table table-skill table-hover align-middle">
+                    <thead class="text-#4CAF50">
+                        <tr>
+                            <th class="ps-3">Compétence</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for skill in skills %}
+                        <tr>
+                            <td class="ps-3 fw-medium">{{ skill.name }}</td>
+                            <td class="text-end pe-3">
+                                <a href="{{ path('app_admin_delete_skill', {id: skill.id}) }}" 
+                                   class="btn btn-danger btn-sm rounded-pill"
+                                   onclick="return confirm('Supprimer cette compétence ?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -186,3 +186,120 @@ a:hover {
 .btn-primary:hover {
     background-color: #388e3c;
 }
+
+/*gestion de compétence utilisateur*/
+
+.skill-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.form-check-input:checked {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+.btn-primary {
+    background-color: #4CAF50;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #388e3c;
+}
+.skill-list {
+    column-count: 2;
+    column-gap: 2rem;
+}
+/*page Profile*/
+
+.profile-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.skill-badge {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4CAF50;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+.btn-primary {
+    background-color: #4CAF50;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #388e3c;
+}
+
+/*tableau de board admin*/
+
+.admin-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.stat-badge {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4CAF50;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+}
+.btn-admin {
+    background-color: #4CAF50;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-admin:hover {
+    background-color: #388e3c;
+}
+
+/*Tableau d'utilisateur*/
+
+.table {
+    --bs-table-bg: transparent;
+    border-color: rgba(76, 175, 80, 0.1);
+}
+.table-light {
+    --bs-table-bg: #e8f5e9;
+    color: #2e7d32;
+}
+.badge {
+    padding: 0.5em 0.75em;
+}
+.btn-success {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+.btn-success:hover {
+    background-color: #388e3c;
+    border-color: #388e3c;
+}
+
+/*gestion de compétences admin*/
+
+
+.skill-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+.btn-primary {
+    background-color: #4CAF50;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #388e3c;
+}
+.table-skill thead {
+    background-color: #e8f5e9;
+}
+
