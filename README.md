@@ -1,4 +1,5 @@
-commande pour démarrer le site : symfony serve -d
+composer install permet d'installer les dépendances
+<br>commande pour démarrer le site : symfony serve -d
 <br>commande pour démarrer la base de donnée : selon la base de donnée local utilisé
 <br>commande pour la base crée sur le local : symfony console doctrine database:create --if-not-exits
 <br>commande pour mise à jour : symfony console doctrine migrations:migrate
