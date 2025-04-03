@@ -27,9 +27,19 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
                 <div class="navbar-nav ms-auto">
-                    <a class="nav-link" href="{{ path('app_page_about') }}">À propos</a>
-                    <a class="nav-link" href="{{ path('app_page_contact') }}">Contact</a>
-                    <a class="nav-link" href="{{ path('app_page_terms') }}">Conditions</a>
+                    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        <a class="nav-link" href="{{ path('app_page_home') }}">Accueil</a>
+                        <a class="nav-link" href="{{ path('app_search_index') }}">Recherche</a>
+                        <a class="nav-link">Messagerie</a>
+                        <button id="profile" class="profile-icon" onclick="profile('open')">
+                            {# image du profil #}
+                        </button>
+                    {% else %}
+                        <a class="nav-link" href="{{ path('app_page_about') }}">À propos</a>
+                        <a class="nav-link" href="{{ path('app_page_contact') }}">Contact</a>
+                        <a class="nav-link" href="{{ path('app_page_terms') }}">Conditions</a>
+                        <a class="nav-link" href="{{path('app_login') }}">Connexion</a>
+                    {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
                     <a class="nav-link text-warning" href="{{ path('app_admin_dashboard') }}">
                         <i class="bi bi-shield-lock"></i> Admin
@@ -50,6 +60,20 @@
             {% endfor %}
         {% endfor %}
     </div>
+    
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <div id="profileMenu" onmouseout="bodyClick('click','profile')" onmouseover="bodyClick('noclick','profile')">
+            <div class="profile-header">
+                <p>{{ user.pseudo }}</p>
+                <div class="close"><button class="closeButton" onclick="profile('close')"><i class="bi bi-x"></i></button></div>
+            </div>
+            <button id="profileButton">
+                <a href="{{ path('app_profile_index') }}"><i class="bi bi-person-circle me-2"></i>profil</a></button>
+            <button id="logoutbutton">
+                <a href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-in-right me-2"></i>Se déconnecter</a>     
+            </button>
+        </div>
+    {% endif %}
 
     <main class="container my-5">
         {% block body %}{% endblock %}
@@ -62,6 +86,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('script.js') }}"></script>
     {% block javascripts %}{% endblock %}
 </body>
 </html>
