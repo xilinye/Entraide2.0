@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Entr'Aide 2.0{% endblock %}</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                        Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% block content %}{% endblock %}
+        
+        <div class="footer">
+            <p>Cet email vous a été envoyé automatiquement par 
+               <a href="{{ absolute_url(path('app_page_home')) }}" 
+                  style="color: #0d6efd; text-decoration: none;">
+                  Entr'Aide 2.0
+               </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

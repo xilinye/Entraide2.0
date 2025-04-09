@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Message;
+use App\Entity\User;
+use App\Entity\ConversationDeletion;
+use App\Form\MessageType;
+use App\Repository\MessageRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[Route('/messages', name: 'app_message_')]
+#[IsGranted('ROLE_USER')]
+class MessageController extends AbstractController
+{
+    #[Route('/', name: 'index')]
+    public function index(MessageRepository $messageRepository): Response
+    {
+        $user = $this->getUser();
+        $conversations = $messageRepository->findConversations($user);
+
+        return $this->render('message/index.html.twig', [
+            'conversations' => $conversations
+        ]);
+    }
+
+    #[Route('/nouveau/{id}', name: 'new', methods: ['GET', 'POST'])]
+    public function new(User $receiver, Request $request, EntityManagerInterface $em): Response
+    {
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message, ['include_title' => true]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message
+                ->setSender($this->getUser())
+                ->setReceiver($receiver)
+                ->setIsRead(false);
+
+            $em->persist($message);
+            $em->flush();
+
+            $this->addFlash('success', 'Message envoyé avec succès');
+            return $this->redirectToRoute('app_message_conversation', ['id' => $receiver->getId()]);
+        }
+
+        return $this->render('message/new.html.twig', [
+            'form' => $form->createView(),
+            'receiver' => $receiver
+        ]);
+    }
+
+
+    #[Route('/conversation/{id}', name: 'conversation', methods: ['GET', 'POST'])]
+    public function conversation(User $otherUser, Request $request, EntityManagerInterface $em, MessageRepository $messageRepository): Response
+    {
+        $user = $this->getUser();
+        $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
+
+        $isAnonymous = $em->getRepository(ConversationDeletion::class)->findOneBy([
+            'user' => $otherUser,
+            'otherUser' => $user,
+        ]);
+
+        // Déterminer le titre de la conversation
+        $conversationTitle = 'Nouvelle conversation';
+        if (!empty($messages)) {
+            $conversationTitle = $messages[0]->getTitle();
+        }
+
+        // Créer le message avec le titre de la conversation
+        $message = new Message();
+        $message->setTitle($conversationTitle);
+
+        // Créer le formulaire sans le champ titre
+        $form = $this->createForm(MessageType::class, $message, ['include_title' => false]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message
+                ->setSender($user)
+                ->setReceiver($otherUser)
+                ->setIsRead(false);
+
+            $em->persist($message);
+            $em->flush();
+
+            $this->addFlash('success', 'Message envoyé avec succès');
+            return $this->redirectToRoute('app_message_conversation', ['id' => $otherUser->getId()]);
+        }
+
+        // Marquer les messages comme lus
+        $messageRepository->markMessagesAsRead($user, $otherUser);
+
+        return $this->render('message/conversation.html.twig', [
+            'messages' => $messages,
+            'otherUser' => $otherUser,
+            'form' => $form->createView(),
+            'is_anonymous' => $isAnonymous !== null
+        ]);
+    }
+
+    #[Route('/conversation/{id}/delete', name: 'delete_conversation', methods: ['POST'])]
+    public function deleteConversation(User $otherUser, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+
+        // Vérifier l'existence d'une conversation
+        $messages = $em->getRepository(Message::class)->findConversationBetweenUsers($user, $otherUser);
+
+        if (empty($messages)) {
+            throw $this->createNotFoundException('Conversation non trouvée');
+        }
+
+        // Marquer la suppression
+        $deletion = new ConversationDeletion();
+        $deletion->setUser($user)
+            ->setOtherUser($otherUser)
+            ->setDeletedAt(new \DateTimeImmutable());
+
+        $em->persist($deletion);
+        $em->flush();
+
+        $this->addFlash('success', 'Conversation supprimée');
+        return $this->redirectToRoute('app_message_index');
+    }
+}
