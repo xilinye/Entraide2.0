@@ -22,11 +22,11 @@ class Message
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentMessages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'SET NULL')]
     private ?User $sender = null;
 
     #[ORM\ManyToOne(inversedBy: 'receivedMessages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'SET NULL')]
     private ?User $receiver = null;
 
     #[ORM\Column(options: ['default' => 'CURRENT_TIMESTAMP'])]

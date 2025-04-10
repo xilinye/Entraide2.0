@@ -9,6 +9,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class SkillSelectionType extends AbstractType
 {
@@ -33,6 +34,10 @@ class SkillSelectionType extends AbstractType
                 }
             ])
             ->add('skill', EntityType::class, [
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez sélectionner une compétence'])
+                ],
                 'class' => Skill::class,
                 'choice_label' => 'name',
                 'query_builder' => function (EntityRepository $er) use ($options) {

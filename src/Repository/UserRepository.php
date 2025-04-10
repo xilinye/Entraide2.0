@@ -110,4 +110,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findOrCreateAnonymousUser(): User
+    {
+        $anonymousUser = $this->findOneBy(['email' => 'anonymous@example.com']);
+
+        if (!$anonymousUser) {
+            $anonymousUser = new User();
+            $anonymousUser->setPseudo('Utilisateur Anonyme');
+            $anonymousUser->setEmail('anonymous@example.com');
+            $anonymousUser->setPassword(bin2hex(random_bytes(16)));
+            $anonymousUser->setIsVerified(true);
+            $anonymousUser->setRoles(['ROLE_ANONYMOUS']);
+
+            $this->getEntityManager()->persist($anonymousUser);
+            $this->getEntityManager()->flush();
+        }
+
+        return $anonymousUser;
+    }
 }

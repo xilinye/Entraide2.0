@@ -3,7 +3,9 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,7 +16,8 @@ class PromoteAdminCommand extends Command
     protected static $defaultName = 'app:promote-admin';
 
     public function __construct(
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private UserManager $userManager
     ) {
         parent::__construct();
     }
@@ -22,11 +25,10 @@ class PromoteAdminCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('app:promote-admin')
             ->setDescription('Promouvoir un utilisateur en administrateur')
             ->addArgument(
-                'email', 
-                InputArgument::REQUIRED, 
+                'email',
+                InputArgument::REQUIRED,
                 "Email de l'utilisateur"
             );
     }
@@ -41,15 +43,12 @@ class PromoteAdminCommand extends Command
             return Command::FAILURE;
         }
 
-        $roles = $user->getRoles();
-        
-        if (!in_array('ROLE_ADMIN', $roles, true)) {
-            $roles[] = 'ROLE_ADMIN';
-            $user->setRoles(array_unique($roles));
-            $this->em->flush();
+        try {
+            $this->userManager->promoteToAdmin($user);
             $output->writeln('<info>Administrateur créé avec succès</info>');
-        } else {
-            $output->writeln('<comment>L\'utilisateur est déjà administrateur</comment>');
+        } catch (RuntimeException $e) {
+            $output->writeln('<error>' . $e->getMessage() . '</error>');
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;

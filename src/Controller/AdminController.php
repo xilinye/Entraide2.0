@@ -2,16 +2,20 @@
 
 namespace App\Controller;
 
+
 use App\Entity\{User, Skill, Category};
 use App\Form\{SkillFormType, CategoryFormType};
 use App\Repository\{CategoryRepository, SkillRepository, UserRepository};
+use App\Service\{UserManager, SkillManager, CategoryManager};
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin', name: 'app_admin_')]
 #[IsGranted('ROLE_ADMIN')]
@@ -22,7 +26,10 @@ class AdminController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly SkillRepository $skillRepository,
         private readonly CategoryRepository $categoryRepository,
-        private readonly ValidatorInterface $validator
+        private readonly ValidatorInterface $validator,
+        private readonly UserManager $userManager,
+        private readonly SkillManager $skillManager,
+        private readonly CategoryManager $categoryManager
     ) {}
 
     #[Route('/', name: 'dashboard')]
@@ -43,7 +50,6 @@ class AdminController extends AbstractController
         $form = $this->createForm(SkillFormType::class, $skill);
         $form->handleRequest($request);
 
-        // Pagination
         $query = $this->skillRepository->findAllWithCategories();
         $skills = $paginator->paginate(
             $query,
@@ -52,7 +58,14 @@ class AdminController extends AbstractController
         );
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->processSkillCreation($skill);
+            try {
+                $this->skillManager->createSkill($skill);
+                $this->addFlash('success', 'Compétence crée avec succès');
+            } catch (ValidationFailedException $e) {
+                $this->addFlash('danger', (string) $e->getViolations());
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
+            }
             return $this->redirectToRoute('app_admin_skills');
         }
 
@@ -82,7 +95,12 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->processCategoryCreation($category);
+            try {
+                $this->categoryManager->createCategory($category);
+                $this->addFlash('success', 'Catégorie crée avec succès');
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
+            }
             return $this->redirectToRoute('app_admin_categories');
         }
 
@@ -126,8 +144,27 @@ class AdminController extends AbstractController
             if ($user === $this->getUser()) {
                 $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte');
             } else {
+                // Récupérer l'utilisateur anonyme
+                $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
+
+                // Anonymiser les messages envoyés
+                foreach ($user->getSentMessages() as $message) {
+                    $message->setSender($anonymousUser);
+                }
+
+                // Anonymiser les messages reçus
+                foreach ($user->getReceivedMessages() as $message) {
+                    $message->setReceiver($anonymousUser);
+                }
+
+                // Anonymiser les autres relations si nécessaire (ex: BlogPost)
+                foreach ($user->getBlogPosts() as $blogPost) {
+                    $blogPost->setAuthor($anonymousUser);
+                }
+
+                $this->em->flush();
                 $this->userRepository->remove($user, true);
-                $this->addFlash('success', 'Utilisateur supprimé avec succès');
+                $this->addFlash('success', 'Utilisateur supprimé et conversations anonymisées');
             }
         }
 
@@ -138,60 +175,21 @@ class AdminController extends AbstractController
     public function promoteUser(Request $request, User $user): Response
     {
         if ($this->isCsrfTokenValid('promote' . $user->getId(), $request->request->get('_token'))) {
-            $this->handleUserPromotion($user);
+            try {
+                $currentUser = $this->getUser();
+
+                if ($user->isAdmin()) {
+                    $this->userManager->demoteFromAdmin($user, $currentUser);
+                    $this->addFlash('success', 'Privilèges administrateur retirés');
+                } else {
+                    $this->userManager->promoteToAdmin($user);
+                    $this->addFlash('success', 'Utilisateur promu en administrateur');
+                }
+            } catch (RuntimeException $e) {
+                $this->addFlash('danger', $e->getMessage());
+            }
         }
 
         return $this->redirectToRoute('app_admin_users');
-    }
-
-    private function processSkillCreation(Skill $skill): void
-    {
-        $errors = $this->validator->validate($skill);
-        if (count($errors) > 0) {
-            $this->addFlash('danger', (string) $errors);
-            return;
-        }
-
-        try {
-            $this->em->persist($skill);
-            $this->em->flush();
-            $this->addFlash('success', 'Compétence créée avec succès');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
-        }
-    }
-
-    private function processCategoryCreation(Category $category): void
-    {
-        try {
-            if ($this->categoryRepository->existsByName($category->getName())) {
-                throw new \RuntimeException('Le nom de catégorie existe déjà');
-            }
-
-            $this->em->persist($category);
-            $this->em->flush();
-            $this->addFlash('success', 'Catégorie créée avec succès');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
-        }
-    }
-
-    private function handleUserPromotion(User $user): void
-    {
-        $roles = $user->getRoles();
-
-        if (in_array('ROLE_ADMIN', $roles, true)) {
-            if ($user === $this->getUser()) {
-                $this->addFlash('warning', 'Vous ne pouvez pas retirer vos propres privilèges d\'administrateur');
-            } else {
-                $user->setRoles(array_diff($roles, ['ROLE_ADMIN']));
-                $this->userRepository->save($user, true);
-                $this->addFlash('success', 'Privilèges d\'administrateur retirés');
-            }
-        } else {
-            $user->setRoles(array_merge($roles, ['ROLE_ADMIN']));
-            $this->userRepository->save($user, true);
-            $this->addFlash('success', 'Utilisateur promu en administrateur');
-        }
     }
 }

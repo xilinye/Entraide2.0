@@ -263,6 +263,13 @@
 								Déconnexion
 							</button>
 						</form>
+						<form action="{{ path('app_profile_delete') }}" method="post" class="w-100 mt-3">
+							<input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+							<button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center" onclick="return confirm('Cette action est irréversible. Supprimer votre compte ?')">
+								<i class="bi bi-trash3 me-2"></i>
+								Supprimer définitivement mon compte
+							</button>
+						</form>
 					</div>
 				</div>
 

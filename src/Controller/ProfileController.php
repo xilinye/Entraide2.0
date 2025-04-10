@@ -2,13 +2,11 @@
 
 namespace App\Controller;
 
-use App\Entity\Skill;
-use App\Entity\User;
+use App\Entity\{Skill, User};
 use App\Form\SkillSelectionType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\{SkillManager, UserManager};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -17,7 +15,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProfileController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em
+        private readonly SkillManager $skillManager,
+        private readonly UserManager $userManager
     ) {}
 
     #[Route('/', name: 'index')]
@@ -32,63 +31,40 @@ class ProfileController extends AbstractController
     public function manageSkills(Request $request): Response
     {
         $user = $this->getAuthenticatedUser();
-        $form = $this->createForm(SkillSelectionType::class, null, [
-            'selected_category' => null,
-            'required' => false
-        ]);
 
+        // Récupération correcte depuis les données du formulaire
+        $form = $this->createForm(SkillSelectionType::class);
         $form->handleRequest($request);
 
-        // Check if the form was submitted and contains category data
-        if ($form->isSubmitted() && $form->has('category')) {
-            $selectedCategory = $form->get('category')->getData();
-            // Recreate the form with the selected category
-            $form = $this->createForm(SkillSelectionType::class, null, [
-                'selected_category' => $selectedCategory,
-                'required' => true
-            ]);
-            // Handle the request again with the new form
-            $form->handleRequest($request);
-        }
+        // Récupérer la catégorie après la soumission
+        $selectedCategory = $form->get('category')->getData();
+
+        // Recréer le formulaire avec la catégorie sélectionnée
+        $form = $this->createForm(SkillSelectionType::class, null, [
+            'selected_category' => $selectedCategory
+        ]);
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            return $this->handleFormSubmission($form->get('skill')->getData());
-        }
+            $skill = $form->get('skill')->getData();
 
-        return $this->renderForm($user, $form);
-    }
+            if (!$skill instanceof Skill) {
+                $this->addFlash('danger', 'Veuillez sélectionner une compétence valide');
+                return $this->redirectToRoute('app_profile_skills');
+            }
 
-    #[Route('/competences/{id}/supprimer', name: 'skill_remove', methods: ['POST'])]
-    public function removeSkill(Request $request, Skill $skill): Response
-    {
-        if (!$this->isCsrfTokenValid('delete' . $skill->getId(), $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Token CSRF invalide.');
+            try {
+                $this->skillManager->handleSkillSubmission(
+                    $user,
+                    $skill
+                );
+                $this->addFlash('success', 'Compétence ajoutée avec succès');
+            } catch (\RuntimeException $e) {
+                $this->addFlash('danger', $e->getMessage());
+            }
             return $this->redirectToRoute('app_profile_skills');
         }
 
-        $user = $this->getAuthenticatedUser();
-        $user->removeSkill($skill);
-        $this->em->flush();
-
-        $this->addFlash('success', 'Compétence supprimée avec succès');
-        return $this->redirectToRoute('app_profile_skills');
-    }
-
-    private function handleFormSubmission($skill): Response
-    {
-        if (!$skill instanceof Skill) {
-            $this->addFlash('danger', 'Veuillez sélectionner une compétence valide.');
-            return $this->redirectToRoute('app_profile_skills');
-        }
-
-        $user = $this->getAuthenticatedUser();
-        $this->processSkillAddition($user, $skill);
-
-        return $this->redirectToRoute('app_profile_skills');
-    }
-
-    private function renderForm(User $user, $form): Response
-    {
         return $this->render('profile/skills.html.twig', [
             'user' => $user,
             'form' => $form->createView(),
@@ -96,33 +72,52 @@ class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/competences/{id}/supprimer', name: 'skill_remove', methods: ['POST'])]
+    public function removeSkill(Request $request, Skill $skill): Response
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if (!$this->isCsrfTokenValid('delete' . $skill->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide');
+            return $this->redirectToRoute('app_profile_skills');
+        }
+
+        try {
+            $this->skillManager->removeUserSkill($user, $skill);
+            $this->addFlash('success', 'Compétence supprimée avec succès');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_profile_skills');
+    }
+
+    #[Route('/supprimer', name: 'delete', methods: ['POST'])]
+    public function deleteAccount(Request $request): Response
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide');
+            return $this->redirectToRoute('app_profile_index');
+        }
+
+        try {
+            $this->userManager->deleteUserAccount($user);
+            $this->addFlash('success', 'Compte supprimé avec succès');
+            return $this->redirectToRoute('app_page_home');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
+            return $this->redirectToRoute('app_profile_index');
+        }
+    }
+
     private function getAuthenticatedUser(): User
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Accès refusé : utilisateur non authentifié');
+            throw $this->createAccessDeniedException();
         }
         return $user;
-    }
-
-    private function processSkillAddition(User $user, Skill $skill): void
-    {
-        if ($user->hasSkill($skill)) {
-            $this->addFlash('warning', 'Vous possédez déjà cette compétence');
-            return;
-        }
-
-        if (!$skill->getCategory()) {
-            $this->addFlash('danger', 'Compétence non classée');
-            return;
-        }
-
-        try {
-            $user->addSkill($skill);
-            $this->em->flush();
-            $this->addFlash('success', 'Compétence ajoutée avec succès');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur lors de l\'ajout : ' . $e->getMessage());
-        }
     }
 }

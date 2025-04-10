@@ -146,7 +146,7 @@
                                                 'data-category-selector-skill-target': ''
                                             }
                                         }) }}
-										<button type="submit" class="btn btn-primary-custom">
+										<button type="submit" class="btn btn-primary-custom" id="skill-submit-btn">
 											<i class="bi bi-plus-lg me-1"></i>
 											Ajouter
 										</button>
@@ -216,36 +216,48 @@
 </div>{% endblock %}{% block javascripts %}
 {{ parent() }}
 <script>
-	document.addEventListener('DOMContentLoaded', function () { // Gestion des confirmations de suppression
-document.querySelectorAll('[data-action="delete"]').forEach(btn => {
-btn.addEventListener('click', function (e) {
-if (!confirm(this.dataset.confirm)) {
-e.preventDefault();
-}
-});
-});
-
-// Gestion de la sélection de catégorie
+	document.addEventListener('DOMContentLoaded', function () {
 const categorySelect = document.querySelector('[name="skill_selection[category]"]');
+const skillSelect = document.querySelector('[name="skill_selection[skill]"]');
+const submitBtn = document.getElementById('skill-submit-btn');
+
+function updateButtonState() { // Activer le bouton seulement si une compétence est sélectionnée
+submitBtn.disabled = ! skillSelect.value;
+
+// Supprimer les classes d'erreur si une compétence est sélectionnée
+if (skillSelect.value) {
+skillSelect.classList.remove('is-invalid');
+skillSelect.parentElement.querySelector('.invalid-feedback').style.display = 'none';
+}
+}
+
+if (skillSelect && submitBtn) {
+skillSelect.addEventListener('change', updateButtonState);
+updateButtonState(); // État initial au chargement
+}
 
 if (categorySelect) {
-categorySelect.addEventListener('change', function () { // Soumet seulement le champ catégorie
-const form = this.closest('form');
-const skillField = form.querySelector('[name="skill_selection[skill]"]');
-skillField.disabled = true; // Désactive la validation compétence
+categorySelect.addEventListener('change', function () { // Soumettre le formulaire pour rafraîchir les compétences
+const form = document.createElement('form');
+form.method = 'POST';
+form.action = '{{ path('app_profile_skills') }}';
 
-const tempForm = document.createElement('form');
-tempForm.method = 'POST';
-tempForm.action = '{{ path('app_profile_skills') }}';
+// Ajouter le token CSRF
+const csrfInput = document.createElement('input');
+csrfInput.type = 'hidden';
+csrfInput.name = 'skill_selection[_token]';
+csrfInput.value = document.querySelector('input[name="skill_selection[_token]"]').value;
+form.appendChild(csrfInput);
 
-const input = document.createElement('input');
-input.type = 'hidden';
-input.name = 'skill_selection[category]';
-input.value = this.value;
+// Ajouter la catégorie sélectionnée
+const categoryInput = document.createElement('input');
+categoryInput.type = 'hidden';
+categoryInput.name = 'skill_selection[category]';
+categoryInput.value = this.value;
+form.appendChild(categoryInput);
 
-tempForm.appendChild(input);
-document.body.appendChild(tempForm);
-tempForm.submit();
+document.body.appendChild(form);
+form.submit();
 });
 }
 });
