@@ -122,6 +122,9 @@
 
 				<h1 class="h4 mb-0 text-#4CAF50">
 					<i class="bi bi-chat-dots me-2"></i>
+					{% if otherUser.isAnonymous() %}
+						<i class="bi bi-exclamation-octagon text-danger me-2"></i>
+					{% endif %}
 					{% if is_anonymous %}
 						Utilisateur Anonyme
 					{% else %}
@@ -151,20 +154,27 @@
 		</div>
 
 		<div class="chat-input-container">
-			{{ form_start(form) }}
-			<div class="input-group">
-				{{ form_widget(form.content, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Écrivez votre message...',
-                        'rows': 2
-                    }
-                }) }}
-				<button type="submit" class="btn send-btn">
-					<i class="bi bi-send me-2"></i>Envoyer
-				</button>
-			</div>
-			{{ form_end(form) }}
+			{% if otherUser.isAnonymous() %}
+				<div class="alert alert-warning mb-0">
+					<i class="bi bi-exclamation-triangle me-2"></i>
+					Cet utilisateur a supprimé son compte. Les nouvelles réponses ne sont plus autorisées.
+				</div>
+			{% else %}
+				{{ form_start(form) }}
+				<div class="input-group">
+					{{ form_widget(form.content, {
+                'attr': {
+                    'class': 'form-control',
+                    'placeholder': 'Écrivez votre message...',
+                    'rows': 2
+                }
+            }) }}
+					<button type="submit" class="btn send-btn">
+						<i class="bi bi-send me-2"></i>Envoyer
+					</button>
+				</div>
+				{{ form_end(form) }}
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
+use App\Service\UserAnonymizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -13,7 +15,9 @@ class UserManager
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly TokenStorageInterface $tokenStorage,
-        private readonly RequestStack $requestStack
+        private readonly RequestStack $requestStack,
+        private UserAnonymizer $anonymizer,
+        private UserRepository $userRepository
     ) {}
 
     public function promoteToAdmin(User $user): void
@@ -40,25 +44,16 @@ class UserManager
         }
     }
 
-    public function deleteUserAccount(User $user): void
+    public function deleteUser(User $user): void
     {
-        $this->anonymizeUser($user);
-        $this->em->remove($user);
-        $this->em->flush();
-        $this->invalidateSession();
-    }
+        $this->anonymizer->anonymize($user);
 
-    private function anonymizeUser(User $user): void
-    {
-        $user->setEmail('deleted_' . $user->getId() . '@example.com');
-        $user->setPassword('deleted');
-    }
-
-    private function invalidateSession(): void
-    {
-        $this->tokenStorage->setToken(null);
-        if ($request = $this->requestStack->getCurrentRequest()) {
-            $request->getSession()?->invalidate();
+        // Déconnexion si l'utilisateur est connecté
+        if ($this->tokenStorage->getToken()?->getUser() === $user) {
+            $this->tokenStorage->setToken(null);
+            $this->requestStack->getSession()->invalidate();
         }
+
+        $this->userRepository->remove($user, true);
     }
 }

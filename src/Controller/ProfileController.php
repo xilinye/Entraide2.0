@@ -103,11 +103,11 @@ class ProfileController extends AbstractController
         }
 
         try {
-            $this->userManager->deleteUserAccount($user);
+            $this->userManager->deleteUser($user);
             $this->addFlash('success', 'Compte supprimé avec succès');
-            return $this->redirectToRoute('app_page_home');
+            return $this->redirectToRoute('app_logout'); // Redirection vers la déconnexion
         } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
+            $this->addFlash('danger', 'Erreur lors de la suppression : ' . $e->getMessage());
             return $this->redirectToRoute('app_profile_index');
         }
     }

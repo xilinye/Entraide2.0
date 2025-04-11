@@ -32,6 +32,11 @@ class MessageController extends AbstractController
     #[Route('/nouveau/{id}', name: 'new', methods: ['GET', 'POST'])]
     public function new(User $receiver, Request $request, EntityManagerInterface $em): Response
     {
+        if ($receiver->isAnonymous()) {
+            $this->addFlash('error', 'Cet utilisateur a supprimé son compte. Vous ne pouvez plus envoyer de messages.');
+            return $this->redirectToRoute('app_message_index');
+        }
+
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message, ['include_title' => true]);
         $form->handleRequest($request);
@@ -60,6 +65,12 @@ class MessageController extends AbstractController
     public function conversation(User $otherUser, Request $request, EntityManagerInterface $em, MessageRepository $messageRepository): Response
     {
         $user = $this->getUser();
+
+        if ($otherUser->isAnonymous()) {
+            $this->addFlash('error', 'Cet utilisateur a supprimé son compte. Vous ne pouvez plus envoyer de messages.');
+            return $this->redirectToRoute('app_message_index');
+        }
+
         $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
 
         $isAnonymous = $em->getRepository(ConversationDeletion::class)->findOneBy([

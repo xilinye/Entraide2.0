@@ -141,33 +141,13 @@ class AdminController extends AbstractController
     public function deleteUser(Request $request, User $user): Response
     {
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
-            if ($user === $this->getUser()) {
-                $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte');
-            } else {
-                // Récupérer l'utilisateur anonyme
-                $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
-
-                // Anonymiser les messages envoyés
-                foreach ($user->getSentMessages() as $message) {
-                    $message->setSender($anonymousUser);
-                }
-
-                // Anonymiser les messages reçus
-                foreach ($user->getReceivedMessages() as $message) {
-                    $message->setReceiver($anonymousUser);
-                }
-
-                // Anonymiser les autres relations si nécessaire (ex: BlogPost)
-                foreach ($user->getBlogPosts() as $blogPost) {
-                    $blogPost->setAuthor($anonymousUser);
-                }
-
-                $this->em->flush();
-                $this->userRepository->remove($user, true);
+            try {
+                $this->userManager->deleteUser($user);
                 $this->addFlash('success', 'Utilisateur supprimé et conversations anonymisées');
+            } catch (\Exception $e) {
+                $this->addFlash('danger', $e->getMessage());
             }
         }
-
         return $this->redirectToRoute('app_admin_users');
     }
 

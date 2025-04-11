@@ -10,10 +10,11 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private EntityManagerInterface $em)
     {
         parent::__construct($registry, User::class);
     }
@@ -86,10 +87,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u != :user')
-            ->setParameter('user', $excludedUser);
+            ->andWhere('u.roles NOT LIKE :anonymousRole')
+            ->andWhere('u.isVerified = :isVerified')
+            ->setParameter('user', $excludedUser)
+            ->setParameter('anonymousRole', '%"ROLE_ANONYMOUS"%')
+            ->setParameter('isVerified', true);
 
         if ($category) {
-            // Join the user's skills and filter by their category
             $qb->innerJoin('u.skills', 's')
                 ->andWhere('s.category = :category')
                 ->setParameter('category', $category);
@@ -117,14 +121,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         if (!$anonymousUser) {
             $anonymousUser = new User();
-            $anonymousUser->setPseudo('Utilisateur Anonyme');
+            $anonymousUser->setPseudo('Utilisateur Supprimé');
             $anonymousUser->setEmail('anonymous@example.com');
             $anonymousUser->setPassword(bin2hex(random_bytes(16)));
             $anonymousUser->setIsVerified(true);
             $anonymousUser->setRoles(['ROLE_ANONYMOUS']);
 
-            $this->getEntityManager()->persist($anonymousUser);
-            $this->getEntityManager()->flush();
+            $this->em->persist($anonymousUser);
+            $this->em->flush();
         }
 
         return $anonymousUser;
