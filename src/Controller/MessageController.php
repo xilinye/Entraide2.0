@@ -66,11 +66,6 @@ class MessageController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($otherUser->isAnonymous()) {
-            $this->addFlash('error', 'Cet utilisateur a supprimé son compte. Vous ne pouvez plus envoyer de messages.');
-            return $this->redirectToRoute('app_message_index');
-        }
-
         $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
 
         $isAnonymous = $em->getRepository(ConversationDeletion::class)->findOneBy([

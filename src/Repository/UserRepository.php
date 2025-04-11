@@ -133,4 +133,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         return $anonymousUser;
     }
+    public function findAnonymousUser(): ?User
+    {
+        return $this->findOneBy(['email' => 'anonymous@example.com']);
+    }
 }

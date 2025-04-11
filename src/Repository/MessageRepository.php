@@ -52,8 +52,10 @@ class MessageRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->where('(m.sender = :user1 AND m.receiver = :user2) OR (m.sender = :user2 AND m.receiver = :user1)')
+            ->andWhere('m.sender != :anonymousUser OR m.receiver != :anonymousUser') // Exclure les conversations entièrement anonymes
             ->setParameter('user1', $user1)
             ->setParameter('user2', $user2)
+            ->setParameter('anonymousUser', $this->getEntityManager()->getRepository(User::class)->findAnonymousUser())
             ->orderBy('m.createdAt', 'ASC')
             ->getQuery()
             ->getResult();
