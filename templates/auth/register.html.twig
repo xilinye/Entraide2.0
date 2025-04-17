@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+{% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
+{% block title %}Inscription - Entr'Aide 2.0
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		{% for message in app.flashes('success') %}
+			<div class="alert alert-success alert-dismissible fade show">
+				{{ message }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+		{% endfor %}
+
+		{% for message in app.flashes('error') %}
+			<div class="alert alert-danger alert-dismissible fade show">
+				{{ message }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+		{% endfor %}
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="card shadow-lg auth-card">
+					<div class="card-header text-white text-center py-4" style="background-color: #4CAF50;">
+						<h1 class="h3 mb-0 fw-bold">
+							<i class="bi bi-person-plus me-2"></i>Créer un compte</h1>
+					</div>
+					<div class="card-body px-lg-5 py-4">
+						{% for flash_error in app.flashes('verify_email_error') %}
+							<div class="alert alert-danger alert-dismissible fade show">
+								{{ flash_error }}
+								<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+							</div>
+						{% endfor %}
+
+						{{ form_errors(registrationForm) }}
+
+						{{ form_start(registrationForm) }}
+						<div class="mb-4">
+							{{ form_row(registrationForm.pseudo, {
+                                label: 'Pseudonyme',
+                                attr: { 
+                                    class: 'form-control form-control-lg rounded-3',
+                                    placeholder: 'Ex: Jean_Dupont23'
+                                },
+                                row_attr: {class: 'form-group'}
+                            }) }}
+						</div>
+
+						<div class="mb-4">
+							{{ form_row(registrationForm.email, {
+                                label: 'Adresse email',
+                                attr: { 
+                                    class: 'form-control form-control-lg rounded-3',
+                                    placeholder: 'exemple@email.com'
+                                },
+                                row_attr: {class: 'form-group'}
+                            }) }}
+						</div>
+
+						<div class="mb-4">
+							{{ form_errors(registrationForm.plainPassword) }}
+							{{ form_row(registrationForm.plainPassword.first, {
+                                label: 'Mot de passe',
+                                attr: { 
+                                    class: 'form-control form-control-lg rounded-3',
+                                    placeholder: '8 caractères minimum'
+                                },
+                                row_attr: {class: 'form-group'}
+                            }) }}
+
+							{{ form_row(registrationForm.plainPassword.second, {
+                                label: 'Confirmation',
+                                attr: { 
+                                    class: 'form-control form-control-lg rounded-3',
+                                    placeholder: 'Répétez votre mot de passe'
+                                },
+                                row_attr: {class: 'form-group'}
+                            }) }}
+						</div>
+
+						<div class="d-grid gap-2 mt-5">
+							<button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
+								<i class="bi bi-send-check me-2"></i>S'inscrire
+							</button>
+						</div>
+						{{ form_end(registrationForm) }}
+
+						<div class="mt-4 text-center">
+							<p class="mb-2">
+								Déjà inscrit ?
+								<a href="{{ path('app_login') }}" class="text-decoration-none link-#4CAF50 fw-medium">
+									Connectez-vous
+								</a>
+							</p>
+							<a href="{{ path('app_auth_resend_confirmation') }}" class="text-decoration-none small link-secondary">
+								Renvoyer l'email de confirmation
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

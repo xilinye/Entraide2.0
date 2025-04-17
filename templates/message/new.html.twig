@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Envoyer un message - Entr'Aide 2.0{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .message-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(76, 175, 80, 0.15);
+        }
+        .message-header {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        .message-form textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .send-btn {
+            background-color: #4CAF50;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="card message-card">
+        <div class="message-header text-center">
+            <h2 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Nouveau message</h2>
+        </div>
+        
+        <div class="card-body p-4 message-form">
+            {{ form_start(form) }}
+                <div class="mb-4">
+                    {{ form_widget(form.content, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Écrivez votre message ici...'
+                        }
+                    }) }}
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn send-btn btn-lg rounded-pill">
+                        <i class="bi bi-send me-2"></i>Envoyer
+                    </button>
+                    <a href="{{ path('app_message_index') }}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Retour
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

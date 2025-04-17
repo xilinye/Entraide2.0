@@ -1,0 +1,193 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+}
+
+button {
+    all: unset;
+	background-color:white;
+}
+
+/*page condition et politique*/
+.legal-content {
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+.legal-content h3 {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+.legal-content h3:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35em;
+    height: 1.2em;
+    width: 5px;
+    background-color: #4CAF50;
+    border-radius: 3px;
+}
+.list-responsibilities {
+    list-style: none;
+    padding-left: 1.5rem;
+}
+.list-responsibilities li {
+    position: relative;
+    margin-bottom: 0.8rem;
+}
+.list-responsibilities li:before {
+    content: '•';
+    color: #4CAF50;
+    position: absolute;
+    left: -1.5rem;
+    font-size: 1.2em;
+}
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+.card-header {
+    border-radius: 0 !important;
+    padding: 2rem;
+}
+.alert-info {
+    background-color: #e8f5e9;
+    border-color: #c8e6c9;
+    color: #2e7d32;
+}
+a {
+    color: #388e3c;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+a:hover {
+    color: #1b5e20;
+}
+
+/*page contact*/
+.contact-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+.btn-primary {
+    background-color: #4CAF50;
+    border: none;
+    padding: 0.75rem 2rem;
+    transition: background-color 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #388e3c;
+}
+
+/*page à propos*/
+.list-steps {
+    list-style: none;
+    counter-reset: step-counter;
+    padding-left: 2rem;
+}
+.list-steps li {
+    counter-increment: step-counter;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-left: 2.5rem;
+}
+.list-steps li:before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: -0.2rem;
+    width: 2rem;
+    height: 2rem;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+.team-card {
+    transition: transform 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+.team-card:hover {
+    transform: translateY(-5px);
+}
+.team-card img {
+    border-radius: 15px 15px 0 0;
+    height: 250px;
+    object-fit: cover;
+}
+
+/*page d'accueil*/
+.hero-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.hero-content {
+    background: linear-gradient(rgba(76, 175, 80, 0.1), #ffffff);
+}
+.cta-button {
+    background: white;
+    color: #4CAF50 !important;
+    border: 3px solid #4CAF50;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 1rem 2.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+.cta-button:hover {
+    background: #4CAF50 !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(28, 63, 29, 0.4);
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+.cta-button {
+    animation: pulse 2s infinite;
+}
+
+/*page de connexion, d'inscription et renvoyer*/
+.auth-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+.btn-primary {
+    background-color: #4CAF50;
+    border: none;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #388e3c;
+}

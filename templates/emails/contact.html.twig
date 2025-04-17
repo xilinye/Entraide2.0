@@ -1,0 +1,10 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block content %}
+<h3>Nouveau message de {{ sender_name }}</h3>
+<p>Email : {{ sender_email }}</p>
+
+<div class="message-content">
+    {{ message|nl2br }}
+</div>
+{% endblock %}

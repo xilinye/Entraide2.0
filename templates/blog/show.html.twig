@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ post.title }}
+	- Entr'Aide 2.0
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<article class="blog-post">
+			<h1 class="mb-3">{{ post.title }}</h1>
+
+			<div class="meta mb-4 text-muted small">
+				Publié par
+				{{ post.author.pseudo }}
+				le
+				{{ post.createdAt|date('d/m/Y à H:i') }}
+			</div>
+
+			<div class="content mb-4">
+				{{ post.content|nl2br }}
+			</div>
+
+			<a href="{{ path('app_blog_index') }}" class="btn btn-outline-secondary">
+				<i class="bi bi-arrow-left"></i>
+				Retour aux articles
+			</a>
+		</article>
+	</div>
+{% endblock %}

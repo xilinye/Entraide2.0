@@ -1,0 +1,219 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des compétences - Admin
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container py-5">
+		{# En-tête et boutons de navigation #}
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h1 class="h3 mb-0 text-primary-custom">
+				<i class="bi bi-tools me-2"></i>Gestion des compétences
+			</h1>
+			<a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-primary-custom">
+				<i class="bi bi-arrow-left me-2"></i>Retour
+			</a>
+		</div>
+
+		{# Messages flash #}
+		{% for label, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="alert alert-{{ label }} alert-dismissible fade show">
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{% if not form.vars.valid %}
+			<div class="alert alert-danger alert-dismissible fade show">
+				{% for error in form.name.vars.errors %}
+					<div>{{ error.message }}</div>
+				{% endfor %}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+		{% endif %}
+
+		<div
+			class="row g-4">
+			{# Formulaire #}
+			<div class="col-lg-6">
+				<div class="card shadow-sm border-primary-custom">
+					<div class="card-header bg-primary-custom text-white">
+						<h2 class="h5 mb-0">
+							<i class="bi bi-plus-circle me-2"></i>Ajouter une compétence</h2>
+					</div>
+					<div class="card-body">
+						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+						<div class="mb-3 position-relative">
+							{{ form_label(form.name, 'Nom de la compétence', {
+    'label_attr': {'class': 'form-label fw-medium'}
+}) }}
+							<div class="input-group">
+								<span class="input-group-text bg-primary-custom text-white">
+									<i class="bi bi-pencil-square"></i>
+								</span>
+								{{ form_widget(form.name, {
+    'attr': {
+        'class': 'form-control' ~ (form.name.vars.errors|length ? ' is-invalid'),
+        'placeholder': 'Ex: Symfony, React...'
+    }
+}) }}
+							</div>
+							<div class="invalid-feedback">
+								{{ form_errors(form.name) }}
+							</div>
+						</div>
+
+						<div class="mb-4">
+							{{ form_label(form.category, 'Catégorie associée', {
+                            'label_attr': {'class': 'form-label fw-medium'}
+                        }) }}
+							<div class="input-group">
+								<span class="input-group-text bg-primary-custom text-white">
+									<i class="bi bi-tag"></i>
+								</span>
+								{{ form_widget(form.category, {
+                            'attr': {
+                                'class': 'form-select' ~ (form.category.vars.errors|length ? ' is-invalid'),
+                                'data-choices': 'true'
+                            }
+                        }) }}
+							</div>
+							<div class="invalid-feedback">
+								{{ form_errors(form.category) }}
+							</div>
+						</div>
+
+						<button type="submit" class="btn btn-primary-custom w-100 fw-medium">
+							<i class="bi bi-save me-2"></i>Enregistrer
+						</button>
+						{{ form_end(form) }}
+					</div>
+				</div>
+			</div>
+
+			{# Liste #}
+			<div class="col-lg-6">
+				<div class="card shadow-sm border-primary-custom">
+					<div class="card-header bg-primary-custom text-white">
+						<h2 class="h5 mb-0">
+							<i class="bi bi-list-task me-2"></i>Liste des compétences</h2>
+					</div>
+					<div class="card-body">
+						{% if skills|length > 0 %}
+							<div class="table-responsive">
+								<table class="table table-hover align-middle">
+									<thead class="table-primary-custom">
+										<tr>
+											<th class="text-white">Nom</th>
+											<th class="text-white">Catégorie</th>
+											<th class="text-white">Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for skill in skills %}
+											<tr>
+												<td class="fw-medium">{{ skill.name }}</td>
+												<td>
+													<span class="badge bg-soft-primary-custom text-primary-custom">
+														<i class="bi bi-tag me-1"></i>
+														{{ skill.category.name }}
+													</span>
+												</td>
+												<td>
+													<form method="post" action="{{ path('app_admin_delete_skill', {'id': skill.id}) }}" class="d-inline">
+														<input type="hidden" name="_method" value="DELETE">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ skill.id) }}">
+														<button type="submit" class="btn btn-danger btn-sm" data-action="delete" data-confirm="Voulez-vous vraiment supprimer cette compétence ?">
+															<i class="bi bi-trash"></i>
+														</button>
+													</form>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+
+							{% if skills.getTotalItemCount() > skills.getItemNumberPerPage() %}
+								<nav class="mt-4">
+									{{ knp_pagination_render(skills, '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig') }}
+								</nav>
+							{% endif %}
+						{% else %}
+							<div class="alert alert-info-custom mb-0">
+								<i class="bi bi-info-circle me-2"></i>
+								Aucune compétence enregistrée
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>:root
+{
+	--primary-color: #4CAF50;
+	--primary-hover: #45a049;
+}
+.text-primary-custom {
+	color: var(--primary-color) !important;
+}
+.bg-primary-custom {
+	background-color: var(--primary-color) !important;
+}
+.border-primary-custom {
+	border-color: var(--primary-color) !important;
+}
+
+.btn-primary-custom {
+	background-color: var(--primary-color);
+	border-color: var(--primary-color);
+	color: white;
+	transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+	background-color: var(--primary-hover);
+	border-color: var(--primary-hover);
+	transform: translateY(-1px);
+}
+
+.btn-outline-primary-custom {
+	border-color: var(--primary-color);
+	color: var(--primary-color);
+	transition: all 0.3s ease;
+}
+
+.btn-outline-primary-custom:hover {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+.table-primary-custom {
+	background-color: var(--primary-color);
+}
+
+.bg-soft-primary-custom {
+	background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.alert-info-custom {
+	background-color: #e8f5e9;
+	border-color: #c8e6c9;
+	color: #2e7d32;
+}
+
+.pagination .page-item.active .page-link {
+	background-color: var(--primary-color);
+	border-color: var(--primary-color);
+}
+.pagination .page-link {
+	color: #000 !important;
+}</style>{%endblock%}

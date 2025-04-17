@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - Entr'Aide 2.0
+{% endblock %}
+
+{% block body %}
+	<div class="card shadow-lg contact-card">
+		<div class="card-header text-white" style="background-color: #4CAF50;">
+			<h2 class="mb-0 display-5 fw-bold">Nous contacter</h2>
+		</div>
+		<div class="card-body px-lg-5 py-4">
+			{{ form_start(form) }}
+			<div class="row g-3">
+				<div class="col-md-6">
+					{{ form_row(form.name, {
+                        attr: {
+                            class: 'form-control-lg rounded-3',
+                            placeholder: 'Votre nom complet'
+                        },
+                        row_attr: {class: 'mb-3'}
+                    }) }}
+				</div>
+
+				<div class="col-md-6">
+					{{ form_row(form.email, {
+                        attr: {
+                            class: 'form-control-lg rounded-3',
+                            placeholder: 'exemple@email.com'
+                        },
+                        row_attr: {class: 'mb-3'}
+                    }) }}
+				</div>
+
+				<div class="col-12">
+					{{ form_row(form.subject, {
+                        attr: {
+                            class: 'form-control-lg rounded-3',
+                            placeholder: 'Objet de votre message'
+                        },
+                        row_attr: {class: 'mb-3'}
+                    }) }}
+				</div>
+
+				<div class="col-12">
+					{{ form_row(form.message, {
+                        attr: {
+                            class: 'form-control-lg rounded-3',
+                            placeholder: 'Votre message...',
+                            rows: 5
+                        },
+                        row_attr: {class: 'mb-4'}
+                    }) }}
+				</div>
+
+				<div class="col-12 text-end">
+					<button type="submit" class="btn btn-primary btn-lg rounded-pill">
+						<i class="bi bi-send me-2"></i>Envoyer
+					</button>
+				</div>
+			</div>
+			{{ form_end(form) }}
+		</div>
+	</div>
+{% endblock %}

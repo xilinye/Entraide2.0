@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau d'utilisateur - Entr'Aide 2.0
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<style>:root
+	{
+		--primary-color: #4CAF50;
+		--primary-hover: #45a049;
+	}
+	.text-primary-custom {
+		color: var(--primary-color) !important;
+	}
+	.bg-primary-custom {
+		background-color: var(--primary-color) !important;
+	}
+	.border-primary-custom {
+		border-color: var(--primary-color) !important;
+	}
+	.btn-primary-custom {
+		background-color: var(--primary-color);
+		border-color: var(--primary-color);
+		color: white;
+		transition: all 0.3s ease;
+	}
+	.btn-primary-custom:hover {
+		background-color: var(--primary-hover);
+		border-color: var(--primary-hover);
+		transform: translateY(-1px);
+	}
+	.btn-outline-primary-custom {
+		border-color: var(--primary-color);
+		color: var(--primary-color);
+		transition: all 0.3s ease;
+	}
+	.btn-outline-primary-custom:hover {
+		background-color: var(--primary-color);
+		color: white;
+	}
+	.table-primary-custom {
+		background-color: var(--primary-color);
+	}
+	.badge-green {
+		background-color: var(--primary-color);
+	}
+	.alert-info-custom {
+		background-color: #e8f5e9;
+		border-color: #c8e6c9;
+		color: #2e7d32;
+	}
+	.pagination .page-item.active .page-link {
+		background-color: var(--primary-color);
+		border-color: var(--primary-color);
+	}
+</style>{% endblock %}{% block body %}
+<div class="container py-5">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h1 class="h3 mb-0 text-primary-custom">
+			<i class="bi bi-people-fill me-2"></i>Gestion des utilisateurs
+		</h1>
+		<a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-primary-custom">
+			<i class="bi bi-arrow-left me-2"></i>Retour
+		</a>
+	</div>
+
+	<div class="row g-4">
+		<div class="col-lg-12">
+			<div class="card shadow-sm border-primary-custom">
+				<div class="card-header bg-primary-custom text-white">
+					<h2 class="h5 mb-0">
+						<i class="bi bi-table me-2"></i>Liste des utilisateurs
+					</h2>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-hover align-middle">
+							<thead class="table-primary-custom">
+								<tr>
+									<th class="text-white">Pseudonyme</th>
+									<th class="text-white">Email</th>
+									<th class="text-white">Rôle</th>
+									<th class="text-white">
+										<i class="bi bi-calendar-event me-1"></i>Inscription
+									</th>
+									<th class="text-white">Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for user in users %}
+									<tr>
+										<td class="fw-medium">{{ user.pseudo }}</td>
+										<td>{{ user.email }}</td>
+										<td>
+											{% if 'ROLE_ADMIN' in user.roles %}
+												<span class="badge bg-danger">Admin</span>
+											{% else %}
+												<span class="badge badge-green">Utilisateur</span>
+											{% endif %}
+										</td>
+										<td class="text-muted">{{ user.createdAt|date('d/m/Y H:i') }}</td>
+										<td>
+											<div class="btn-group" role="group">
+												{% if 'ROLE_ADMIN' in user.roles %}
+													<form action="{{ path('app_admin_demote_user', {id: user.id}) }}" method="post">
+														<input type="hidden" name="_token" value="{{ csrf_token('demote' ~ user.id) }}">
+														<button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Retirer les privilèges administrateur ?')">
+															<i class="bi bi-arrow-down-circle"></i>
+														</button>
+													</form>
+												{% else %}
+													<form action="{{ path('app_admin_promote_user', {id: user.id}) }}" method="post">
+														<input type="hidden" name="_token" value="{{ csrf_token('promote' ~ user.id) }}">
+														<button type="submit" class="btn btn-primary-custom btn-sm" onclick="return confirm('Promouvoir cet utilisateur ?')">
+															<i class="bi bi-arrow-up-circle"></i>
+														</button>
+													</form>
+												{% endif %}
+
+												<form action="{{ path('app_admin_delete_user', {id: user.id}) }}" method="post">
+													<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+													<button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer définitivement ?')">
+														<i class="bi bi-trash"></i>
+													</button>
+												</form>
+											</div>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>{% endblock %}{% block javascripts %}
+{{ parent() }}
+<script>
+	document.addEventListener('DOMContentLoaded', function () { // Gestion des confirmations
+document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+btn.addEventListener('click', function (e) {
+if (!confirm(this.dataset.confirm)) {
+e.preventDefault();
+}
+});
+});
+});
+</script>{% endblock %}

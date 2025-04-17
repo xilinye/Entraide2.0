@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - Entr'Aide 2.0
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="card shadow-lg auth-card">
+					<div class="card-header text-white text-center py-4" style="background-color: #4CAF50;">
+						<h1 class="h3 mb-0 fw-bold">
+							<i class="bi bi-person-check me-2"></i>Connexion</h1>
+					</div>
+					<div class="card-body px-lg-5 py-4">
+						<form method="post">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+							{% if error %}
+								<div class="alert alert-danger alert-dismissible fade show">
+									{% set error_message = error.messageKey|trans(error.messageData, 'security') %}
+
+									{# Cas des identifiants invalides #}
+									{% if error.messageKey == 'Invalid credentials.' %}
+										❌
+										{{ error_message }}
+
+										{# Cas du compte non activé #}
+									{% elseif error.messageKey == 'UNVERIFIED_ACCOUNT' %}
+										🚫
+										{{ error_message }}
+										<div class="mt-2">
+											<a href="{{ path('app_auth_resend_confirmation') }}" class="alert-link">
+												Renvoyer le lien d'activation
+											</a>
+										</div>
+
+										{# Cas générique pour les autres erreurs #}
+									{% else %}
+										⚠️
+										{{ error_message }}
+									{% endif %}
+
+									<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+								</div>
+							{% endif %}
+
+							<div class="mb-4">
+								<label for="inputPseudo" class="form-label fw-medium">Pseudonyme</label>
+								<input type="text" name="pseudo" id="inputPseudo" class="form-control form-control-lg rounded-3" placeholder="Votre pseudonyme" value="{{ last_username }}" required autofocus>
+							</div>
+
+							<div class="mb-4">
+								<label for="inputPassword" class="form-label fw-medium">Mot de passe</label>
+								<input type="password" name="password" id="inputPassword" class="form-control form-control-lg rounded-3" placeholder="••••••••" autocomplete="current-password" required>
+							</div>
+
+							<div class="d-grid gap-2 mt-5">
+								<button class="btn btn-primary btn-lg rounded-pill fw-semibold" type="submit">
+									<i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+								</button>
+							</div>
+
+							<div class="mt-4 text-center">
+								<a href="{{ path('app_auth_forgot_password_request') }}" class="text-decoration-none text-success small">
+									Mot de passe oublié ?
+								</a>
+								<br>
+								<a href="{{ path('app_auth_register') }}" class="text-decoration-none text-success">
+									Pas encore de compte ?
+									<span class="fw-medium">S'inscrire</span>
+								</a>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,206 @@
+{# templates/message/index.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Messagerie
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<style>:root
+	{
+		--accent-color: #4CAF50;
+		--accent-hover: #45a049;
+		--danger-color: #dc3545;
+		--text-primary: #2d3339;
+		--text-secondary: #6c757d;
+		--bg-light: #f8f9fa;
+		--border-color: #e9ecef;
+	}
+
+	.conversation-card {
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		border: 1px solid var(--border-color);
+		border-left: 4px solid var(--accent-color);
+		background: white;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.conversation-card:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+	}
+
+	.conversation-card.anonymous {
+		border-left-color: var(--text-secondary);
+	}
+
+	.user-avatar {
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		background: var(--accent-color);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.user-avatar i {
+		font-size: 1.5rem;
+		color: white;
+	}
+
+	.card-actions {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-left: auto;
+	}
+
+	.delete-btn {
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+
+	.conversation-card:hover .delete-btn {
+		opacity: 1;
+	}
+
+	.open-conversation-btn {
+		transition: transform 0.2s ease;
+	}
+
+	.open-conversation-btn:hover {
+		transform: translateX(3px);
+	}
+
+	.unread-indicator {
+		display: inline-block;
+		width: 8px;
+		height: 8px;
+		background: var(--accent-color);
+		border-radius: 50%;
+		margin-left: 8px;
+	}
+
+	.anonymous-badge {
+		background: var(--text-secondary);
+		color: white;
+		font-size: 0.75rem;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+	}
+
+	.btn-accent {
+		background: var(--accent-color);
+		color: white;
+		transition: background 0.2s ease;
+	}
+
+	.btn-accent:hover {
+		background: var(--accent-hover);
+		color: white;
+	}
+
+	.empty-state {
+		border: 2px dashed var(--border-color);
+		background: var(--bg-light);
+		border-radius: 12px;
+	}
+
+	.empty-icon {
+		transition: transform 0.3s ease;
+	}
+
+	.empty-state:hover .empty-icon {
+		transform: scale(1.05);
+	}
+</style>{% endblock %}{% block body %}
+<div class="container py-4">
+	<div class="d-flex justify-content-between align-items-center mb-5">
+		<h1 class="h3 mb-0 text-accent">
+			<i class="bi bi-chat-text-fill me-2"></i>Vos conversations
+		</h1>
+		<a href="{{ path('app_search_index') }}" class="btn btn-accent">
+			<i class="bi bi-plus-circle-fill me-2"></i>Nouvelle discussion
+		</a>
+	</div>
+
+	{% if conversations|length > 0 %}
+		<div class="row row-cols-1 row-cols-md-2 g-4">
+			{% for conversation in conversations %}
+				{% set is_deleted = conversation.deletion_date is not null and (conversation.last_message_date < conversation.deletion_date) %}
+
+				<div class="col">
+					<div class="card conversation-card {% if is_deleted %}anonymous{% endif %}">
+						<div class="card-body d-flex align-items-center">
+							{% if not is_deleted %}
+								<div class="user-avatar me-3">
+									<i class="bi bi-person"></i>
+								</div>
+
+								{# Modifiez le wrapper du lien #}
+								<div class="stretched-link-wrapper flex-grow-1">
+									<a href="{{ path('app_message_conversation', {id: conversation.other_user_id}) }}" class="text-decoration-none text-dark">
+										<div class="mb-1">
+											<h5>
+												{{ conversation.other_user_pseudo|default('Utilisateur inconnu') }}
+												{% if conversation.unread_count > 0 %}
+													<span class="unread-indicator"></span>
+												{% endif %}
+											</h5>
+											<div class="mb-1">
+												{% if conversation.last_title %}
+													<span class="fw-medium text-accent">{{ conversation.last_title }}</span>
+												{% else %}
+													<span class="fst-italic text-muted">Sans objet</span>
+												{% endif %}
+											</div>
+											<small class="text-muted">
+												Dernier message :
+												{{ conversation.last_message_date|date('d/m/Y H:i') }}
+											</small>
+										</div>
+									</a>
+								</div>
+
+								{# Bouton de suppression #}
+								<div class="card-actions">
+									<form action="{{ path('app_message_delete_conversation', {id: conversation.other_user_id}) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?')">
+										<input type="hidden" name="_token" value="{{ csrf_token('delete_conversation_' ~ conversation.other_user_id) }}">
+										<button type="submit" class="btn btn-sm btn-danger delete-btn">
+											<i class="bi bi-trash"></i>
+										</button>
+									</form>
+								</div>
+							{% else %}
+								<div class="text-center w-100 py-3">
+									<span class="anonymous-badge">
+										<i class="bi bi-eye-slash me-2"></i>Conversation supprimée
+									</span>
+									<div class="mt-2 small text-muted">
+										{{ conversation.last_title|default('Titre non disponible') }}
+									</div>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% else %}
+		<div class="card empty-state border-2">
+			<div class="card-body text-center py-5">
+				<div class="empty-icon mb-4">
+					<i class="bi bi-chat-heart-fill text-accent display-4"></i>
+				</div>
+				<h3 class="text-accent mb-3">Commencez à dialoguer</h3>
+				<p class="text-muted mb-4">Envoyez votre premier message à un utilisateur de la communauté</p>
+				<a href="{{ path('app_search_index') }}" class="btn btn-accent btn-lg rounded-pill">
+					<i class="bi bi-search me-2"></i>Trouver des membres
+				</a>
+			</div>
+		</div>
+	{% endif %}
+</div>{% endblock %}
