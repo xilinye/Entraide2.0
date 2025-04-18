@@ -2,8 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Message;
-use App\Entity\User;
+use App\Entity\{Message,User};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

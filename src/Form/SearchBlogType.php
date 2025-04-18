@@ -2,8 +2,7 @@
 
 namespace App\Form;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
 use Symfony\Component\Form\Extension\Core\Type\SearchType as SymfonySearchType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 

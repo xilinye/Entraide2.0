@@ -3,8 +3,7 @@
 namespace App\Security;
 
 use App\Entity\User;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserCheckerInterface;
+use Symfony\Component\Security\Core\User\{UserInterface,UserCheckerInterface};
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
 class UserChecker implements UserCheckerInterface

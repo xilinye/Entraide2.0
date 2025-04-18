@@ -2,8 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Skill;
-use App\Entity\User;
+use App\Entity\{Skill,User};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

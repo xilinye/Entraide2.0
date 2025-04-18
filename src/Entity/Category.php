@@ -21,9 +21,6 @@ class Category
     #[ORM\OneToMany(targetEntity: Skill::class, mappedBy: 'category')]
     private Collection $skills;
 
-    /**
-     * @var Collection<int, Forum>
-     */
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Forum::class, orphanRemoval: true)]
     private Collection $forums;
 

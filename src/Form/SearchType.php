@@ -5,8 +5,7 @@ namespace App\Form;
 use App\Entity\{Category, Skill};
 use App\Repository\SkillRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SearchType extends AbstractType
