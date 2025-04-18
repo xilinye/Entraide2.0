@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ forum.title }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<div class="card mb-4">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h1>{{ forum.title }}</h1>
+				{% if is_granted('ROLE_USER') and (app.user == forum.author or is_granted('ROLE_ADMIN')) %}
+					<form action="{{ path('app_forum_toggle', {id: forum.id}) }}" method="post">
+						<button type="submit" class="btn btn-sm {{ forum.isOpen ? 'btn-warning' : 'btn-success' }}">
+							{% if forum.isOpen %}
+								Marquer comme résolu
+							{% else %}
+								Rouvrir la discussion
+							{% endif %}
+						</button>
+					</form>
+				{% endif %}
+			</div>
+			<div class="card-body">
+				<div class="d-flex gap-3 mb-4">
+					<div class="flex-shrink-0">
+						<img src="{{ asset('images/avatar.png') }}" class="rounded-circle" width="60" alt="Avatar de {{ forum.author.pseudo }}">
+					</div>
+					<div class="flex-grow-1">
+						<div class="mb-3">
+							<span class="fw-bold">{{ forum.author.pseudo }}</span>
+							<small class="text-muted ms-2">
+								{{ forum.createdAt|date('d/m/Y à H:i') }}
+								{% if forum.category %}
+									•
+									<span class="badge bg-secondary">{{ forum.category.name }}</span>
+								{% endif %}
+							</small>
+						</div>
+						<div class="forum-content">
+							{{ forum.content|nl2br }}
+						</div>
+					</div>
+				</div>
+
+				<hr>
+
+				<h3 class="mb-4">{{ forum.responses|length }}
+					réponses</h3>
+
+				{% for response in forum.responses %}
+					<div class="d-flex gap-3 mb-4">
+						<div class="flex-shrink-0">
+							<img src="{{ asset('images/avatar.png') }}" class="rounded-circle" width="50" alt="Avatar de {{ response.author.pseudo }}">
+						</div>
+						<div class="flex-grow-1">
+							<div class="mb-2">
+								<span class="fw-bold">{{ response.author.pseudo }}</span>
+								<small class="text-muted ms-2">
+									{{ response.createdAt|date('d/m/Y à H:i') }}
+								</small>
+							</div>
+							<div class="response-content bg-light p-3 rounded">
+								{{ response.content|nl2br }}
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<div class="alert alert-info">Aucune réponse pour le moment</div>
+				{% endfor %}
+
+				{% if forum.isOpen %}
+					<hr>
+
+					{% if is_granted('ROLE_USER') %}
+						<h4 class="mb-3">Ajouter une réponse</h4>
+						{{ form_start(responseForm) }}
+						{{ form_widget(responseForm.content) }}
+						<button type="submit" class="btn btn-primary mt-3">
+							<i class="bi bi-send"></i>
+							Poster la réponse
+						</button>
+						{{ form_end(responseForm) }}
+					{% else %}
+						<div class="alert alert-info">
+							<a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a>
+							pour participer à la discussion
+						</div>
+					{% endif %}
+				{% else %}
+					<div class="alert alert-success">
+						<i class="bi bi-check-circle"></i>
+						Cette discussion a été marquée comme résolue
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

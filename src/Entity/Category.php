@@ -21,9 +21,16 @@ class Category
     #[ORM\OneToMany(targetEntity: Skill::class, mappedBy: 'category')]
     private Collection $skills;
 
+    /**
+     * @var Collection<int, Forum>
+     */
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Forum::class, orphanRemoval: true)]
+    private Collection $forums;
+
     public function __construct()
     {
         $this->skills = new ArrayCollection();
+        $this->forums = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -72,5 +79,32 @@ class Category
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    public function getForums(): Collection
+    {
+        return $this->forums;
+    }
+
+    public function addForum(Forum $forum): static
+    {
+        if (!$this->forums->contains($forum)) {
+            $this->forums->add($forum);
+            $forum->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForum(Forum $forum): static
+    {
+        if ($this->forums->removeElement($forum)) {
+            // set the owning side to null (unless already changed)
+            if ($forum->getCategory() === $this) {
+                $forum->setCategory(null);
+            }
+        }
+
+        return $this;
     }
 }

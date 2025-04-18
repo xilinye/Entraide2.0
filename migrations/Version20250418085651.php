@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250417221357 extends AbstractMigration
+final class Version20250418085651 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -28,6 +28,12 @@ final class Version20250417221357 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE conversation_deletion (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, other_user_id INT NOT NULL, deleted_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_CD936635A76ED395 (user_id), INDEX IDX_CD936635B4334DF9 (other_user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE forum (id INT AUTO_INCREMENT NOT NULL, author_id INT NOT NULL, category_id INT DEFAULT NULL, title VARCHAR(255) NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', is_open TINYINT(1) DEFAULT 1 NOT NULL, INDEX IDX_852BBECDF675F31B (author_id), INDEX IDX_852BBECD12469DE2 (category_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE forum_response (id INT AUTO_INCREMENT NOT NULL, author_id INT NOT NULL, forum_id INT NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_1988861CF675F31B (author_id), INDEX IDX_1988861C29CCBAD0 (forum_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE message (id INT AUTO_INCREMENT NOT NULL, sender_id INT NOT NULL, receiver_id INT NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '(DC2Type:datetime_immutable)', is_read TINYINT(1) DEFAULT 0 NOT NULL, title VARCHAR(255) NOT NULL, INDEX IDX_B6BD307FF624B39D (sender_id), INDEX IDX_B6BD307FCD53EDB6 (receiver_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -52,6 +58,18 @@ final class Version20250417221357 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE conversation_deletion ADD CONSTRAINT FK_CD936635B4334DF9 FOREIGN KEY (other_user_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum ADD CONSTRAINT FK_852BBECDF675F31B FOREIGN KEY (author_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum ADD CONSTRAINT FK_852BBECD12469DE2 FOREIGN KEY (category_id) REFERENCES category (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum_response ADD CONSTRAINT FK_1988861CF675F31B FOREIGN KEY (author_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum_response ADD CONSTRAINT FK_1988861C29CCBAD0 FOREIGN KEY (forum_id) REFERENCES forum (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE message ADD CONSTRAINT FK_B6BD307FF624B39D FOREIGN KEY (sender_id) REFERENCES user (id)
@@ -83,6 +101,18 @@ final class Version20250417221357 extends AbstractMigration
             ALTER TABLE conversation_deletion DROP FOREIGN KEY FK_CD936635B4334DF9
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE forum DROP FOREIGN KEY FK_852BBECDF675F31B
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum DROP FOREIGN KEY FK_852BBECD12469DE2
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum_response DROP FOREIGN KEY FK_1988861CF675F31B
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE forum_response DROP FOREIGN KEY FK_1988861C29CCBAD0
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE message DROP FOREIGN KEY FK_B6BD307FF624B39D
         SQL);
         $this->addSql(<<<'SQL'
@@ -105,6 +135,12 @@ final class Version20250417221357 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE conversation_deletion
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE forum
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE forum_response
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE message

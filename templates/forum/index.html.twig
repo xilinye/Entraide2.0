@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum d'entraide
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<h1 class="mb-4">Forum d'entraide</h1>
+
+		<div class="row mb-4">
+			<div class="col-md-8">
+				{{ form_start(searchForm) }}
+				<div class="input-group">
+					{{ form_widget(searchForm.query) }}
+					{{ form_widget(searchForm.category) }}
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-search"></i>
+					</button>
+				</div>
+				{{ form_end(searchForm) }}
+			</div>
+			<div class="col-md-4 text-end">
+				<a href="{{ path('app_forum_new') }}" class="btn btn-success">
+					<i class="bi bi-plus-circle"></i>
+					Nouvelle discussion
+				</a>
+			</div>
+		</div>
+
+		{% for forum in forums %}
+			<div class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						<a href="{{ path('app_forum_show', {id: forum.id}) }}">{{ forum.title }}</a>
+						{% if forum.category %}
+							<span class="badge bg-secondary">{{ forum.category.name }}</span>
+						{% endif %}
+					</h5>
+					<p class="card-text">{{ forum.content|u.truncate(200, '...') }}</p>
+					<small class="text-muted">
+						Posté par
+						{{ forum.author.pseudo }}
+						le
+						{{ forum.createdAt|date('d/m/Y H:i') }}
+					</small>
+				</div>
+			</div>
+		{% else %}
+			<div class="alert alert-info">Aucune discussion trouvée</div>
+		{% endfor %}
+	</div>
+{% endblock %}

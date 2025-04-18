@@ -81,6 +81,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ConversationDeletion::class, mappedBy: 'user')]
     private Collection $conversationDeletions;
 
+    #[ORM\OneToMany(targetEntity: Forum::class, mappedBy: 'author')]
+    private Collection $forums;
+
+    #[ORM\OneToMany(targetEntity: ForumResponse::class, mappedBy: 'author')]
+    private Collection $forumResponses;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -91,6 +97,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->receivedMessages = new ArrayCollection();
         $this->blogPosts = new ArrayCollection();
         $this->conversationDeletions = new ArrayCollection();
+        $this->forums = new ArrayCollection();
+        $this->forumResponses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -381,5 +389,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isAnonymous(): bool
     {
         return in_array('ROLE_ANONYMOUS', $this->getRoles(), true);
+    }
+
+    /**
+     * @return Collection<int, Forum>
+     */
+    public function getForums(): Collection
+    {
+        return $this->forums;
+    }
+
+    public function addForum(Forum $forum): static
+    {
+        if (!$this->forums->contains($forum)) {
+            $this->forums->add($forum);
+            $forum->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForum(Forum $forum): static
+    {
+        if ($this->forums->removeElement($forum)) {
+            // set the owning side to null (unless already changed)
+            if ($forum->getAuthor() === $this) {
+                $forum->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ForumResponse>
+     */
+    public function getForumResponses(): Collection
+    {
+        return $this->forumResponses;
+    }
+
+    public function addForumResponse(ForumResponse $forumResponse): static
+    {
+        if (!$this->forumResponses->contains($forumResponse)) {
+            $this->forumResponses->add($forumResponse);
+            $forumResponse->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForumResponse(ForumResponse $forumResponse): static
+    {
+        if ($this->forumResponses->removeElement($forumResponse)) {
+            // set the owning side to null (unless already changed)
+            if ($forumResponse->getAuthor() === $this) {
+                $forumResponse->setAuthor(null);
+            }
+        }
+
+        return $this;
     }
 }
