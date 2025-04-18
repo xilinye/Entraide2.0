@@ -34,7 +34,6 @@ class ForumController extends AbstractController
     }
 
     #[Route('/new', name: 'new')]
-    #[IsGranted('ROLE_USER')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $forum = new Forum();

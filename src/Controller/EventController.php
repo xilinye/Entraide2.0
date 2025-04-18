@@ -53,6 +53,7 @@ class EventController extends AbstractController
         return $this->render('event/show.html.twig', [
             'event' => $event,
             'is_registered' => $event->getAttendees()->contains($this->getUser()),
+            'attendees' => $event->getSortedAttendees()
         ]);
     }
 

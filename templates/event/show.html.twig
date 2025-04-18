@@ -67,6 +67,26 @@
 			{% endif %}
 		</div>
 	</div>
+
+	{% if app.user == event.organizer %}
+		<section class="mt-5">
+			<h3>Liste des participants ({{ event.attendees|length }}/{{ event.maxAttendees ?? '∞' }})</h3>
+			<div class="list-group">
+				{% for attendee in attendees %}
+					<div class="list-group-item">
+						{{ attendee.pseudo }}
+						{% if attendee == app.user %}
+							<span class="badge bg-primary">Vous</span>
+						{% endif %}
+					</div>
+				{% else %}
+					<div class="list-group-item text-muted">
+						Aucun participant pour le moment
+					</div>
+				{% endfor %}
+			</div>
+		</section>
+	{% endif %}
 	<div class="mt-4">
 		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
 			Retour

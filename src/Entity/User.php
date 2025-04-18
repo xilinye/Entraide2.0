@@ -90,9 +90,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Event::class)]
     private Collection $organizedEvents;
 
-    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'attendees')]
-    private Collection $attendedEvents;
-
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -105,6 +102,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->conversationDeletions = new ArrayCollection();
         $this->forums = new ArrayCollection();
         $this->forumResponses = new ArrayCollection();
+        $this->organizedEvents = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -303,7 +301,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeBlogPost(BlogPost $blogPost): static
     {
         if ($this->blogPosts->removeElement($blogPost)) {
-            // set the owning side to null (unless already changed)
             if ($blogPost->getAuthor() === $this) {
                 $blogPost->setAuthor(null);
             }
@@ -378,7 +375,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeConversationDeletion(ConversationDeletion $conversationDeletion): static
     {
         if ($this->conversationDeletions->removeElement($conversationDeletion)) {
-            // set the owning side to null (unless already changed)
             if ($conversationDeletion->getUser() === $this) {
                 $conversationDeletion->setUser(null);
             }
@@ -397,9 +393,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return in_array('ROLE_ANONYMOUS', $this->getRoles(), true);
     }
 
-    /**
-     * @return Collection<int, Forum>
-     */
     public function getForums(): Collection
     {
         return $this->forums;
@@ -418,7 +411,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeForum(Forum $forum): static
     {
         if ($this->forums->removeElement($forum)) {
-            // set the owning side to null (unless already changed)
             if ($forum->getAuthor() === $this) {
                 $forum->setAuthor(null);
             }
@@ -427,9 +419,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, ForumResponse>
-     */
     public function getForumResponses(): Collection
     {
         return $this->forumResponses;
@@ -448,9 +437,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeForumResponse(ForumResponse $forumResponse): static
     {
         if ($this->forumResponses->removeElement($forumResponse)) {
-            // set the owning side to null (unless already changed)
             if ($forumResponse->getAuthor() === $this) {
                 $forumResponse->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOrganizedEvents(): Collection
+    {
+        return $this->organizedEvents;
+    }
+
+    public function addOrganizedEvent(Event $organizedEvent): static
+    {
+        if (!$this->organizedEvents->contains($organizedEvent)) {
+            $this->organizedEvents->add($organizedEvent);
+            $organizedEvent->setOrganizer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrganizedEvent(Event $organizedEvent): static
+    {
+        if ($this->organizedEvents->removeElement($organizedEvent)) {
+            // Définissez le côté propriétaire à null (sauf si déjà changé)
+            if ($organizedEvent->getOrganizer() === $this) {
+                $organizedEvent->setOrganizer(null);
             }
         }
 

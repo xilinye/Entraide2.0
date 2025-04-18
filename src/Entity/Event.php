@@ -183,4 +183,11 @@ class Event
         $this->maxAttendees = $maxAttendees;
         return $this;
     }
+
+    public function getSortedAttendees(): array
+    {
+        $attendees = $this->attendees->toArray();
+        usort($attendees, fn($a, $b) => $a->getPseudo() <=> $b->getPseudo());
+        return $attendees;
+    }
 }
