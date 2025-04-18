@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\BlogPost;
-use App\Form\BlogPostFormType;
+use App\Form\{BlogPostFormType,SearchBlogType};
 use App\Repository\BlogPostRepository;
-use App\Form\SearchBlogType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

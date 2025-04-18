@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Message;
-use App\Entity\User;
-use App\Entity\ConversationDeletion;
+use App\Entity\{User,Message,ConversationDeletion};
 use App\Form\MessageType;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
