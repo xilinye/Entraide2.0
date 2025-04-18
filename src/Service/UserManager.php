@@ -85,10 +85,8 @@ class UserManager
             ->update(ConversationDeletion::class, 'cd')
             ->set('cd.user', ':anonymousUser')
             ->where('cd.user = :user')
-            ->setParameters([
-                'user' => $user,
-                'anonymousUser' => $anonymousUser
-            ])
+            ->setParameter('user', $user)
+            ->setParameter('anonymousUser', $anonymousUser)
             ->getQuery()
             ->execute();
     }
