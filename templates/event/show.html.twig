@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ event.title }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<h1>{{ event.title }}</h1>
+
+		<div class="row mt-4">
+			<div class="col-md-8">
+				<p class="lead">{{ event.description }}</p>
+
+				<div class="row">
+					<div class="col-md-6">
+						<div class="card mb-3">
+							<div class="card-body">
+								<h5 class="card-title">Détails</h5>
+								<ul class="list-unstyled">
+									<li>📅 Début :
+										{{ event.startDate|date('d/m/Y H:i') }}</li>
+									<li>🏁 Fin :
+										{{ event.endDate|date('d/m/Y H:i') }}</li>
+									<li>📍 Lieu :
+										{{ event.location }}</li>
+									<li>👤 Organisateur :
+										{{ event.organizer.pseudo }}</li>
+									<li>👥 Participants :
+										{{ event.attendees|length }}
+										{% if event.maxAttendees %}/{{ event.maxAttendees }}
+										{% endif %}
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-4">
+			{% if is_registered %}
+				<form method="post" action="{{ path('app_event_unregister', {'id': event.id}) }}">
+					<button class="btn btn-warning">Se désinscrire</button>
+				</form>
+			{% else %}
+				<form method="post" action="{{ path('app_event_register', {'id': event.id}) }}">
+					<button class="btn btn-success" {{ not event.canRegister(app.user) ? 'disabled' : '' }}>
+						S'inscrire
+					</button>
+				</form>
+			{% endif %}
+
+			{% if is_granted('edit', event) %}
+				<div class="mt-3">
+					<a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-primary">
+						Modifier
+					</a>
+					<form method="post" action="{{ path('app_event_delete', {'id': event.id}) }}" class="d-inline">
+						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+						<button class="btn btn-danger" onclick="return confirm('Supprimer cet événement ?')">
+							Supprimer
+						</button>
+					</form>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+	<div class="mt-4">
+		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
+			Retour
+		</a>
+	</div>
+{% endblock %}

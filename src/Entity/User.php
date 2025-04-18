@@ -87,6 +87,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ForumResponse::class, mappedBy: 'author')]
     private Collection $forumResponses;
 
+    #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Event::class)]
+    private Collection $organizedEvents;
+
+    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'attendees')]
+    private Collection $attendedEvents;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();

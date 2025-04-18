@@ -1,0 +1,45 @@
+{# new.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un événement
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<h1>Créer un nouvel événement</h1>
+		{{ form_start(form) }}
+		{{ form_widget(form) }}
+		<button class="btn btn-success">{{ button_label|default('Créer') }}</button>
+		{{ form_end(form) }}
+	</div>
+	<div class="mt-4">
+		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
+			Retour
+		</a>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+flatpickr('.datetimepicker', {
+enableTime: true,
+dateFormat: "Y-m-d H:i",
+time_24hr: true,
+locale: "fr",
+minDate: "today",
+altInput: true,
+altFormat: "j F Y à H:i",
+allowInput: true
+});
+});
+	</script>
+{% endblock %}
