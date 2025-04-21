@@ -10,6 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
+use Psr\Log\LoggerInterface;
 
 #[Route('/messages', name: 'app_message_')]
 #[IsGranted('ROLE_USER')]
@@ -27,8 +31,13 @@ class MessageController extends AbstractController
     }
 
     #[Route('/nouveau/{id}', name: 'new', methods: ['GET', 'POST'])]
-    public function new(User $receiver, Request $request, EntityManagerInterface $em): Response
-    {
+    public function new(
+        User $receiver,
+        Request $request,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        LoggerInterface $logger
+    ): Response {
         if ($receiver->isAnonymous()) {
             $this->addFlash('error', 'Cet utilisateur a supprimé son compte. Vous ne pouvez plus envoyer de messages.');
             return $this->redirectToRoute('app_message_index');
@@ -48,6 +57,26 @@ class MessageController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Message envoyé avec succès');
+
+            try {
+                $email = (new TemplatedEmail())
+                    ->from(new Address(
+                        $this->getParameter('app.mailer_from'),
+                        $this->getParameter('app.mailer_from_name')
+                    ))
+                    ->to($receiver->getEmail())
+                    ->subject('Nouveau message de ' . $this->getUser())
+                    ->htmlTemplate('emails/message_notification.html.twig')
+                    ->context([
+                        'sender' => $this->getUser(),
+                        'message' => $message,
+                    ]);
+
+                $mailer->send($email);
+            } catch (\Exception $e) {
+                $logger->error('Erreur d\'envoi d\'email: ' . $e->getMessage());
+            }
+
             return $this->redirectToRoute('app_message_conversation', ['id' => $receiver->getId()]);
         }
 
@@ -59,8 +88,14 @@ class MessageController extends AbstractController
 
 
     #[Route('/conversation/{id}', name: 'conversation', methods: ['GET', 'POST'])]
-    public function conversation(User $otherUser, Request $request, EntityManagerInterface $em, MessageRepository $messageRepository): Response
-    {
+    public function conversation(
+        User $otherUser,
+        Request $request,
+        EntityManagerInterface $em,
+        MessageRepository $messageRepository,
+        MailerInterface $mailer,
+        LoggerInterface $logger
+    ): Response {
         $user = $this->getUser();
 
         $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
@@ -94,6 +129,26 @@ class MessageController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Message envoyé avec succès');
+
+            try {
+                $email = (new TemplatedEmail())
+                    ->from(new Address(
+                        $this->getParameter('app.mailer_from'),
+                        $this->getParameter('app.mailer_from_name')
+                    ))
+                    ->to($otherUser->getEmail())
+                    ->subject('Nouveau message de ' . $this->getUser())
+                    ->htmlTemplate('emails/message_notification.html.twig')
+                    ->context([
+                        'sender' => $user,
+                        'message' => $message,
+                    ]);
+
+                $mailer->send($email);
+            } catch (\Exception $e) {
+                $logger->error('Erreur d\'envoi d\'email: ' . $e->getMessage());
+            }
+
             return $this->redirectToRoute('app_message_conversation', ['id' => $otherUser->getId()]);
         }
 
