@@ -51,6 +51,9 @@
 								<small>Début :
 									{{ event.startDate|date('d/m/Y H:i') }}</small>
 							</p>
+							<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-outline-secondary">
+								Voir détails
+							</a>
 						</div>
 					</div>
 				</div>

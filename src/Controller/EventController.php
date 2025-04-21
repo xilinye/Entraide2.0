@@ -60,6 +60,11 @@ class EventController extends AbstractController
     #[IsGranted('edit', 'event')]
     public function edit(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
+        if ($event->isPast()) {
+            $this->addFlash('error', 'Impossible de modifier un événement terminé');
+            return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+        }
+
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
 
@@ -79,6 +84,11 @@ class EventController extends AbstractController
     #[Route('/{id}/inscription', name: 'register', methods: ['POST'])]
     public function register(Event $event, EntityManagerInterface $entityManager): Response
     {
+        if ($event->isPast()) {
+            $this->addFlash('error', 'Impossible de s\'inscrire à un événement terminé');
+            return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+        }
+
         $user = $this->getUser();
         if (!$event->canRegister($user)) {
             $this->addFlash('error', 'Inscription impossible à cet événement');
@@ -95,6 +105,11 @@ class EventController extends AbstractController
     #[Route('/{id}/desinscription', name: 'unregister', methods: ['POST'])]
     public function unregister(Event $event, EntityManagerInterface $entityManager): Response
     {
+        if ($event->isPast()) {
+            $this->addFlash('error', 'Impossible de se désinscrire d\'un événement terminé');
+            return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+        }
+
         $event->removeAttendee($this->getUser());
         $entityManager->flush();
 
@@ -106,6 +121,11 @@ class EventController extends AbstractController
     #[IsGranted('delete', 'event')]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
+        if ($event->isPast()) {
+            $this->addFlash('error', 'Impossible de supprimer un événement terminé');
+            return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+        }
+
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $request->request->get('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();

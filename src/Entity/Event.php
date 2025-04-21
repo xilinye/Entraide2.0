@@ -102,10 +102,9 @@ class Event
 
     public function canRegister(User $user): bool
     {
-        return
+        return !$this->isPast() &&
             !$this->attendees->contains($user) &&
             $this->organizer !== $user &&
-            $this->startDate > new \DateTime() &&
             (!$this->maxAttendees || $this->attendees->count() < $this->maxAttendees);
     }
 
@@ -188,5 +187,10 @@ class Event
         $attendees = $this->attendees->toArray();
         usort($attendees, fn($a, $b) => $a->getPseudo() <=> $b->getPseudo());
         return $attendees;
+    }
+
+    public function isPast(): bool
+    {
+        return $this->startDate < new \DateTime();
     }
 }
