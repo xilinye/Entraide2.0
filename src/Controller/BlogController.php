@@ -75,4 +75,44 @@ class BlogController extends AbstractController
             'post' => $post,
         ]);
     }
+
+    #[Route('/{slug}/edit', name: 'edit')]
+    #[IsGranted('EDIT', 'post')]
+    public function edit(Request $request, BlogPost $post): Response
+    {
+        $originalTitle = $post->getTitle();
+
+        $form = $this->createForm(BlogPostFormType::class, $post);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Regénérer le slug seulement si le titre a changé
+            if ($post->getTitle() !== $originalTitle) {
+                $post->computeSlug($this->slugger);
+            }
+
+            $this->em->flush();
+
+            $this->addFlash('success', 'Article mis à jour avec succès');
+            return $this->redirectToRoute('app_blog_show', ['slug' => $post->getSlug()]);
+        }
+
+        return $this->render('blog/edit.html.twig', [
+            'form' => $form->createView(),
+            'post' => $post,
+        ]);
+    }
+
+    #[Route('/{slug}/delete', name: 'delete', methods: ['POST'])]
+    #[IsGranted('DELETE', 'post')]
+    public function delete(Request $request, BlogPost $post): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $post->getId(), $request->request->get('_token'))) {
+            $this->em->remove($post);
+            $this->em->flush();
+            $this->addFlash('success', 'Article supprimé avec succès');
+        }
+
+        return $this->redirectToRoute('app_blog_index');
+    }
 }

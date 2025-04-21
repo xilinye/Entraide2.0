@@ -2,15 +2,20 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\{Event, User};
+use App\Entity\BlogPost;
+use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class EventVoter extends Voter
+class BlogPostVoter extends Voter
 {
+    const EDIT = 'EDIT';
+    const DELETE = 'DELETE';
+
     protected function supports(string $attribute, $subject): bool
     {
-        return $subject instanceof Event && in_array($attribute, ['edit', 'delete']);
+        return in_array($attribute, [self::EDIT, self::DELETE])
+            && $subject instanceof BlogPost;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
@@ -21,8 +26,8 @@ class EventVoter extends Voter
             return false;
         }
 
-        $event = $subject;
+        $post = $subject;
 
-        return $event->getOrganizer() === $user || $user->hasRole('ROLE_ADMIN');
+        return $user === $post->getAuthor() || $user->hasRole('ROLE_ADMIN');
     }
 }
