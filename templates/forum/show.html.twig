@@ -9,17 +9,23 @@
 		<div class="card mb-4">
 			<div class="card-header d-flex justify-content-between align-items-center">
 				<h1>{{ forum.title }}</h1>
-				{% if is_granted('ROLE_USER') and (app.user == forum.author or is_granted('ROLE_ADMIN')) %}
-					<form action="{{ path('app_forum_toggle', {id: forum.id}) }}" method="post">
-						<button type="submit" class="btn btn-sm {{ forum.isOpen ? 'btn-warning' : 'btn-success' }}">
-							{% if forum.isOpen %}
-								Marquer comme résolu
-							{% else %}
-								Rouvrir la discussion
-							{% endif %}
-						</button>
-					</form>
-				{% endif %}
+				<div class="d-flex gap-2">
+					{% if (app.user == forum.author or is_granted('ROLE_ADMIN')) %}
+						<form action="{{ path('app_forum_toggle', {id: forum.id}) }}" method="post">
+							<button type="submit" class="btn btn-sm {{ forum.isOpen ? 'btn-warning' : 'btn-success' }}">
+								{% if forum.isOpen %}
+									Marquer comme résolu
+								{% else %}
+									Rouvrir la discussion
+								{% endif %}
+							</button>
+						</form>
+						<a href="{{ path('app_forum_edit', {id: forum.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+						<form action="{{ path('app_forum_delete', {id: forum.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette discussion ?');">
+							<button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+						</form>
+					{% endif %}
+				</div>
 			</div>
 			<div class="card-body">
 				<div class="d-flex gap-3 mb-4">

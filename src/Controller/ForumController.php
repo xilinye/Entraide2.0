@@ -52,6 +52,43 @@ class ForumController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Forum $forum, EntityManagerInterface $em): Response
+    {
+        if ($forum->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $form = $this->createForm(ForumType::class, $forum);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+
+            $this->addFlash('success', 'La discussion a été modifiée avec succès.');
+            return $this->redirectToRoute('app_forum_show', ['id' => $forum->getId()]);
+        }
+
+        return $this->render('forum/edit.html.twig', [
+            'form' => $form->createView(),
+            'forum' => $forum,
+        ]);
+    }
+
+    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Forum $forum, EntityManagerInterface $em): Response
+    {
+        if ($forum->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $em->remove($forum);
+        $em->flush();
+
+        $this->addFlash('success', 'La discussion a été supprimée avec succès.');
+        return $this->redirectToRoute('app_forum_index');
+    }
+
     #[Route('/{id}', name: 'show')]
     public function show(Forum $forum, Request $request, EntityManagerInterface $em): Response
     {
