@@ -77,7 +77,10 @@ class MessageController extends AbstractController
                 $logger->error('Erreur d\'envoi d\'email: ' . $e->getMessage());
             }
 
-            return $this->redirectToRoute('app_message_conversation', ['id' => $receiver->getId()]);
+            return $this->redirectToRoute('app_message_conversation', [
+                'id' => $receiver->getId(),
+                'title' => $message->getTitle()
+            ]);
         }
 
         return $this->render('message/new.html.twig', [
@@ -85,7 +88,6 @@ class MessageController extends AbstractController
             'receiver' => $receiver
         ]);
     }
-
 
     #[Route('/conversation/{id}', name: 'conversation', methods: ['GET', 'POST'])]
     public function conversation(
@@ -97,25 +99,25 @@ class MessageController extends AbstractController
         LoggerInterface $logger
     ): Response {
         $user = $this->getUser();
+        $title = $request->query->get('title');
 
-        $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
+        // Récupération des messages selon le titre
+        if ($title) {
+            $messages = $messageRepository->findConversationBetweenUsersByTitle($user, $otherUser, $title);
+        } else {
+            $messages = $messageRepository->findConversationBetweenUsers($user, $otherUser);
+            $title = !empty($messages) ? $messages[0]->getTitle() : 'Nouvelle conversation';
+        }
 
         $isAnonymous = $em->getRepository(ConversationDeletion::class)->findOneBy([
             'user' => $otherUser,
             'otherUser' => $user,
         ]);
 
-        // Déterminer le titre de la conversation
-        $conversationTitle = 'Nouvelle conversation';
-        if (!empty($messages)) {
-            $conversationTitle = $messages[0]->getTitle();
-        }
-
-        // Créer le message avec le titre de la conversation
+        // Création du nouveau message avec le titre déterminé
         $message = new Message();
-        $message->setTitle($conversationTitle);
+        $message->setTitle($title);
 
-        // Créer le formulaire sans le champ titre
         $form = $this->createForm(MessageType::class, $message, ['include_title' => false]);
         $form->handleRequest($request);
 
@@ -149,17 +151,20 @@ class MessageController extends AbstractController
                 $logger->error('Erreur d\'envoi d\'email: ' . $e->getMessage());
             }
 
-            return $this->redirectToRoute('app_message_conversation', ['id' => $otherUser->getId()]);
+            return $this->redirectToRoute('app_message_conversation', [
+                'id' => $otherUser->getId(),
+                'title' => $title
+            ]);
         }
 
-        // Marquer les messages comme lus
         $messageRepository->markMessagesAsRead($user, $otherUser);
 
         return $this->render('message/conversation.html.twig', [
             'messages' => $messages,
             'otherUser' => $otherUser,
             'form' => $form->createView(),
-            'is_anonymous' => $isAnonymous !== null
+            'is_anonymous' => $isAnonymous !== null,
+            'conversation_title' => $title
         ]);
     }
 
@@ -170,7 +175,6 @@ class MessageController extends AbstractController
         EntityManagerInterface $em,
         MessageRepository $messageRepository
     ): Response {
-        // Vérification CSRF
         $csrfToken = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('delete_conversation_' . $otherUser->getId(), $csrfToken)) {
             $this->addFlash('error', 'Jeton de sécurité invalide');
@@ -185,7 +189,6 @@ class MessageController extends AbstractController
         ]);
 
         if ($existingDeletion) {
-            // Mise à jour de la date si déjà supprimé
             $existingDeletion->setDeletedAt(new \DateTimeImmutable());
         } else {
             $deletion = new ConversationDeletion();

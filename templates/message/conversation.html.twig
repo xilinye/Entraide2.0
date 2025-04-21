@@ -125,7 +125,8 @@
 						Utilisateur Anonyme
 						<i class="bi bi-exclamation-octagon text-danger me-2"></i>
 					{% else %}
-						{{ otherUser.pseudo }}
+						{{ otherUser.pseudo }}-
+						{{ conversation_title }}
 					{% endif %}
 				</h1>
 				{% if messages|length > 0 %}
@@ -139,6 +140,11 @@
 		</div>
 		<div class="message-history">
 			{% for message in messages %}
+				{% if loop.first or message.title != messages[loop.index0 - 1].title %}
+					<div class="message-divider">
+						<span>{{ message.title }}</span>
+					</div>
+				{% endif %}
 				<div class="message-bubble {% if message.sender.id == app.user.id %}sent{% else %}received{% endif %}">
 					<div class="message-info">
 						<span class="message-sender">{{ message.sender.pseudo }}</span>
@@ -158,7 +164,12 @@
 					Cet utilisateur a supprimé son compte. Les nouvelles réponses ne sont plus autorisées.
 				</div>
 			{% else %}
-				{{ form_start(form) }}
+				{{ form_start(form, { 
+    'action': path('app_message_conversation', { 
+        'id': otherUser.id, 
+        'title': conversation_title 
+    }) 
+}) }}
 				<div class="input-group">
 					{{ form_widget(form.content, {
                 'attr': {

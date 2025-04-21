@@ -142,7 +142,7 @@
 
 								{# Modifiez le wrapper du lien #}
 								<div class="stretched-link-wrapper flex-grow-1">
-									<a href="{{ path('app_message_conversation', {id: conversation.other_user_id}) }}" class="text-decoration-none text-dark">
+									<a href="{{ path('app_message_conversation', { 'id': conversation.other_user_id, 'title': conversation.last_title }) }}">
 										<div class="mb-1">
 											<h5>
 												{{ conversation.other_user_pseudo|default('Utilisateur inconnu') }}
