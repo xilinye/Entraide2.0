@@ -122,4 +122,13 @@ class UserManager
         // Suppression finale
         $this->em->remove($user);
     }
+
+    public function saveUser(User $user, bool $flush = true): void
+    {
+        $this->em->persist($user);
+
+        if ($flush) {
+            $this->em->flush();
+        }
+    }
 }

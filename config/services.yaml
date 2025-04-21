@@ -7,6 +7,7 @@ parameters:
   app.mailer_from: "noreply@entraide20.com"
   app.mailer_from_name: "EntrAide 2.0"
   locale: "fr"
+  profile_images_directory: "%kernel.project_dir%/public/uploads/profile"
 services:
   # default configuration for services in *this* file
   _defaults:

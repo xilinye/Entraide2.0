@@ -88,6 +88,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Event::class)]
     private Collection $organizedEvents;
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $profileImage = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -472,6 +475,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    public function getProfileImage(): ?string
+    {
+        return $this->profileImage;
+    }
+
+    public function setProfileImage(?string $profileImage): self
+    {
+        $this->profileImage = $profileImage;
         return $this;
     }
 }

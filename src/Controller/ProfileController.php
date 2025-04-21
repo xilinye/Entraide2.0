@@ -127,4 +127,24 @@ class ProfileController extends AbstractController
         }
         return $user;
     }
+
+    #[Route('/image/update', name: 'image_update', methods: ['POST'])]
+    public function updateProfileImage(Request $request): Response
+    {
+        $user = $this->getAuthenticatedUser();
+        $file = $request->files->get('profile_image');
+
+        if ($file) {
+            $uploadsDir = $this->getParameter('profile_images_directory');
+            $filename = md5(uniqid()) . '.' . $file->guessExtension();
+
+            $file->move($uploadsDir, $filename);
+            $user->setProfileImage($filename);
+
+            $this->userManager->saveUser($user, true);
+            $this->addFlash('success', 'Photo de profil mise à jour !');
+        }
+
+        return $this->redirectToRoute('app_profile_index');
+    }
 }
