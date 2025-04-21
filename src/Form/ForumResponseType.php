@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\ForumResponse;
-use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 

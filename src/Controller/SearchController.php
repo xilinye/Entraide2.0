@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Entity\{Category, Skill};
 use App\Form\SearchType;
-use App\Repository\{UserRepository,CategoryRepository};
+use App\Repository\{UserRepository, CategoryRepository};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request,Response,JsonResponse};
+use Symfony\Component\HttpFoundation\{Request, Response, JsonResponse};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;

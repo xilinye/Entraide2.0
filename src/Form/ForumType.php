@@ -2,11 +2,11 @@
 
 namespace App\Form;
 
-use App\Entity\{Forum,Category};
-use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
+use App\Entity\{Forum, Category};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{TextType,TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{TextType, TextareaType};
 
 class ForumType extends AbstractType
 {

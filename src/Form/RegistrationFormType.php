@@ -3,10 +3,10 @@
 namespace App\Form;
 
 use App\Entity\User;
-use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
-use Symfony\Component\Validator\Constraints\{Regex,Length,NotBlank,Email};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
+use Symfony\Component\Validator\Constraints\{Regex, Length, NotBlank, Email};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{TextType,EmailType,PasswordType,RepeatedType};
+use Symfony\Component\Form\Extension\Core\Type\{TextType, EmailType, PasswordType, RepeatedType};
 
 class RegistrationFormType extends AbstractType
 {

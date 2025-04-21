@@ -3,9 +3,9 @@
 namespace App\Form;
 
 use App\Entity\Event;
-use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{DateTimeType,IntegerType};
+use Symfony\Component\Form\Extension\Core\Type\{DateTimeType, IntegerType};
 
 class EventType extends AbstractType
 {

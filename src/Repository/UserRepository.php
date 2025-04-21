@@ -2,11 +2,11 @@
 
 namespace App\Repository;
 
-use App\Entity\{User,Skill,Category};
+use App\Entity\{User, Skill, Category};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\User\{PasswordAuthenticatedUserInterface,PasswordUpgraderInterface};
+use Symfony\Component\Security\Core\User\{PasswordAuthenticatedUserInterface, PasswordUpgraderInterface};
 use Doctrine\ORM\EntityManagerInterface;
 
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface

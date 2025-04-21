@@ -2,10 +2,10 @@
 
 namespace App\Form;
 
-use App\Entity\{Skill,Category};
+use App\Entity\{Skill, Category};
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\{AbstractType,FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
