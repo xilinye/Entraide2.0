@@ -39,12 +39,12 @@ class ReportController extends AbstractController
 
         // Collecter les statistiques
         $stats = [
-            'total_users' => $this->userRepository->count([]),
-            'total_messages' => $this->messageRepository->count([]),
-            'total_blog_posts' => $this->blogPostRepository->count([]),
-            'total_forum_topics' => $this->forumRepository->count([]),
-            'total_forum_responses' => $this->forumResponseRepository->count([]),
-            'total_events' => $this->eventRepository->count([]),
+            'total_utilisateurs_actifs' => $this->userRepository->count([]),
+            'total_echanges_realisés' => $this->messageRepository->count([]),
+            'total_blog_postés' => $this->blogPostRepository->count([]),
+            'total_forum_crées' => $this->forumRepository->count([]),
+            'total_forum_responses_crées' => $this->forumResponseRepository->count([]),
+            'total_evenements_crées' => $this->eventRepository->count([]),
         ];
 
         if ($format === 'pdf') {

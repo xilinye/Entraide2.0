@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 	<head>
 		<meta charset="UTF-8">
 		<title>Rapport d'engagement - Entr'Aide 2.0</title>
@@ -51,7 +51,7 @@
 	<body>
 		<div class="header">
 			<h1>
-				<img src="{{ absolute_url(asset('build/images/logo.png')) }}" class="logo" alt="Logo Entr'Aide"><br>
+				<img src="{{ absolute_url(asset('build/images/logo.png')) }}" class="logo" alt="Logo Entr'Aide 2.0"><br>
 				Rapport d'engagement des utilisateurs
 			</h1>
 		</div>
@@ -66,7 +66,7 @@
 			<tbody>
 				{% for key, value in stats %}
 					<tr>
-						<td class="stat-label">{{ key|replace({'_': ' ')|title }}</td>
+						<td class="stat-label">{{ key|replace({'_': ' '})|title }}</td>
 						<td>{{ value|number_format(0, ',', ' ') }}</td>
 					</tr>
 				{% endfor %}
@@ -75,7 +75,7 @@
 
 		<div class="footer">
 			Généré le
-			{{ generation_date|date('d/m/Y à H:i') }}<br>
+			{{ generation_date|date('d/m/Y \à H:i') }}<br>
 			Entr'Aide 2.0 - Plateforme d'échange de compétences
 		</div>
 	</body>
