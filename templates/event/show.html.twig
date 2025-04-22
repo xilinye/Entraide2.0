@@ -39,118 +39,193 @@
 			</div>
 		</div>
 
+
 		<div class="mt-4">
+			{% if not event.isPast() %}
+				{% if is_registered %}
+					<form method="post" action="{{ path('app_event_unregister', {'id': event.id}) }}">
+						<button class="btn btn-warning">Se désinscrire</button>
+					</form>
+				{% else %}
+					<form method="post" action="{{ path('app_event_register', {'id': event.id}) }}">
+						<button class="btn btn-success" {{ not event.canRegister(app.user) ? 'disabled' : '' }}>
+							S'inscrire
+						</button>
+					</form>
+				{% endif %}
 
-
-			<div class="mt-4">
-				{% if not event.isPast() %}
-					{% if is_registered %}
-						<form method="post" action="{{ path('app_event_unregister', {'id': event.id}) }}">
-							<button class="btn btn-warning">Se désinscrire</button>
-						</form>
-					{% else %}
-						<form method="post" action="{{ path('app_event_register', {'id': event.id}) }}">
-							<button class="btn btn-success" {{ not event.canRegister(app.user) ? 'disabled' : '' }}>
-								S'inscrire
+				{% if is_granted('edit', event) %}
+					<div class="mt-3">
+						<a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-primary">
+							Modifier
+						</a>
+						<form method="post" action="{{ path('app_event_delete', {'id': event.id}) }}" class="d-inline">
+							<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+							<button class="btn btn-danger" onclick="return confirm('Supprimer cet événement ?')">
+								Supprimer
 							</button>
 						</form>
-					{% endif %}
-
-					{% if is_granted('edit', event) %}
-						<div class="mt-3">
-							<a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-primary">
-								Modifier
-							</a>
-							<form method="post" action="{{ path('app_event_delete', {'id': event.id}) }}" class="d-inline">
-								<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
-								<button class="btn btn-danger" onclick="return confirm('Supprimer cet événement ?')">
-									Supprimer
-								</button>
-							</form>
-						</div>
-					{% endif %}
-				{% else %}
-					<div class="alert alert-info mt-3">
-						Cet événement est terminé. Les inscriptions et modifications ne sont plus possibles.
 					</div>
 				{% endif %}
-			</div>
-		</div>
-
-		{% if app.user == event.organizer %}
-			<section class="mt-5">
-				<h3>Liste des participants ({{ event.attendees|length }}/{{ event.maxAttendees ?? '∞' }})</h3>
-				<div class="list-group">
-					{% for attendee in attendees %}
-						<div class="list-group-item">
-							{{ attendee.pseudo }}
-							{% if attendee == app.user %}
-								<span class="badge bg-primary">Vous</span>
-							{% endif %}
-						</div>
-					{% else %}
-						<div class="list-group-item text-muted">
-							Aucun participant pour le moment
-						</div>
-					{% endfor %}
-				</div>
-			</section>
-		{% endif %}
-		{# Section des notes #}
-		<div class="rating-section mt-5">
-			<div class="average-rating alert alert-info">
-				<h4>Note moyenne :
-					{{ averageRating|number_format(1) }}/5</h4>
-				<small>Basé sur
-					{{ ratings|length }}
-					évaluation(s)</small>
-			</div>
-
-			{% if ratings|length > 0 %}
-				<div class="ratings-list mt-4">
-					<h5>Dernières évaluations :</h5>
-					{% for rating in ratings %}
-						<div class="card mb-3">
-							<div class="card-body">
-								<div class="star-rating">
-									{% for i in 1..5 %}
-										<span class="star {% if i <= rating.score %}filled{% endif %}">★</span>
-									{% endfor %}
-								</div>
-								{% if rating.comment %}
-									<p class="mt-2">{{ rating.comment }}</p>
-								{% endif %}
-								<small class="text-muted">
-									Par
-									{{ rating.rater.pseudo }}, 
-									                            le
-									{{ rating.createdAt|date('d/m/Y') }}
-								</small>
-							</div>
-						</div>
-					{% endfor %}
+			{% else %}
+				<div class="alert alert-info mt-3">
+					Cet événement est terminé. Les inscriptions et modifications ne sont plus possibles.
 				</div>
 			{% endif %}
+		</div>
+	</div>
 
-			{% if canRate %}
-				<div class="rating-form mt-4">
-					<h4>{{ existingRating ? 'Modifier votre' : 'Ajouter une' }}
-						évaluation</h4>
-					{{ form_start(ratingForm) }}
-					<div class="star-rating mb-3">
-						{{ form_widget(ratingForm.score) }}
+	{% if app.user == event.organizer %}
+		<section class="mt-5">
+			<h3>Liste des participants ({{ event.attendees|length }}/{{ event.maxAttendees ?? '∞' }})</h3>
+			<div class="list-group">
+				{% for attendee in attendees %}
+					<div class="list-group-item">
+						{{ attendee.pseudo }}
+						{% if attendee == app.user %}
+							<span class="badge bg-primary">Vous</span>
+						{% endif %}
 					</div>
-					{{ form_row(ratingForm.comment) }}
-					<button class="btn btn-primary">
-						{{ existingRating ? 'Mettre à jour' : 'Envoyer' }}
-					</button>
-					{{ form_end(ratingForm) }}
+				{% else %}
+					<div class="list-group-item text-muted">
+						Aucun participant pour le moment
+					</div>
+				{% endfor %}
+			</div>
+		</section>
+	{% endif %}
+	{# Section des notes #}
+	<div class="rating-section mt-5">
+		<div class="average-rating alert alert-info">
+			<h4>Note moyenne :
+				{{ averageRating|number_format(1) }}/5</h4>
+			<small>Basé sur
+				{{ ratings|length }}
+				évaluation(s)</small>
+		</div>
+
+		{% if ratings|length > 0 %}
+			<div class="user-ratings">
+				<h4>Avis des utilisateurs :</h4>
+				{% for rating in ratings %}
+					<div class="card rating-card mb-3">
+						<div class="card-body">
+							<div class="star-rating-static text-warning">
+								{% for i in 1..5 %}
+									{% if i <= rating.score %}
+										<span class="text-warning">★</span>
+									{% else %}
+										<span class="text-muted">★</span>
+									{% endif %}
+								{% endfor %}
+							</div>
+							{% if rating.comment %}
+								<p class="mt-2">{{ rating.comment }}</p>
+							{% endif %}
+							<small class="text-muted">
+								Par
+								{{ rating.rater.pseudo }}, 
+																																																																																																																																																																																																																																																																																																										le
+								{{ rating.createdAt|date('d/m/Y') }}
+							</small>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		{% endif %}
+
+		{% if canRate %}
+			<div class="rating-form mt-4">
+				<h4>{{ existingRating ? 'Modifier votre' : 'Ajouter une' }}
+					évaluation</h4>
+
+				{{ form_start(ratingForm) }}
+				<div class="star-rating mb-3">
+					{% for child in ratingForm.score|reverse %}
+						<input type="radio" id="{{ child.vars.id }}" name="{{ child.vars.full_name }}" value="{{ child.vars.value }}" {{ child.vars.checked ? 'checked' : '' }} class="visually-hidden"/>
+						<label for="{{ child.vars.id }}" title="{{ child.vars.label }}">
+							<svg class="star" width="32" height="32" viewbox="0 0 24 24">
+								<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+							</svg>
+						</label>
+					{% endfor %}
 				</div>
-			{% endif %}
-		</div>
-		<div class="mt-4">
-			<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
-				Retour
-			</a>
-		</div>
-	{% endblock %}
+				{{ form_errors(ratingForm.score) }}
+				{# Affiche les erreurs du score #}
+				{{ form_row(ratingForm.comment) }}
+				{{ form_rest(ratingForm) }}
+				{# Inclut le token CSRF #}
+				<button class="btn btn-primary">
+					{{ existingRating ? 'Mettre à jour' : 'Envoyer' }}
+				</button>
+				{{ form_end(ratingForm) }}
+			</div>
+		{% endif %}
+	</div>
+	<div class="mt-4">
+		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
+			Retour
+		</a>
+	</div>
+
+{% endblock %}
+{% block stylesheets %}
+	<style>
+		.star-rating {
+			display: flex;
+			gap: 5px;
+			flex-direction: row-reverse;
+			justify-content: flex-end;
+		}
+
+		.star-rating input {
+			display: none;
+		}
+
+		.star-rating label {
+			cursor: pointer;
+			color: #ddd;
+			transition: color 0.2s;
+		}
+
+		.star-rating label:hover,
+		.star-rating label:hover ~ label {
+			color: #ffd700;
+		}
+
+		.star-rating .star {
+			fill: currentColor;
+			width: 2.5em;
+			height: 2.5em;
+		}
+	</style>
+{% endblock %}
+{% block javascripts %}
+	<script>
+		document.querySelectorAll('.star-rating').forEach(container => {
+const stars = container.querySelectorAll('input');
+stars.forEach(star => { // Initialisation basée sur l'étoile cochée
+if (star.checked) {
+highlightStars(stars, parseInt(star.value));
+}
+
+star.addEventListener('change', () => {
+const selectedValue = parseInt(star.value);
+highlightStars(stars, selectedValue);
+});
+});
+});
+
+function highlightStars(stars, selectedValue) {
+stars.forEach(star => {
+const label = star.nextElementSibling; // Le label suit l'input
+const starValue = parseInt(star.value);
+if (starValue <= selectedValue) {
+label.querySelector('.star').style.fill = '#ffd700';
+} else {
+label.querySelector('.star').style.fill = '#ddd';
+}
+});
+}
+	</script>
+{% endblock %}

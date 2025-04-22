@@ -7,28 +7,31 @@
 {% block stylesheets %}
 	<style>
 		.star-rating {
-			--star-size: 2rem;
-			display: inline-flex;
+			display: flex;
+			gap: 5px;
 			flex-direction: row-reverse;
-			font-size: var(--star-size);
-			line-height: 1;
+			justify-content: flex-end;
 		}
+
 		.star-rating input {
 			display: none;
 		}
+
 		.star-rating label {
-			color: #ddd;
 			cursor: pointer;
+			color: #ddd;
 			transition: color 0.2s;
 		}
+
 		.star-rating label:hover,
-		.star-rating label:hover ~ label,
-		.star-rating input:checked ~ label {
+		.star-rating label:hover ~ label {
 			color: #ffd700;
 		}
-		.rating-card {
-			border-left: 4px solid #ffd700;
-			background: #f8f9fa;
+
+		.star-rating .star {
+			fill: currentColor;
+			width: 2.5em;
+			height: 2.5em;
 		}
 	</style>
 {% endblock %}
@@ -58,27 +61,6 @@
 						avis</small>
 				</div>
 
-				{% if not hasRated and app.user != post.author %}
-					<div class="rating-form card p-4 mb-5">
-						<h4>Ajouter votre avis</h4>
-						{# Dans la section du formulaire #}
-						{{ form_start(ratingForm) }}
-						<div class="star-rating mb-3">
-							{% for i in 5..1 %}
-								<input type="radio" id="star{{ i }}" name="{{ ratingForm.score.vars.full_name }}" value="{{ i }}" {% if ratingForm.score.vars.value == i %} checked {% endif %}/>
-								<label for="star{{ i }}">★</label>
-							{% endfor %}
-						</div>
-						{{ form_errors(ratingForm.score) }}
-						{# Affiche les erreurs du score #}
-						{{ form_row(ratingForm.comment) }}
-						{{ form_rest(ratingForm) }}
-						{# Inclut le token CSRF #}
-						<button class="btn btn-primary">Publier</button>
-						{{ form_end(ratingForm) }}
-					</div>
-				{% endif %}
-
 				{% if ratings|length > 0 %}
 					<div class="user-ratings">
 						<h4>Avis des utilisateurs :</h4>
@@ -100,12 +82,44 @@
 									<small class="text-muted">
 										Par
 										{{ rating.rater.pseudo }}, 
-																																																																																																				le
+																																																																																																																																																																																																																																																																																																												le
 										{{ rating.createdAt|date('d/m/Y') }}
 									</small>
 								</div>
 							</div>
 						{% endfor %}
+					</div>
+				{% endif %}
+				{% if app.user != post.author %}
+					<div class="rating-form card p-4 mb-5">
+						<h4>
+							{% if hasRated %}
+								Modifier votre avis
+							{% else %}
+								Ajouter votre avis
+							{% endif %}
+						</h4>
+						{# Dans la section du formulaire #}
+						{{ form_start(ratingForm) }}
+						<div class="star-rating mb-3">
+							{% for child in ratingForm.score|reverse %}
+								<input type="radio" id="{{ child.vars.id }}" name="{{ child.vars.full_name }}" value="{{ child.vars.value }}" {{ child.vars.checked ? 'checked' : '' }} class="visually-hidden"/>
+								<label for="{{ child.vars.id }}" title="{{ child.vars.label }}">
+									<svg class="star" width="32" height="32" viewbox="0 0 24 24">
+										<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+									</svg>
+								</label>
+							{% endfor %}
+						</div>
+						{{ form_errors(ratingForm.score) }}
+						{# Affiche les erreurs du score #}
+						{{ form_row(ratingForm.comment) }}
+						{{ form_rest(ratingForm) }}
+						{# Inclut le token CSRF #}
+						<button class="btn btn-primary">
+							{% if hasRated %}Mettre à jour{% else %}Publier
+							{% endif %}
+						</button>
 					</div>
 				{% endif %}
 			</div>
@@ -114,15 +128,30 @@
 {% endblock %}
 {% block javascripts %}
 	<script>
-		document.querySelectorAll('.star-rating label').forEach(label => {
-label.addEventListener('click', () => {
-const inputId = label.getAttribute('for');
-const input = document.getElementById(inputId);
-if (input) {
-input.checked = true;
-input.dispatchEvent(new Event('change'));
+		document.querySelectorAll('.star-rating').forEach(container => {
+const stars = container.querySelectorAll('input');
+stars.forEach(star => { // Initialisation basée sur l'étoile cochée
+if (star.checked) {
+highlightStars(stars, parseInt(star.value));
+}
+
+star.addEventListener('change', () => {
+const selectedValue = parseInt(star.value);
+highlightStars(stars, selectedValue);
+});
+});
+});
+
+function highlightStars(stars, selectedValue) {
+stars.forEach(star => {
+const label = star.nextElementSibling; // Le label suit l'input
+const starValue = parseInt(star.value);
+if (starValue <= selectedValue) {
+label.querySelector('.star').style.fill = '#ffd700';
+} else {
+label.querySelector('.star').style.fill = '#ddd';
 }
 });
-});
+}
 	</script>
 {% endblock %}

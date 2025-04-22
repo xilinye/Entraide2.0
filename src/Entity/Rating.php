@@ -57,12 +57,6 @@ class Rating
             $this->event,
             $this->forumResponse
         ]);
-
-        if (count($targets) !== 1) {
-            $context->buildViolation('Une note doit être associée à un seul élément')
-                ->atPath('forumResponse')
-                ->addViolation();
-        }
     }
 
     public function getId(): ?int

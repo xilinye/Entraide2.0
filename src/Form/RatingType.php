@@ -14,10 +14,17 @@ class RatingType extends AbstractType
     {
         $builder
             ->add('score', ChoiceType::class, [
-                'choices' => array_combine(range(1, 5), range(1, 5)),
+                'choices' => [
+                    '1' => 1,
+                    '2' => 2,
+                    '3' => 3,
+                    '4' => 4,
+                    '5' => 5
+                ],
                 'expanded' => true,
                 'multiple' => false,
                 'label' => false,
+                'choice_label' => false,
                 'attr' => ['class' => 'star-rating']
             ])
             ->add('comment', TextareaType::class, [

@@ -49,8 +49,8 @@ class EventController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET', 'POST'])]
     public function show(Event $event, Request $request, EntityManagerInterface $em): Response
     {
-        $ratingRepo = $em->getRepository(Rating::class);
         $user = $this->getUser();
+        $ratingRepo = $em->getRepository(Rating::class);
 
         // Vérification si l'utilisateur a déjà noté
         $existingRating = $user ? $ratingRepo->findOneBy([
@@ -60,33 +60,33 @@ class EventController extends AbstractController
 
         $rating = $existingRating ?? new Rating();
         $form = $this->createForm(RatingType::class, $rating);
+        $form->handleRequest($request);
 
-        // Gestion du formulaire de notation
-        if ($request->isMethod('POST')) {
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                // Validation des conditions de notation
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                // Validation des conditions
                 if (!$event->isPast()) {
-                    $this->addFlash('error', 'Vous ne pouvez noter que les événements passés');
-                    return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+                    throw new \Exception('Vous ne pouvez noter que les événements passés');
                 }
 
                 if (!$event->getAttendees()->contains($user)) {
-                    $this->addFlash('error', 'Seuls les participants peuvent noter cet événement');
-                    return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+                    throw new \Exception('Seuls les participants peuvent noter cet événement');
                 }
 
+                // Gestion de la notation existante
                 if (!$existingRating) {
                     $rating->setRater($user)
-                        ->setRatedUser($event->getOrganizer())
-                        ->setEvent($event);
+                        ->setEvent($event)
+                        ->setRatedUser($event->getOrganizer()); // Important pour la relation
                 }
 
                 $em->persist($rating);
                 $em->flush();
 
                 $this->addFlash('success', $existingRating ? 'Note mise à jour !' : 'Merci pour votre notation !');
+                return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', $e->getMessage());
                 return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
             }
         }
@@ -98,7 +98,8 @@ class EventController extends AbstractController
             'ratingForm' => $form->createView(),
             'averageRating' => $ratingRepo->getAverageForEvent($event),
             'ratings' => $ratingRepo->findBy(['event' => $event], ['createdAt' => 'DESC']),
-            'canRate' => $user && $event->isPast() && $event->getAttendees()->contains($user)
+            'canRate' => $user && $event->isPast() && $event->getAttendees()->contains($user),
+            'existingRating' => $existingRating
         ]);
     }
 

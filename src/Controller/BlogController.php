@@ -91,6 +91,7 @@ class BlogController extends AbstractController
 
             $this->em->persist($rating);
             $this->em->flush();
+            $this->em->refresh($rating);
 
             $this->addFlash('success', $existingRating ? 'Note mise à jour !' : 'Merci pour votre notation !');
             return $this->redirectToRoute('app_blog_show', ['slug' => $post->getSlug()]);

@@ -195,7 +195,7 @@ class Event
 
     public function isPast(): bool
     {
-        return $this->startDate < new \DateTime();
+        return $this->endDate < new \DateTime();
     }
 
     public function getRatings(): Collection
