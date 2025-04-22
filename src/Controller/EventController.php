@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Event;
-use App\Form\EventType;
+use App\Entity\{Event, Rating};
+use App\Form\{EventType, RatingType};
 use App\Repository\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,13 +46,59 @@ class EventController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
-    public function show(Event $event): Response
+    #[Route('/{id}', name: 'show', methods: ['GET', 'POST'])]
+    public function show(Event $event, Request $request, EntityManagerInterface $em): Response
     {
+        $ratingRepo = $em->getRepository(Rating::class);
+        $user = $this->getUser();
+
+        // Vérification si l'utilisateur a déjà noté
+        $existingRating = $user ? $ratingRepo->findOneBy([
+            'rater' => $user,
+            'event' => $event
+        ]) : null;
+
+        $rating = $existingRating ?? new Rating();
+        $form = $this->createForm(RatingType::class, $rating);
+
+        // Gestion du formulaire de notation
+        if ($request->isMethod('POST')) {
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                // Validation des conditions de notation
+                if (!$event->isPast()) {
+                    $this->addFlash('error', 'Vous ne pouvez noter que les événements passés');
+                    return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+                }
+
+                if (!$event->getAttendees()->contains($user)) {
+                    $this->addFlash('error', 'Seuls les participants peuvent noter cet événement');
+                    return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+                }
+
+                if (!$existingRating) {
+                    $rating->setRater($user)
+                        ->setRatedUser($event->getOrganizer())
+                        ->setEvent($event);
+                }
+
+                $em->persist($rating);
+                $em->flush();
+
+                $this->addFlash('success', $existingRating ? 'Note mise à jour !' : 'Merci pour votre notation !');
+                return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
+            }
+        }
+
         return $this->render('event/show.html.twig', [
             'event' => $event,
-            'is_registered' => $event->getAttendees()->contains($this->getUser()),
-            'attendees' => $event->getSortedAttendees()
+            'is_registered' => $event->getAttendees()->contains($user),
+            'attendees' => $event->getSortedAttendees(),
+            'ratingForm' => $form->createView(),
+            'averageRating' => $ratingRepo->getAverageForEvent($event),
+            'ratings' => $ratingRepo->findBy(['event' => $event], ['createdAt' => 'DESC']),
+            'canRate' => $user && $event->isPast() && $event->getAttendees()->contains($user)
         ]);
     }
 

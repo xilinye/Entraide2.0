@@ -1,54 +1,128 @@
-{# blog/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}
 	{{ post.title }}
-	- Entr'Aide 2.0
+{% endblock %}
+
+{% block stylesheets %}
+	<style>
+		.star-rating {
+			--star-size: 2rem;
+			display: inline-flex;
+			flex-direction: row-reverse;
+			font-size: var(--star-size);
+			line-height: 1;
+		}
+		.star-rating input {
+			display: none;
+		}
+		.star-rating label {
+			color: #ddd;
+			cursor: pointer;
+			transition: color 0.2s;
+		}
+		.star-rating label:hover,
+		.star-rating label:hover ~ label,
+		.star-rating input:checked ~ label {
+			color: #ffd700;
+		}
+		.rating-card {
+			border-left: 4px solid #ffd700;
+			background: #f8f9fa;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
 	<div class="container mt-5">
 		<article class="blog-post">
-			<div class="d-flex justify-content-between align-items-center mb-3">
-				<h1>{{ post.title }}</h1>
-				<div>
-					{% if is_granted('EDIT', post) %}
-						<a href="{{ path('app_blog_edit', {'slug': post.slug}) }}" class="btn btn-warning me-2">
-							<i class="bi bi-pencil"></i>
-							Modifier
-						</a>
-					{% endif %}
-					{% if is_granted('DELETE', post) %}
-						<form method="post" action="{{ path('app_blog_delete', {'slug': post.slug}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
-							<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-							<button class="btn btn-danger">
-								<i class="bi bi-trash"></i>
-								Supprimer
-							</button>
-						</form>
-					{% endif %}
-				</div>
-			</div>
+			<h1 class="mb-4">{{ post.title }}</h1>
 
-			<div class="meta mb-4 text-muted small">
-				Publié par
+			<div class="meta mb-4 text-muted">
+				Par
 				{{ post.author.pseudo }}
-				le
-				{{ post.createdAt|date('d/m/Y à H:i') }}
-				{% if post.updatedAt != post.createdAt %}
-					(modifié le
-					{{ post.updatedAt|date('d/m/Y à H:i') }})
-				{% endif %}
+				•
+				{{ post.createdAt|date('d/m/Y H:i') }}
 			</div>
 
-			<div class="content mb-4">
+			<div class="content mb-5">
 				{{ post.content|nl2br }}
 			</div>
-		</article>
 
-		<a href="{{ path('app_blog_index') }}" class="btn btn-outline-secondary">
-			<i class="bi bi-arrow-left"></i>
-			Retour
-		</a>
+			<div class="rating-section">
+				<div class="average-rating alert alert-info">
+					<h4>Note moyenne :
+						{{ averageRating|number_format(1) }}/5</h4>
+					<small class="text-muted">Basé sur
+						{{ ratings|length }}
+						avis</small>
+				</div>
+
+				{% if not hasRated and app.user != post.author %}
+					<div class="rating-form card p-4 mb-5">
+						<h4>Ajouter votre avis</h4>
+						{# Dans la section du formulaire #}
+						{{ form_start(ratingForm) }}
+						<div class="star-rating mb-3">
+							{% for i in 5..1 %}
+								<input type="radio" id="star{{ i }}" name="{{ ratingForm.score.vars.full_name }}" value="{{ i }}" {% if ratingForm.score.vars.value == i %} checked {% endif %}/>
+								<label for="star{{ i }}">★</label>
+							{% endfor %}
+						</div>
+						{{ form_errors(ratingForm.score) }}
+						{# Affiche les erreurs du score #}
+						{{ form_row(ratingForm.comment) }}
+						{{ form_rest(ratingForm) }}
+						{# Inclut le token CSRF #}
+						<button class="btn btn-primary">Publier</button>
+						{{ form_end(ratingForm) }}
+					</div>
+				{% endif %}
+
+				{% if ratings|length > 0 %}
+					<div class="user-ratings">
+						<h4>Avis des utilisateurs :</h4>
+						{% for rating in ratings %}
+							<div class="card rating-card mb-3">
+								<div class="card-body">
+									<div class="star-rating-static text-warning">
+										{% for i in 1..5 %}
+											{% if i <= rating.score %}
+												<span class="text-warning">★</span>
+											{% else %}
+												<span class="text-muted">★</span>
+											{% endif %}
+										{% endfor %}
+									</div>
+									{% if rating.comment %}
+										<p class="mt-2">{{ rating.comment }}</p>
+									{% endif %}
+									<small class="text-muted">
+										Par
+										{{ rating.rater.pseudo }}, 
+																																																																																																				le
+										{{ rating.createdAt|date('d/m/Y') }}
+									</small>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</article>
 	</div>
+{% endblock %}
+{% block javascripts %}
+	<script>
+		document.querySelectorAll('.star-rating label').forEach(label => {
+label.addEventListener('click', () => {
+const inputId = label.getAttribute('for');
+const input = document.getElementById(inputId);
+if (input) {
+input.checked = true;
+input.dispatchEvent(new Event('change'));
+}
+});
+});
+	</script>
 {% endblock %}

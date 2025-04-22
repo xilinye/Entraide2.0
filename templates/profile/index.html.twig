@@ -298,7 +298,61 @@
 							</div>
 						</div>
 					</div>
+					<div class="user-rating-summary">
+						<h3>Réputation</h3>
+						<div class="average-rating">
+							<div class="stars">
+								{% for i in 1..5 %}
+									<span class="star {% if i <= user.averageRating|round %}filled{% endif %}">★</span>
+								{% endfor %}
+							</div>
+							<p>Moyenne :
+								{{ user.averageRating|number_format(1) }}/5</p>
+							<button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#ratingDetails">
+								Voir le détail
+							</button>
+						</div>
+					</div>
 
+					<!-- Modal -->
+					<div class="modal fade" id="ratingDetails">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title">Détail des notes reçues</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+								</div>
+								<div class="modal-body">
+									{% for rating in user.ratingsReceived %}
+										<div class="rating-item mb-3 p-2 border-bottom">
+											<div class="stars">
+												{% for i in 1..5 %}
+													<span class="star {% if i <= rating.score %}filled{% endif %}">★</span>
+												{% endfor %}
+											</div>
+											{% if rating.comment %}
+												<p class="mt-2 mb-1">{{ rating.comment }}</p>
+											{% endif %}
+											<small class="text-muted">
+												Sur
+												{% if rating.blogPost %}
+													l'article "{{ rating.blogPost.title }}"
+												{% elseif rating.event %}
+													l'événement "{{ rating.event.title }}"
+												{% elseif rating.forumResponse %}
+													une réponse forum
+												{% endif %}
+												-
+												{{ rating.createdAt|date('d/m/Y') }}
+											</small>
+										</div>
+									{% else %}
+										<p>Aucune note reçue</p>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
 					<div class="d-grid gap-3">
 						<a href="{{ path('app_profile_skills') }}" class="btn btn-primary-custom d-flex align-items-center justify-content-center">
 							<i class="bi bi-pencil-square me-2"></i>

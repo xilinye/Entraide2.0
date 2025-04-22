@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\BlogPost;
-use App\Form\{BlogPostFormType, SearchBlogType};
+use App\Entity\{BlogPost, Rating};
+use App\Form\{BlogPostFormType, SearchBlogType, RatingType};
 use App\Repository\BlogPostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -63,16 +63,58 @@ class BlogController extends AbstractController
     }
 
     #[Route('/{slug}', name: 'show')]
-    public function show(string $slug): Response
+    public function show(BlogPost $post, Request $request): Response
     {
-        $post = $this->blogPostRepository->findOneBySlug($slug);
+        $existingRating = $this->em->getRepository(Rating::class)->findOneBy([
+            'blogPost' => $post,
+            'rater' => $this->getUser()
+        ]);
 
-        if (!$post) {
-            throw $this->createNotFoundException('Article non trouvé');
+        // Crée ou récupère la notation
+        $rating = $existingRating ?? new Rating();
+
+        // Pré-remplit les associations pour les nouvelles notations
+        if (!$existingRating) {
+            $rating->setBlogPost($post)
+                ->setRater($this->getUser())
+                ->setRatedUser($post->getAuthor());
         }
+
+        $form = $this->createForm(RatingType::class, $rating);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($post->getAuthor() === $this->getUser()) {
+                $this->addFlash('error', 'Vous ne pouvez pas noter votre propre article');
+                return $this->redirectToRoute('app_blog_show', ['slug' => $post->getSlug()]);
+            }
+
+            $this->em->persist($rating);
+            $this->em->flush();
+
+            $this->addFlash('success', $existingRating ? 'Note mise à jour !' : 'Merci pour votre notation !');
+            return $this->redirectToRoute('app_blog_show', ['slug' => $post->getSlug()]);
+        } elseif ($form->isSubmitted()) {
+            // Log des erreurs
+            $errors = $form->getErrors(true);
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
+        $ratings = $this->em->getRepository(Rating::class)->findBy(
+            ['blogPost' => $post],
+            ['createdAt' => 'DESC']
+        );
+
+        $averageRating = $this->em->getRepository(Rating::class)->getAverageForBlogPost($post);
 
         return $this->render('blog/show.html.twig', [
             'post' => $post,
+            'ratingForm' => $form->createView(),
+            'ratings' => $ratings,
+            'averageRating' => $averageRating,
+            'hasRated' => (bool)$existingRating
         ]);
     }
 

@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: BlogPostRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -39,6 +40,9 @@ class BlogPost
 
     #[ORM\Column(length: 255, unique: true)]
     private string $slug;
+
+    #[ORM\OneToMany(mappedBy: 'blogPost', targetEntity: Rating::class)]
+    private Collection $ratings;
 
     public function __construct()
     {
@@ -143,5 +147,10 @@ class BlogPost
     {
         $slug = (string) $slugger->slug($this->title)->lower();
         $this->slug = $slug . '-' . bin2hex(random_bytes(4));
+    }
+
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
     }
 }

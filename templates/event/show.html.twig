@@ -96,6 +96,58 @@
 				</div>
 			</section>
 		{% endif %}
+		{# Section des notes #}
+		<div class="rating-section mt-5">
+			<div class="average-rating alert alert-info">
+				<h4>Note moyenne :
+					{{ averageRating|number_format(1) }}/5</h4>
+				<small>Basé sur
+					{{ ratings|length }}
+					évaluation(s)</small>
+			</div>
+
+			{% if ratings|length > 0 %}
+				<div class="ratings-list mt-4">
+					<h5>Dernières évaluations :</h5>
+					{% for rating in ratings %}
+						<div class="card mb-3">
+							<div class="card-body">
+								<div class="star-rating">
+									{% for i in 1..5 %}
+										<span class="star {% if i <= rating.score %}filled{% endif %}">★</span>
+									{% endfor %}
+								</div>
+								{% if rating.comment %}
+									<p class="mt-2">{{ rating.comment }}</p>
+								{% endif %}
+								<small class="text-muted">
+									Par
+									{{ rating.rater.pseudo }}, 
+									                            le
+									{{ rating.createdAt|date('d/m/Y') }}
+								</small>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if canRate %}
+				<div class="rating-form mt-4">
+					<h4>{{ existingRating ? 'Modifier votre' : 'Ajouter une' }}
+						évaluation</h4>
+					{{ form_start(ratingForm) }}
+					<div class="star-rating mb-3">
+						{{ form_widget(ratingForm.score) }}
+					</div>
+					{{ form_row(ratingForm.comment) }}
+					<button class="btn btn-primary">
+						{{ existingRating ? 'Mettre à jour' : 'Envoyer' }}
+					</button>
+					{{ form_end(ratingForm) }}
+				</div>
+			{% endif %}
+		</div>
 		<div class="mt-4">
 			<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
 				Retour

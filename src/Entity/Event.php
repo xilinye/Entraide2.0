@@ -54,9 +54,13 @@ class Event
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'attendedEvents')]
     private Collection $attendees;
 
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Rating::class)]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->attendees = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -192,5 +196,10 @@ class Event
     public function isPast(): bool
     {
         return $this->startDate < new \DateTime();
+    }
+
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
     }
 }

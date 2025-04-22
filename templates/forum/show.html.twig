@@ -4,99 +4,153 @@
 	{{ forum.title }}
 {% endblock %}
 
+{% block stylesheets %}
+	<style>
+		.response-rating {
+			position: relative;
+			padding-left: 100px;
+		}
+		.rating-badge {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 80px;
+			text-align: center;
+			background: rgba(255, 215, 0, 0.1);
+			border: 1px solid #ffd700;
+			border-radius: 4px;
+			padding: 5px;
+		}
+		.top-response {
+			border: 2px solid #ffd700;
+			background: #fffdf6;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		}
+		.star-rating {
+			direction: rtl;
+			display: inline-block;
+		}
+		.star-rating input[type="radio"] {
+			display: none;
+		}
+		.star-rating label {
+			color: #ccc;
+			cursor: pointer;
+			font-size: 1.2em;
+		}
+		.star-rating label:hover,
+		.star-rating label:hover ~ label,
+		.star-rating input[type="radio"]:checked ~ label {
+			color: #ffd700;
+		}
+	</style>
+{% endblock %}
+
 {% block body %}
-	<div class="container mt-5">
-		<div class="card mb-4">
-			<div class="card-header d-flex justify-content-between align-items-center">
+	<div class="container mt-4">
+		<div class="card">
+			<div class="card-header">
 				<h1>{{ forum.title }}</h1>
-				<div class="d-flex gap-2">
-					{% if (app.user == forum.author or is_granted('ROLE_ADMIN')) %}
-						<form action="{{ path('app_forum_toggle', {id: forum.id}) }}" method="post">
-							<button type="submit" class="btn btn-sm {{ forum.isOpen ? 'btn-warning' : 'btn-success' }}">
-								{% if forum.isOpen %}
-									Marquer comme résolu
-								{% else %}
-									Rouvrir la discussion
-								{% endif %}
-							</button>
-						</form>
-						<a href="{{ path('app_forum_edit', {id: forum.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-						<form action="{{ path('app_forum_delete', {id: forum.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette discussion ?');">
-							<button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-						</form>
+				<div class="meta text-muted">
+					Par
+					{{ forum.author.pseudo }}
+					•
+					{{ forum.createdAt|date('d/m/Y H:i') }}
+					{% if forum.isOpen %}
+						<span class="badge bg-success">Ouvert</span>
+					{% else %}
+						<span class="badge bg-danger">Fermé</span>
 					{% endif %}
 				</div>
 			</div>
+
 			<div class="card-body">
-				<div class="d-flex gap-3 mb-4">
-					<div class="flex-shrink-0">
-						<img src="{{ asset('images/avatar.png') }}" class="rounded-circle" width="60" alt="Avatar de {{ forum.author.pseudo }}">
-					</div>
-					<div class="flex-grow-1">
-						<div class="mb-3">
-							<span class="fw-bold">{{ forum.author.pseudo }}</span>
-							<small class="text-muted ms-2">
-								{{ forum.createdAt|date('d/m/Y à H:i') }}
-								{% if forum.category %}
-									•
-									<span class="badge bg-secondary">{{ forum.category.name }}</span>
-								{% endif %}
-							</small>
-						</div>
-						<div class="forum-content">
-							{{ forum.content|nl2br }}
-						</div>
-					</div>
+				<div class="forum-content mb-5">
+					{{ forum.content|nl2br }}
 				</div>
 
-				<hr>
-
-				<h3 class="mb-4">{{ forum.responses|length }}
-					réponses</h3>
-
-				{% for response in forum.responses %}
-					<div class="d-flex gap-3 mb-4">
-						<div class="flex-shrink-0">
-							<img src="{{ asset('images/avatar.png') }}" class="rounded-circle" width="50" alt="Avatar de {{ response.author.pseudo }}">
-						</div>
-						<div class="flex-grow-1">
-							<div class="mb-2">
-								<span class="fw-bold">{{ response.author.pseudo }}</span>
-								<small class="text-muted ms-2">
-									{{ response.createdAt|date('d/m/Y à H:i') }}
-								</small>
+				{% if topResponses|length > 0 %}
+					<div class="top-responses mb-5">
+						<h4>🌟 Réponses les mieux notées</h4>
+						{% for topResponse in topResponses %}
+							{% set response = topResponse[0] %}
+							{% set averageRating = topResponse.average %}
+							<div class="card top-response mb-3">
+								<div class="card-body">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<div class="rating-badge">
+											★
+											{{ averageRating|number_format(1) }}
+										</div>
+										<strong>{{ response.author.pseudo }}</strong>
+										<small class="text-muted">
+											{{ response.createdAt|date('d/m/Y H:i') }}
+										</small>
+									</div>
+									<p class="mb-0">{{ response.content|nl2br }}</p>
+								</div>
 							</div>
-							<div class="response-content bg-light p-3 rounded">
-								{{ response.content|nl2br }}
-							</div>
-						</div>
+						{% endfor %}
 					</div>
-				{% else %}
-					<div class="alert alert-info">Aucune réponse pour le moment</div>
-				{% endfor %}
+				{% endif %}
+
+				<div class="responses">
+					<h4>{{ forum.responses|length }}
+						réponses</h4>
+
+					{% for response in forum.responses %}
+						<div class="card mb-4">
+							<div class="card-body">
+								<div class="response-rating">
+									<div class="response-content">
+										<div class="d-flex justify-content-between mb-2">
+											<strong>{{ response.author.pseudo }}</strong>
+											<small class="text-muted">
+												{{ response.createdAt|date('d/m/Y H:i') }}
+											</small>
+										</div>
+										<p>{{ response.content|nl2br }}</p>
+
+										{% if app.user and app.user != response.author and forum.isOpen %}
+											<div class="rating-form mt-3">
+												{{ form_start(responseForms[response.id]) }}
+												<div class="star-rating">
+													{% for i in range(5, 1, -1) %}
+														<input type="radio" id="response{{ response.id }}_star{{ i }}" name="{{ responseForms[response.id].score.vars.full_name }}" value="{{ i }}" {{ responseForms[response.id].score.vars.value == i ? 'checked' : '' }}/>
+														<label for="response{{ response.id }}_star{{ i }}">★</label>
+													{% endfor %}
+												</div>
+												{{ form_widget(responseForms[response.id].comment, {
+                                                'attr': {'placeholder': 'Commentaire (optionnel)'}
+                                            }) }}
+												<button class="btn btn-sm btn-outline-primary mt-2">Noter</button>
+												{{ form_end(responseForms[response.id]) }}
+											</div>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
 
 				{% if forum.isOpen %}
-					<hr>
-
-					{% if is_granted('ROLE_USER') %}
-						<h4 class="mb-3">Ajouter une réponse</h4>
+					<div class="add-response mt-5">
+						<h4>Ajouter une réponse</h4>
 						{{ form_start(responseForm) }}
-						{{ form_widget(responseForm.content) }}
-						<button type="submit" class="btn btn-primary mt-3">
-							<i class="bi bi-send"></i>
-							Poster la réponse
-						</button>
+						{{ form_widget(responseForm.content, {
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': 5,
+                            'placeholder': 'Votre réponse...'
+                        }
+                    }) }}
+						<button class="btn btn-primary mt-3">Publier</button>
 						{{ form_end(responseForm) }}
-					{% else %}
-						<div class="alert alert-info">
-							<a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a>
-							pour participer à la discussion
-						</div>
-					{% endif %}
+					</div>
 				{% else %}
-					<div class="alert alert-success">
-						<i class="bi bi-check-circle"></i>
-						Cette discussion a été marquée comme résolue
+					<div class="alert alert-warning mt-4">
+						Cette discussion est fermée aux nouvelles réponses
 					</div>
 				{% endif %}
 			</div>

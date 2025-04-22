@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ForumResponseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 
 #[ORM\Entity(repositoryClass: ForumResponseRepository::class)]
 class ForumResponse
@@ -28,9 +29,13 @@ class ForumResponse
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\OneToMany(mappedBy: 'forumResponse', targetEntity: Rating::class)]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -84,5 +89,10 @@ class ForumResponse
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
     }
 }

@@ -91,6 +91,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $profileImage = null;
 
+    #[ORM\OneToMany(mappedBy: 'ratedUser', targetEntity: Rating::class)]
+    private Collection $ratingsReceived;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -104,6 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->forums = new ArrayCollection();
         $this->forumResponses = new ArrayCollection();
         $this->organizedEvents = new ArrayCollection();
+        $this->ratingsReceived = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -487,5 +491,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->profileImage = $profileImage;
         return $this;
+    }
+
+    public function getRatingsReceived(): Collection
+    {
+        return $this->ratingsReceived;
+    }
+
+    public function getAverageRating(): float
+    {
+        $total = 0;
+        $count = 0;
+
+        foreach ($this->ratingsReceived as $rating) {
+            $total += $rating->getScore();
+            $count++;
+        }
+
+        return $count > 0 ? round($total / $count, 1) : 0;
+    }
+
+    public function getRatingDetails(): array
+    {
+        $details = [
+            'blog' => ['total' => 0, 'average' => 0],
+            'event' => ['total' => 0, 'average' => 0],
+            'forum' => ['total' => 0, 'average' => 0]
+        ];
+
+        foreach ($this->ratingsReceived as $rating) {
+            $type = 'blog';
+            if ($rating->getEvent()) $type = 'event';
+            elseif ($rating->getForumResponse()) $type = 'forum';
+
+            $details[$type]['total']++;
+            $details[$type]['average'] += $rating->getScore();
+        }
+
+        foreach ($details as &$type) {
+            if ($type['total'] > 0) {
+                $type['average'] = round($type['average'] / $type['total'], 1);
+            }
+        }
+
+        return $details;
     }
 }
