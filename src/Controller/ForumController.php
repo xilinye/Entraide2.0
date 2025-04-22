@@ -116,6 +116,7 @@ class ForumController extends AbstractController
 
         $responses = $forum->getResponses();
         $responseForms = [];
+        $averages = [];
 
         foreach ($responses as $forumResponse) {
             $rating = $this->em->getRepository(Rating::class)->findOneBy([
@@ -128,6 +129,10 @@ class ForumController extends AbstractController
                 $rating,
                 ['action' => $this->generateUrl('app_forum_rate_response', ['id' => $forumResponse->getId()])]
             )->createView();
+
+            // Calcul de la moyenne pour chaque réponse
+            $average = $this->ratingRepository->getAverageForForumResponse($forumResponse);
+            $averages[$forumResponse->getId()] = $average;
         }
 
         $topResponses = $forumResponseRepo->getTopForumResponses($forum);
@@ -137,7 +142,8 @@ class ForumController extends AbstractController
             'responseForm' => $responseForm->createView(),
             'responses' => $responses,
             'responseForms' => $responseForms,
-            'topResponses' => $topResponses
+            'topResponses' => $topResponses,
+            'averages' => $averages
         ]);
     }
 
@@ -162,11 +168,17 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('app_forum_show', ['id' => $response->getForum()->getId()]);
         }
 
-        // Crée le Rating avec les associations AVANT le formulaire
-        $rating = new Rating();
-        $rating->setForumResponse($response)
-            ->setRater($this->getUser())
-            ->setRatedUser($response->getAuthor());
+        $rating = $this->ratingRepository->findOneBy([
+            'forumResponse' => $response,
+            'rater' => $this->getUser()
+        ]);
+
+        if (!$rating) {
+            $rating = new Rating();
+            $rating->setForumResponse($response)
+                ->setRater($this->getUser())
+                ->setRatedUser($response->getAuthor());
+        }
 
         $form = $this->createForm(RatingType::class, $rating);
         $form->handleRequest($request);

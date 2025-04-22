@@ -76,6 +76,24 @@
 		transform: translateY(-5px);
 		box-shadow: 0 8px 16px rgba(76, 175, 80, 0.2);
 	}
+	.stars {
+		display: inline-block;
+		font-size: 1.25rem;
+		line-height: 1;
+	}
+	.star {
+		color: #e4e5e9; /* Couleur des étoiles non remplies */
+		transition: color 0.2s ease;
+	}
+
+	.star.filled {
+		color: #ffc107; /* Couleur des étoiles remplies */
+	}
+
+	/* Ajustement pour l'affichage des étoiles dans le modal */
+	.rating-item .stars {
+		font-size: 1.1rem;
+	}
 
 	/* Badges de compétences */
 	.skill-badge {
@@ -301,11 +319,6 @@
 					<div class="user-rating-summary">
 						<h3>Réputation</h3>
 						<div class="average-rating">
-							<div class="stars">
-								{% for i in 1..5 %}
-									<span class="star {% if i <= user.averageRating|round %}filled{% endif %}">★</span>
-								{% endfor %}
-							</div>
 							<p>Moyenne :
 								{{ user.averageRating|number_format(1) }}/5</p>
 							<button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#ratingDetails">

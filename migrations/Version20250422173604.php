@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250421163151 extends AbstractMigration
+final class Version20250422173604 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -45,10 +45,13 @@ final class Version20250421163151 extends AbstractMigration
             CREATE TABLE message (id INT AUTO_INCREMENT NOT NULL, sender_id INT NOT NULL, receiver_id INT NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '(DC2Type:datetime_immutable)', is_read TINYINT(1) DEFAULT 0 NOT NULL, title VARCHAR(255) NOT NULL, INDEX IDX_B6BD307FF624B39D (sender_id), INDEX IDX_B6BD307FCD53EDB6 (receiver_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE rating (id INT AUTO_INCREMENT NOT NULL, rater_id INT NOT NULL, rated_user_id INT NOT NULL, blog_post_id INT DEFAULT NULL, event_id INT DEFAULT NULL, forum_response_id INT DEFAULT NULL, score INT NOT NULL, comment LONGTEXT DEFAULT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_D88926223FC1CD0A (rater_id), INDEX IDX_D8892622A8957C46 (rated_user_id), INDEX IDX_D8892622A77FBEAF (blog_post_id), INDEX IDX_D889262271F7E88B (event_id), INDEX IDX_D8892622FDC7ABE2 (forum_response_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE skill (id INT AUTO_INCREMENT NOT NULL, category_id INT NOT NULL, name VARCHAR(255) NOT NULL, description LONGTEXT DEFAULT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '(DC2Type:datetime_immutable)', UNIQUE INDEX UNIQ_5E3DE4775E237E06 (name), INDEX IDX_5E3DE47712469DE2 (category_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, pseudo VARCHAR(180) NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, is_verified TINYINT(1) DEFAULT 0 NOT NULL, registration_token VARCHAR(255) DEFAULT NULL, token_expires_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', reset_token VARCHAR(255) DEFAULT NULL, reset_token_expires_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', UNIQUE INDEX UNIQ_8D93D64986CC499D (pseudo), UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, pseudo VARCHAR(180) NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, is_verified TINYINT(1) DEFAULT 0 NOT NULL, registration_token VARCHAR(255) DEFAULT NULL, token_expires_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', reset_token VARCHAR(255) DEFAULT NULL, reset_token_expires_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', profile_image VARCHAR(255) DEFAULT NULL, UNIQUE INDEX UNIQ_8D93D64986CC499D (pseudo), UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE user_skill (user_id INT NOT NULL, skill_id INT NOT NULL, INDEX IDX_BCFF1F2FA76ED395 (user_id), INDEX IDX_BCFF1F2F5585C142 (skill_id), PRIMARY KEY(user_id, skill_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -91,6 +94,21 @@ final class Version20250421163151 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE message ADD CONSTRAINT FK_B6BD307FCD53EDB6 FOREIGN KEY (receiver_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating ADD CONSTRAINT FK_D88926223FC1CD0A FOREIGN KEY (rater_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating ADD CONSTRAINT FK_D8892622A8957C46 FOREIGN KEY (rated_user_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating ADD CONSTRAINT FK_D8892622A77FBEAF FOREIGN KEY (blog_post_id) REFERENCES blog_post (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating ADD CONSTRAINT FK_D889262271F7E88B FOREIGN KEY (event_id) REFERENCES event (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating ADD CONSTRAINT FK_D8892622FDC7ABE2 FOREIGN KEY (forum_response_id) REFERENCES forum_response (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE skill ADD CONSTRAINT FK_5E3DE47712469DE2 FOREIGN KEY (category_id) REFERENCES category (id)
@@ -143,6 +161,21 @@ final class Version20250421163151 extends AbstractMigration
             ALTER TABLE message DROP FOREIGN KEY FK_B6BD307FCD53EDB6
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE rating DROP FOREIGN KEY FK_D88926223FC1CD0A
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating DROP FOREIGN KEY FK_D8892622A8957C46
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating DROP FOREIGN KEY FK_D8892622A77FBEAF
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating DROP FOREIGN KEY FK_D889262271F7E88B
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE rating DROP FOREIGN KEY FK_D8892622FDC7ABE2
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE skill DROP FOREIGN KEY FK_5E3DE47712469DE2
         SQL);
         $this->addSql(<<<'SQL'
@@ -174,6 +207,9 @@ final class Version20250421163151 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE message
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE rating
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE skill

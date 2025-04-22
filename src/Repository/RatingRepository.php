@@ -54,4 +54,16 @@ class RatingRepository extends ServiceEntityRepository
 
         return $result ? (float)$result : 0;
     }
+
+    public function getAverageForForumResponse(ForumResponse $forumResponse): float
+    {
+        $result = $this->createQueryBuilder('r')
+            ->select('AVG(r.score) as average')
+            ->where('r.forumResponse = :forumResponse')
+            ->setParameter('forumResponse', $forumResponse)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result ? (float)$result : 0;
+    }
 }

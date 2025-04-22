@@ -43,6 +43,20 @@
 		.star-rating input[type="radio"]:checked ~ label {
 			color: #ffd700;
 		}
+		.rating-badge {
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			position: static;
+			display: inline-block;
+			margin-right: 1rem;
+		}
+		.star-rating label {
+			font-size: 1.5rem;
+			padding: 0 2px;
+		}
+		.collapse {
+			transition: all 0.3s ease;
+		}
 	</style>
 {% endblock %}
 
@@ -101,34 +115,61 @@
 					{% for response in forum.responses %}
 						<div class="card mb-4">
 							<div class="card-body">
-								<div class="response-rating">
-									<div class="response-content">
-										<div class="d-flex justify-content-between mb-2">
-											<strong>{{ response.author.pseudo }}</strong>
-											<small class="text-muted">
-												{{ response.createdAt|date('d/m/Y H:i') }}
-											</small>
-										</div>
-										<p>{{ response.content|nl2br }}</p>
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<div class="rating-badge">
+										★
+										{{ averages[response.id]|number_format(1) }}
+									</div>
+									<strong>{{ response.author.pseudo }}</strong>
+									<small class="text-muted">
+										{{ response.createdAt|date('d/m/Y H:i') }}
+									</small>
+								</div>
 
-										{% if app.user and app.user != response.author and forum.isOpen %}
-											<div class="rating-form mt-3">
-												{{ form_start(responseForms[response.id]) }}
-												<div class="star-rating">
-													{% for i in range(5, 1, -1) %}
-														<input type="radio" id="response{{ response.id }}_star{{ i }}" name="{{ responseForms[response.id].score.vars.full_name }}" value="{{ i }}" {{ responseForms[response.id].score.vars.value == i ? 'checked' : '' }}/>
-														<label for="response{{ response.id }}_star{{ i }}">★</label>
-													{% endfor %}
+								<p>{{ response.content|nl2br }}</p>
+
+								<button class="btn btn-sm btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#ratings-{{ response.id }}">
+									Détails
+								</button>
+
+								<div class="collapse" id="ratings-{{ response.id }}">
+									<div class="card card-body">
+										<h6>Détail des notes</h6>
+										{% if response.ratings|length > 0 %}
+											{% for rating in response.ratings %}
+												<div class="mb-2">
+													<div>
+														<strong>{{ rating.rater.pseudo }}</strong>
+														a donné ★{{ rating.score }}
+														{% if rating.comment %}
+															:
+															<em>"{{ rating.comment }}"</em>
+														{% endif %}
+													</div>
 												</div>
-												{{ form_widget(responseForms[response.id].comment, {
-                                                'attr': {'placeholder': 'Commentaire (optionnel)'}
-                                            }) }}
-												<button class="btn btn-sm btn-outline-primary mt-2">Noter</button>
-												{{ form_end(responseForms[response.id]) }}
-											</div>
+											{% endfor %}
+										{% else %}
+											<div class="text-muted">Aucune note pour cette réponse</div>
 										{% endif %}
 									</div>
 								</div>
+
+								{% if app.user and app.user != response.author and forum.isOpen %}
+									<div class="rating-form mt-3">
+										{{ form_start(responseForms[response.id]) }}
+										<div class="star-rating">
+											{% for i in range(5, 1, -1) %}
+												<input type="radio" id="response{{ response.id }}_star{{ i }}" name="{{ responseForms[response.id].score.vars.full_name }}" value="{{ i }}" {{ responseForms[response.id].score.vars.value == i ? 'checked' : '' }}/>
+												<label for="response{{ response.id }}_star{{ i }}">★</label>
+											{% endfor %}
+										</div>
+										{{ form_widget(responseForms[response.id].comment) }}
+										<button class="btn btn-sm btn-outline-primary mt-2">
+											{{ responseForms[response.id].vars.data.id ? 'Modifier' : 'Noter' }}
+										</button>
+										{{ form_end(responseForms[response.id]) }}
+									</div>
+								{% endif %}
 							</div>
 						</div>
 					{% endfor %}
