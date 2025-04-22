@@ -1,0 +1,88 @@
+{# templates/admin/reports/export_users_pdf.html.twig #}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Export Utilisateurs - Entr'Aide 2.0</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 2cm;
+			}
+			.header {
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			h1 {
+				color: #4CAF50;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			th,
+			td {
+				padding: 8px;
+				text-align: left;
+				border-bottom: 1px solid #ddd;
+			}
+			th {
+				background-color: #4CAF50;
+				color: white;
+			}
+			.footer {
+				margin-top: 50px;
+				text-align: right;
+				font-size: 0.8em;
+				color: #666;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="header">
+			<h1>Export des Utilisateurs -
+				{{ "now"|date('d/m/Y') }}</h1>
+		</div>
+
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Pseudonyme</th>
+					<th>Email</th>
+					<th>Rôles</th>
+					<th>Vérifié</th>
+					<th>Inscription</th>
+					<th>Compétences</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td>{{ user.id }}</td>
+						<td>{{ user.pseudo }}</td>
+						<td>{{ user.email }}</td>
+						<td>{{ user.roles|join(', ') }}</td>
+						<td>{{ user.isVerified ? 'Oui' : 'Non' }}</td>
+						<td>{{ user.createdAt|date('d/m/Y H:i') }}</td>
+						<td>
+							{% for skill in user.skills %}
+								{{ skill.name }}
+								{% if not loop.last %},
+								{% endif %}
+							{% endfor %}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<div class="footer">
+			Généré le
+			{{ "now"|date('d/m/Y à H:i') }}<br>
+			Total utilisateurs :
+			{{ users|length }}
+		</div>
+	</body>
+</html>

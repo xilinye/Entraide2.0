@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Rapport d'engagement - Entr'Aide 2.0</title>
+		<style>
+			body {
+				font-family: 'Arial', sans-serif;
+				margin: 1.5cm;
+			}
+			.header {
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			.logo {
+				width: 150px;
+				margin-bottom: 20px;
+			}
+			h1 {
+				color: #4CAF50;
+				margin-bottom: 30px;
+				font-size: 24px;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			th {
+				background-color: #4CAF50;
+				color: white;
+				padding: 12px;
+				text-align: left;
+			}
+			td {
+				padding: 10px;
+				border-bottom: 1px solid #ddd;
+			}
+			.footer {
+				margin-top: 40px;
+				text-align: right;
+				font-size: 0.8em;
+				color: #666;
+			}
+			.stat-label {
+				font-weight: 600;
+				color: #333;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="header">
+			<h1>
+				<img src="{{ absolute_url(asset('build/images/logo.png')) }}" class="logo" alt="Logo Entr'Aide"><br>
+				Rapport d'engagement des utilisateurs
+			</h1>
+		</div>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Statistique</th>
+					<th>Valeur</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for key, value in stats %}
+					<tr>
+						<td class="stat-label">{{ key|replace({'_': ' ')|title }}</td>
+						<td>{{ value|number_format(0, ',', ' ') }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<div class="footer">
+			Généré le
+			{{ generation_date|date('d/m/Y à H:i') }}<br>
+			Entr'Aide 2.0 - Plateforme d'échange de compétences
+		</div>
+	</body>
+</html>

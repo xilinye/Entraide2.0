@@ -5,7 +5,7 @@ namespace App\Controller;
 
 use App\Entity\{User, Skill, Category};
 use App\Form\{SkillFormType, CategoryFormType};
-use App\Repository\{CategoryRepository, SkillRepository, UserRepository};
+use App\Repository\{CategoryRepository, SkillRepository, UserRepository, MessageRepository, EventRepository, ForumRepository, BlogPostRepository};
 use App\Service\{UserManager, SkillManager, CategoryManager};
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -26,7 +26,11 @@ class AdminController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly UserRepository $userRepository,
         private readonly SkillRepository $skillRepository,
+        private readonly MessageRepository $messageRepository,
+        private readonly EventRepository $eventRepository,
         private readonly CategoryRepository $categoryRepository,
+        private readonly BlogPostRepository $blogPostRepository,
+        private readonly ForumRepository $forumRepository,
         private readonly ValidatorInterface $validator,
         private readonly UserManager $userManager,
         private readonly SkillManager $skillManager,
@@ -40,6 +44,10 @@ class AdminController extends AbstractController
             'users_count' => $this->userRepository->count([]),
             'skills_count' => $this->skillRepository->count([]),
             'categories_count' => $this->categoryRepository->count([]),
+            'messages_count' => $this->messageRepository->count([]),
+            'blog_posts_count' => $this->blogPostRepository->count([]),
+            'forums_count' => $this->forumRepository->count([]),
+            'events_count' => $this->eventRepository->count([]),
             'recent_users' => $this->userRepository->findRecent(5)
         ]);
     }

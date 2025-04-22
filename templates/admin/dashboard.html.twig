@@ -29,6 +29,11 @@
 			background-color: #45a049;
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 		}
+		.report-options {
+			display: grid;
+			gap: 1rem;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		}
 	</style>
 
 	<div class="container-fluid py-4">
@@ -39,7 +44,7 @@
 		<div
 			class="row g-4">
 			<!-- Colonne Statistiques -->
-			<div class="col-md-6">
+			<div class="col-lg-6">
 				<div class="card shadow-lg admin-card">
 					<div class="card-header text-white py-3" style="background-color: #4CAF50;">
 						<h3 class="h5 mb-0 fw-bold">
@@ -56,6 +61,13 @@
 							</li>
 							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
 								<div>
+									<i class="bi bi-tags-fill me-2" style="color: #4CAF50;"></i>
+									Catégories actives
+								</div>
+								<span class="stat-badge">{{ categories_count }}</span>
+							</li>
+							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+								<div>
 									<i class="bi bi-list-task me-2" style="color: #4CAF50;"></i>
 									Compétences disponibles
 								</div>
@@ -63,10 +75,32 @@
 							</li>
 							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
 								<div>
-									<i class="bi bi-tags-fill me-2" style="color: #4CAF50;"></i>
-									Catégories actives
+									<i class="bi bi-chat-dots me-2" style="color: #4CAF50;"></i>
+									Messages échangés
 								</div>
-								<span class="stat-badge">{{ categories_count }}</span>
+								<span class="stat-badge">{{ messages_count }}</span>
+							</li>
+							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+								<div>
+									<i class="bi bi-file-earmark-text me-2" style="color: #4CAF50;"></i>
+									Articles de blog
+								</div>
+								<span class="stat-badge">{{ blog_posts_count }}</span>
+							</li>
+
+							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+								<div>
+									<i class="bi bi-chat-square-text me-2" style="color: #4CAF50;"></i>
+									Discussions de forum
+								</div>
+								<span class="stat-badge">{{ forums_count }}</span>
+							</li>
+							<li class="list-group-item d-flex justify-content-between align-items-center py-3">
+								<div>
+									<i class="bi bi-calendar-event me-2" style="color: #4CAF50;"></i>
+									Événements créés
+								</div>
+								<span class="stat-badge">{{ events_count }}</span>
 							</li>
 						</ul>
 					</div>
@@ -74,26 +108,79 @@
 			</div>
 
 			<!-- Colonne Actions rapides -->
-			<div class="col-md-6">
+			<div class="col-lg-6">
 				<div class="card shadow-lg admin-card">
 					<div class="card-header text-white py-3" style="background-color: #4CAF50;">
 						<h3 class="h5 mb-0 fw-bold">
 							<i class="bi bi-lightning-charge me-2"></i>Actions rapides</h3>
 					</div>
 					<div class="card-body px-lg-5 py-4">
-						<div class="d-grid gap-3">
+						<div class="report-options">
 							<a href="{{ path('app_admin_users') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
 								<i class="bi bi-people-fill fs-5 me-3"></i>
 								Gérer les utilisateurs
 							</a>
-							<a href="{{ path('app_admin_skills') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
-								<i class="bi bi-list-task fs-5 me-3"></i>
-								Gérer les compétences
+
+							<a href="{{ path('app_admin_reports_engagement') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
+								<i class="bi bi-file-earmark-bar-graph fs-5 me-3"></i>
+								Rapport d'engagement
 							</a>
+
+							<a href="{{ path('app_admin_reports_export_users') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
+								<i class="bi bi-database-down fs-5 me-3"></i>
+								Export utilisateurs
+							</a>
+
 							<a href="{{ path('app_admin_categories') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
 								<i class="bi bi-bookmark-fill fs-5 me-3"></i>
 								Gérer les catégories
 							</a>
+
+							<a href="{{ path('app_admin_skills') }}" class="btn btn-admin btn-lg rounded-pill fw-semibold d-flex align-items-center justify-content-center">
+								<i class="bi bi-list-task fs-5 me-3"></i>
+								Gérer les compétences
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Section Utilisateurs récents -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="card shadow-lg admin-card">
+					<div class="card-header text-white py-3" style="background-color: #4CAF50;">
+						<h3 class="h5 mb-0 fw-bold">
+							<i class="bi bi-clock-history me-2"></i>Inscriptions récentes
+						</h3>
+					</div>
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table table-hover">
+								<thead>
+									<tr>
+										<th>Pseudonyme</th>
+										<th>Email</th>
+										<th>Inscription</th>
+										<th>Statut</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for user in recent_users %}
+										<tr>
+											<td>{{ user.pseudo }}</td>
+											<td>{{ user.email }}</td>
+											<td>{{ user.createdAt|date('d/m/Y H:i') }}</td>
+											<td>
+												<span class="badge bg-{{ user.isVerified ? 'success' : 'warning' }}">
+													{{ user.isVerified ? 'Vérifié' : 'En attente' }}
+												</span>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
