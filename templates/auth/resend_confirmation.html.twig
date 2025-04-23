@@ -1,44 +1,39 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Renvoyer la confirmation - Entr'Aide 2.0{% endblock %}
+{% block title %}Renvoyer la confirmation - Entr'Aide 2.0
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg auth-card">
-                <div class="card-header text-white text-center py-4" style="background-color: #4CAF50;">
-                    <h1 class="h3 mb-0 fw-bold"><i class="bi bi-envelope-arrow-up me-2"></i>Renvoyer l'email de confirmation</h1>
-                </div>
-                <div class="card-body px-lg-5 py-4">
-                    <form method="post">
-                        <div class="mb-4">
-                            <label for="email" class="form-label fw-medium">Adresse email</label>
-                            <input 
-                                type="email" 
-                                class="form-control form-control-lg rounded-3"
-                                id="email" 
-                                name="email"
-                                placeholder="exemple@email.com" 
-                                required>
-                        </div>
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="card shadow-lg auth-card">
+					<div class="card-header text-white text-center py-4" style="background-color: #4CAF50;">
+						<h1 class="h3 mb-0 fw-bold">
+							<i class="bi bi-envelope-arrow-up me-2"></i>Renvoyer l'email de confirmation</h1>
+					</div>
+					<div class="card-body px-lg-5 py-4">
+						<form method="post">
+							<div class="mb-4">
+								<label for="email" class="form-label fw-medium">Adresse email</label>
+								<input type="email" class="form-control form-control-lg rounded-3" id="email" name="email" placeholder="exemple@email.com" required>
+							</div>
 
-                        <div class="d-grid gap-2 mt-5">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
-                                <i class="bi bi-send-check me-2"></i>Renvoyer l'email
-                            </button>
-                        </div>
-                    </form>
+							<div class="d-grid gap-2 mt-5">
+								<button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
+									<i class="bi bi-send-check me-2"></i>Renvoyer l'email
+								</button>
+							</div>
+						</form>
 
-                    <div class="mt-4 text-center">
-                        <a href="{{ path('app_auth_register') }}" 
-                           class="text-decoration-none link-#4CAF50 small">
-                            <i class="bi bi-person-plus me-1"></i>Créer un nouveau compte
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+						<div class="mt-4 text-center">
+							<a href="{{ path('app_auth_register') }}" class="text-decoration-none text-success">
+								<i class="bi bi-person-plus me-1"></i>Créer un nouveau compte
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
