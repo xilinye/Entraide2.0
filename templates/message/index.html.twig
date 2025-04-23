@@ -9,175 +9,286 @@
 	{
 		--accent-color: #4CAF50;
 		--accent-hover: #45a049;
-		--danger-color: #dc3545;
+		--accent-light: #E8F5E9;
+		--danger-color: #ff4444;
 		--text-primary: #2d3339;
 		--text-secondary: #6c757d;
 		--bg-light: #f8f9fa;
 		--border-color: #e9ecef;
+		--card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 	}
 
+	/* En-tête amélioré */
+	.header-section {
+		padding: 1.5rem;
+		background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+		border-radius: 12px;
+		margin-bottom: 2rem;
+		box-shadow: var(--card-shadow);
+	}
+
+	.header-section h1 {
+		color: white;
+		margin: 0;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	/* Carte de conversation */
 	.conversation-card {
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		border: 1px solid var(--border-color);
-		border-left: 4px solid var(--accent-color);
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		border: 0;
 		background: white;
+		border-radius: 12px;
 		position: relative;
 		overflow: hidden;
+		box-shadow: var(--card-shadow);
+	}
+
+	.conversation-card::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		width: 4px;
+		background: var(--accent-color);
+		transition: width 0.3s ease;
+	}
+
+	.conversation-card:hover::before {
+		width: 6px;
 	}
 
 	.conversation-card:hover {
 		transform: translateY(-3px);
-		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 	}
 
-	.conversation-card.anonymous {
-		border-left-color: var(--text-secondary);
+	.conversation-card.anonymous::before {
+		background: var(--text-secondary);
 	}
 
 	.user-avatar {
 		width: 48px;
 		height: 48px;
-		border-radius: 50%;
-		background: var(--accent-color);
+		border-radius: 12px;
+		background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.user-avatar i {
-		font-size: 1.5rem;
-		color: white;
-	}
-
-	.card-actions {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		margin-left: auto;
-	}
-
-	.delete-btn {
-		opacity: 0;
-		transition: opacity 0.2s ease;
-	}
-
-	.conversation-card:hover .delete-btn {
-		opacity: 1;
-	}
-
-	.open-conversation-btn {
-		transition: transform 0.2s ease;
-	}
-
-	.open-conversation-btn:hover {
-		transform: translateX(3px);
-	}
-
-	.unread-indicator {
-		display: inline-block;
-		width: 8px;
-		height: 8px;
-		background: var(--accent-color);
-		border-radius: 50%;
-		margin-left: 8px;
-	}
-
-	.anonymous-badge {
-		background: var(--text-secondary);
-		color: white;
-		font-size: 0.75rem;
-		padding: 0.25rem 0.5rem;
-		border-radius: 4px;
-	}
-
-	.btn-accent {
-		background: var(--accent-color);
-		color: white;
-		transition: background 0.2s ease;
-	}
-
-	.btn-accent:hover {
-		background: var(--accent-hover);
-		color: white;
-	}
-
-	.empty-state {
-		border: 2px dashed var(--border-color);
-		background: var(--bg-light);
-		border-radius: 12px;
-	}
-
-	.empty-icon {
 		transition: transform 0.3s ease;
 	}
 
-	.empty-state:hover .empty-icon {
+	.user-avatar i {
+		font-size: 1.25rem;
+		color: white;
+	}
+
+	.conversation-card:hover .user-avatar {
 		transform: scale(1.05);
+	}
+
+	/* Badge non lu */
+	.unread-indicator {
+		display: inline-flex;
+		width: 24px;
+		height: 24px;
+		background: var(--accent-color);
+		color: white;
+		border-radius: 50%;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		font-weight: 600;
+		margin-left: 8px;
+	}
+
+	/* Actions de la carte */
+	.card-actions {
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		display: flex;
+		gap: 0.5rem;
+		position: absolute;
+		right: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		background: rgba(255, 255, 255, 0.9);
+		padding: 0.25rem;
+		border-radius: 8px;
+		backdrop-filter: blur(2px);
+	}
+
+	.conversation-card:hover .card-actions {
+		opacity: 1;
+	}
+
+	.delete-btn {
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+	}
+
+	/* État vide */
+	.empty-state {
+		border: 2px dashed var(--border-color);
+		background: var(--bg-light);
+		border-radius: 16px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.empty-state::before {
+		content: '';
+		position: absolute;
+		width: 200%;
+		height: 200%;
+		background: repeating-linear-gradient(45deg, transparent, transparent 15px, var(--accent-light) 15px, var(--accent-light) 30px);
+		animation: slide 20s linear infinite;
+		opacity: 0.15;
+	}
+
+	@keyframes slide {
+		from {
+			transform: translateX(0);
+		}
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	.empty-icon {
+		transition: all 0.3s ease;
+		filter: drop-shadow(0 4px 6px rgba(76, 175, 80, 0.1));
+	}
+
+	.empty-state:hover .empty-icon {
+		transform: translateY(-5px);
+	}
+
+	/* Améliorations typographiques */
+	.conversation-title {
+		font-weight: 600;
+		color: var(--text-primary);
+		margin-bottom: 0.25rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.conversation-meta {
+		font-size: 0.875rem;
+		color: var(--text-secondary);
+	}
+
+	.message-preview {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		font-size: 0.9rem;
+		color: var(--text-primary);
+		margin-bottom: 0.5rem;
+	}
+
+	/* Bouton principal */
+	.btn-accent {
+		background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+		color: white;
+		border: none;
+		padding: 0.75rem 1.5rem;
+		border-radius: 8px;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.btn-accent::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(255, 255, 255, 0.1);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.btn-accent:hover::before {
+		opacity: 1;
+	}
+
+	.btn-accent:active {
+		transform: scale(0.98);
 	}
 </style>{% endblock %}{% block body %}
 <div class="container py-4">
-	<div class="d-flex justify-content-between align-items-center mb-5">
-		<h1 class="h3 mb-0 text-accent">
-			<i class="bi bi-chat-text-fill me-2"></i>Vos conversations
-		</h1>
-		<a href="{{ path('app_search_index') }}" class="btn btn-accent">
-			<i class="bi bi-plus-circle-fill me-2"></i>Nouvelle discussion
-		</a>
+	<div class="header-section">
+		<div class="d-flex justify-content-between align-items-center">
+			<h1>
+				<i class="bi bi-chat-text-fill"></i>
+				Vos conversations
+			</h1>
+			<a href="{{ path('app_search_index') }}" class="btn btn-accent">
+				<i class="bi bi-plus-circle-fill me-2"></i>Nouvelle discussion
+			</a>
+		</div>
 	</div>
 
 	{% if conversations|length > 0 %}
-		<div class="row row-cols-1 row-cols-md-2 g-4">
+		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 			{% for conversation in conversations %}
 				{% set is_deleted = conversation.deletion_date is not null and (conversation.last_message_date < conversation.deletion_date) %}
 
 				<div class="col">
-					<div class="card conversation-card {% if is_deleted %}anonymous{% endif %}">
-						<div class="card-body d-flex align-items-center">
+					<div class="card conversation-card {% if is_deleted %}anonymous{% endif %} h-100">
+						<div class="card-body position-relative">
 							{% if not is_deleted %}
-								<div class="user-avatar me-3">
-									<i class="bi bi-person"></i>
-								</div>
+								<div class="d-flex align-items-start gap-3">
+									<div class="user-avatar">
+										<i class="bi bi-person"></i>
+									</div>
 
-								{# Modifiez le wrapper du lien #}
-								<div class="stretched-link-wrapper flex-grow-1">
-									<a href="{{ path('app_message_conversation', { 'id': conversation.other_user_id, 'title': conversation.last_title }) }}">
-										<div class="mb-1">
-											<h5>
+									<div class="flex-grow-1">
+										<a href="{{ path('app_message_conversation', { 'id': conversation.other_user_id, 'title': conversation.last_title }) }}" class="stretched-link text-decoration-none">
+											<div class="conversation-title">
 												{{ conversation.other_user_pseudo|default('Utilisateur inconnu') }}
 												{% if conversation.unread_count > 0 %}
-													<span class="unread-indicator"></span>
-												{% endif %}
-											</h5>
-											<div class="mb-1">
-												{% if conversation.last_title %}
-													<span class="fw-medium text-accent">{{ conversation.last_title }}</span>
-												{% else %}
-													<span class="fst-italic text-muted">Sans objet</span>
+													<span class="unread-indicator">{{ conversation.unread_count }}</span>
 												{% endif %}
 											</div>
-											<small class="text-muted">
-												Dernier message :
+											<div class="message-preview">
+												{{ conversation.last_message|default('Aucun message')|striptags|slice(0, 60) ~ '...' }}
+											</div>
+											<div class="conversation-meta">
+												Dernière activité :
 												{{ conversation.last_message_date|date('d/m/Y H:i') }}
-											</small>
-										</div>
-									</a>
+											</div>
+										</a>
+									</div>
 								</div>
 
-								{# Bouton de suppression #}
 								<div class="card-actions">
 									<form action="{{ path('app_message_delete_conversation', {id: conversation.other_user_id}) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?')">
 										<input type="hidden" name="_token" value="{{ csrf_token('delete_conversation_' ~ conversation.other_user_id) }}">
-										<button type="submit" class="btn btn-sm btn-danger delete-btn">
-											<i class="bi bi-trash"></i>
+										<button type="submit" class="btn btn-sm delete-btn" title="Supprimer la conversation">
+											<i class="bi bi-trash text-danger"></i>
 										</button>
 									</form>
 								</div>
 							{% else %}
 								<div class="text-center w-100 py-3">
-									<span class="anonymous-badge">
+									<div class="anonymous-badge mb-3">
 										<i class="bi bi-eye-slash me-2"></i>Conversation supprimée
-									</span>
-									<div class="mt-2 small text-muted">
+									</div>
+									<div class="small text-muted">
 										{{ conversation.last_title|default('Titre non disponible') }}
 									</div>
 								</div>
@@ -188,14 +299,14 @@
 			{% endfor %}
 		</div>
 	{% else %}
-		<div class="card empty-state border-2">
-			<div class="card-body text-center py-5">
+		<div class="card empty-state border-0">
+			<div class="card-body text-center py-5 position-relative">
 				<div class="empty-icon mb-4">
 					<i class="bi bi-chat-heart-fill text-accent display-4"></i>
 				</div>
 				<h3 class="text-accent mb-3">Commencez à dialoguer</h3>
 				<p class="text-muted mb-4">Envoyez votre premier message à un utilisateur de la communauté</p>
-				<a href="{{ path('app_search_index') }}" class="btn btn-accent btn-lg rounded-pill">
+				<a href="{{ path('app_search_index') }}" class="btn btn-accent btn-lg rounded-3">
 					<i class="bi bi-search me-2"></i>Trouver des membres
 				</a>
 			</div>

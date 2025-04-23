@@ -5,64 +5,339 @@
 
 {% block stylesheets %}
 	{{ parent() }}
-	<style>
-		.message-card {
-			max-width: 600px;
-			margin: 2rem auto;
-			border-radius: 15px;
-			box-shadow: 0 0.5rem 1rem rgba(76, 175, 80, 0.15);
+	<style>:root
+	{
+		--primary-color: #4CAF50;
+		--primary-light: #E8F5E9;
+		--primary-dark: #388E3C;
+		--accent-gradient: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+	}
+
+	.message-card {
+		max-width: 700px;
+		margin: 2rem auto;
+		border-radius: 24px;
+		border: none;
+		box-shadow: 0 12px 32px rgba(76, 175, 80, 0.12);
+		transform: translateY(0);
+		transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
+		background: white;
+	}
+
+	.message-card:hover {
+		transform: translateY(-8px);
+		box-shadow: 0 20px 40px rgba(76, 175, 80, 0.18);
+	}
+
+	.message-header {
+		background: var(--accent-gradient);
+		color: white;
+		border-radius: 24px 24px 0 0;
+		padding: 2.5rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.message-header::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(45deg, transparent 60%, rgba(255,255,255,0.15));
+	}
+
+	.message-header::after {
+		content: '';
+		position: absolute;
+		bottom: -40px;
+		right: -40px;
+		width: 80px;
+		height: 80px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 50%;
+	}
+
+	.message-form {
+		padding: 2.5rem;
+		background: linear-gradient(to bottom right, #f8f9fa 0%, #ffffff 100%);
+	}
+
+	.form-group {
+		margin-bottom: 2rem;
+		position: relative;
+	}
+
+	.form-label {
+		display: block;
+		font-weight: 600;
+		color: var(--primary-dark);
+		margin-bottom: 0.75rem;
+		padding-left: 0.5rem;
+		position: relative;
+	}
+
+	.form-label::before {
+		content: '';
+		position: absolute;
+		left: -8px;
+		top: 4px;
+		height: 20px;
+		width: 4px;
+		background: var(--primary-color);
+		border-radius: 2px;
+	}
+
+	.form-control {
+		border: 2px solid var(--primary-light);
+		border-radius: 14px;
+		padding: 1.25rem 1.5rem;
+		font-size: 1rem;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		background: white;
+	}
+
+	.form-control:focus {
+		border-color: var(--primary-color);
+		box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
+		padding: 1.25rem 1.75rem;
+	}
+
+	.custom-file-upload {
+		border: 2px dashed var(--primary-light);
+		border-radius: 14px;
+		padding: 2rem;
+		text-align: center;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		background: rgba(200, 230, 201, 0.1);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.custom-file-upload:hover {
+		border-color: var(--primary-color);
+		background: rgba(76, 175, 80, 0.05);
+		transform: translateY(-2px);
+	}
+
+	.upload-icon {
+		font-size: 2.5rem;
+		color: var(--primary-color);
+		transition: all 0.3s ease;
+		margin-bottom: 1rem;
+	}
+
+	.custom-file-upload:hover .upload-icon {
+		transform: scale(1.1) translateY(-3px);
+		color: var(--primary-dark);
+	}
+
+	.btn-send {
+		background: var(--accent-gradient);
+		color: white;
+		padding: 1.25rem 2.5rem;
+		border-radius: 50px;
+		border: none;
+		font-weight: 700;
+		letter-spacing: 0.5px;
+		position: relative;
+		overflow: hidden;
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.btn-send::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 150%;
+		height: 100%;
+		background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+		transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.btn-send:hover::before {
+		left: 100%;
+	}
+
+	.btn-send:hover {
+		transform: translateY(-3px) scale(1.02);
+		box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+	}
+
+	.btn-back {
+		border: 2px solid var(--primary-light);
+		color: var(--primary-dark);
+		padding: 1.25rem 2rem;
+		border-radius: 50px;
+		transition: all 0.3s ease;
+		font-weight: 600;
+		background: white;
+	}
+
+	.btn-back:hover {
+		border-color: var(--primary-color);
+		background: rgba(76, 175, 80, 0.05);
+		transform: translateY(-2px);
+	}
+
+	.preview-container {
+		border-radius: 14px;
+		overflow: hidden;
+		margin-top: 1.5rem;
+		display: none;
+		animation: fadeIn 0.4s ease;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
 		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media(max-width: 576px) {
+		.message-card {
+			margin: 1rem;
+		}
+
 		.message-header {
-			background-color: #4CAF50;
-			color: white;
-			border-radius: 15px 15px 0 0;
 			padding: 1.5rem;
 		}
-		.message-form textarea {
-			min-height: 150px;
-			resize: vertical;
-		}
-		.send-btn {
-			background-color: #4CAF50;
-			color: white;
-			transition: transform 0.2s;
-		}
-		.send-btn:hover {
-			transform: translateY(-2px);
-		}
-	</style>
-{% endblock %}
 
-{% block body %}
-	<div class="container py-5">
-		<div class="card message-card">
-			<div class="message-header text-center">
-				<h2 class="mb-0">
-					<i class="bi bi-chat-dots me-2"></i>Nouveau message</h2>
-			</div>
+		.btn-group {
+			flex-direction: column;
+			gap: 1rem;
+		}
+	}
+	.char-counter {
+		position: absolute;
+		right: 1.5rem;
+		bottom: 1.25rem;
+		color: var(--primary-dark);
+		font-size: 0.9rem;
+		background: rgba(200, 230, 201, 0.3);
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+	}
+</style>{% endblock %}{% block body %}
+<div class="container py-5">
+	<div class="message-card">
+		<div class="message-header text-center position-relative">
+			<h2 class="mb-0 display-5 fw-bold">
+				<i class="bi bi-chat-heart me-2"></i>Nouveau message
+			</h2>
+		</div>
 
-			<div class="card-body p-4 message-form">
-				{{ form_start(form) }}
-				<div class="mb-4">
-					{{ form_widget(form.content, {
+		<div class="message-form">
+			{{ form_start(form) }}
+			<div class="form-group">
+				<label class="form-label">Titre du message</label>
+				{{ form_widget(form.title, {
                         'attr': {
                             'class': 'form-control',
-                            'placeholder': 'Écrivez votre message ici...'
+                            'placeholder': 'Donnez un titre à votre message...'
                         }
                     }) }}
-					{{ form_row(form.imageFile) }}
-				</div>
-
-				<div class="d-grid gap-2 d-md-flex justify-content-md-end">
-					<button type="submit" class="btn send-btn btn-lg rounded-pill">
-						<i class="bi bi-send me-2"></i>Envoyer
-					</button>
-					<a href="{{ path('app_message_index') }}" class="btn btn-outline-secondary btn-lg rounded-pill">
-						<i class="bi bi-arrow-left me-2"></i>Retour
-					</a>
-				</div>
-				{{ form_end(form) }}
 			</div>
+
+			<div class="form-group">
+				<label class="form-label">Contenu du message</label>
+				{{ form_widget(form.content, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Écrivez votre message ici...',
+                            'rows': 6,
+                            'maxlength': 500
+                        }
+                    }) }}
+				<div class="char-counter" id="charCounter">
+					<span id="charCount">0</span>/500
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="custom-file-upload d-block">
+					<div class="upload-icon mb-2">
+						<i class="bi bi-image-alt"></i>
+					</div>
+					<span class="d-block text-primary fw-medium mb-1">Ajouter une illustration</span>
+					<span class="text-muted small">Formats supportés : JPG, PNG (Max 2MB)</span>
+					{{ form_widget(form.imageFile, {'attr': {'class': 'd-none'}}) }}
+				</label>
+
+				<div class="preview-container">
+					<img id="imagePreview" class="img-fluid rounded" alt="Aperçu de l'image">
+				</div>
+			</div>
+
+			<div class="d-flex flex-wrap gap-3 justify-content-end btn-group mt-4">
+				<button type="submit" class="btn btn-send">
+					<i class="bi bi-send-fill me-2"></i>Envoyer le message
+				</button>
+				<a href="{{ path('app_message_index') }}" class="btn btn-back">
+					<i class="bi bi-arrow-return-left me-2"></i>Retour
+				</a>
+			</div>
+			{{ form_end(form) }}
 		</div>
 	</div>
-{% endblock %}
+</div>
+
+<script>
+	// Compteur de caractères
+const textarea = document.getElementById('{{ form.content.vars.id }}');
+const charCount = document.getElementById('charCount');
+const charCounter = document.getElementById('charCounter');
+
+textarea.addEventListener('input', () => {
+const length = textarea.value.length;
+charCount.textContent = length;
+
+if (length > 400) {
+charCounter.style.backgroundColor = '#FFEBEE';
+charCounter.style.color = '#B71C1C';
+} else {
+charCounter.style.backgroundColor = 'rgba(200, 230, 201, 0.3)';
+charCounter.style.color = 'var(--primary-dark)';
+}
+});
+
+// Prévisualisation d'image
+document.getElementById('{{ form.imageFile.vars.id }}').addEventListener('change', function (e) {
+const preview = document.getElementById('imagePreview');
+const container = document.querySelector('.preview-container');
+
+if (this.files && this.files[0]) {
+const reader = new FileReader();
+
+reader.onload = function (e) {
+preview.src = e.target.result;
+container.style.display = 'block';
+}
+
+reader.readAsDataURL(this.files[0]);
+} else {
+container.style.display = 'none';
+}
+});
+
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', () => {
+const card = document.querySelector('.message-card');
+card.style.opacity = '0';
+card.style.transform = 'translateY(20px)';
+
+setTimeout(() => {
+card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+card.style.opacity = '1';
+card.style.transform = 'translateY(0)';
+}, 100);
+});
+</script>{% endblock %}
