@@ -3,25 +3,156 @@
 {% block title %}Nouvelle discussion
 {% endblock %}
 
+{% block stylesheets %}
+	<style>
+		.creation-header {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+			padding: 3rem 0;
+			margin-bottom: 2rem;
+			border-bottom: 3px solid #4CAF50;
+		}
+
+		.form-card {
+			border: none;
+			border-radius: 15px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+			overflow: hidden;
+		}
+
+		.form-card-body {
+			padding: 2.5rem;
+		}
+
+		.form-label {
+			font-weight: 600;
+			color: #2c3e50;
+			margin-bottom: 0.5rem;
+		}
+
+		.form-control {
+			border: 2px solid #e9ecef;
+			border-radius: 8px;
+			padding: 0.75rem 1rem;
+			transition: all 0.3s ease;
+		}
+
+		.form-control:focus {
+			border-color: #4CAF50;
+			box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+		}
+
+		textarea.form-control {
+			min-height: 150px;
+			resize: vertical;
+		}
+
+		.file-upload {
+			position: relative;
+			padding: 1.5rem;
+			border: 2px dashed #dee2e6;
+			border-radius: 8px;
+			text-align: center;
+			transition: all 0.3s ease;
+		}
+
+		.file-upload:hover {
+			border-color: #4CAF50;
+			background-color: rgba(76, 175, 80, 0.03);
+		}
+
+		.file-upload input[type="file"] {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+			cursor: pointer;
+			left: 0;
+			top: 0;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+			border: none;
+			padding: 0.75rem 2rem;
+			border-radius: 8px;
+			font-weight: 600;
+			transition: all 0.3s ease;
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+		}
+
+		.btn-outline-secondary {
+			border: 2px solid #dee2e6;
+			color: #6c757d;
+			transition: all 0.3s ease;
+		}
+
+		.btn-outline-secondary:hover {
+			border-color: #4CAF50;
+			color: #4CAF50;
+		}
+
+		@media(max-width: 768px) {
+			.form-card-body {
+				padding: 1.5rem;
+			}
+
+			.creation-header {
+				padding: 2rem 0;
+			}
+		}
+	</style>
+{% endblock %}
+
 {% block body %}
-	<div class="container mt-5">
-		<h1 class="mb-4">Créer une nouvelle discussion</h1>
+	<div class="creation-header">
+		<div class="container">
+			<h1 class="display-5 fw-bold text-dark mb-0">Créer une nouvelle discussion</h1>
+		</div>
+	</div>
 
-		<div class="card">
-			<div class="card-body">
+	<div class="container">
+		<div class="form-card">
+			<div class="form-card-body">
 				{{ form_start(form) }}
-				{{ form_row(form.title) }}
-				{{ form_row(form.category) }}
-				{{ form_row(form.content, {
-                    attr: {
-                        'data-controller': 'textarea-autogrow'
-                    }
-                }) }}
-				{{ form_row(form.imageFile) }}
+				<div class="mb-4">
+					{{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.title, {'attr': {'class': 'form-control-lg'}}) }}
+				</div>
 
-				<div class="mt-4">
-					<button type="submit" class="btn btn-primary">
-						<i class="bi bi-save"></i>
+				<div class="mb-4">
+					{{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.category, {'attr': {'class': 'form-select form-select-lg'}}) }}
+				</div>
+
+				<div class="mb-4">
+					{{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.content, {
+                        'attr': {
+                            'class': 'form-control',
+                            'data-controller': 'textarea-autogrow',
+                            'rows': '4'
+                        }
+                    }) }}
+				</div>
+
+				<div class="mb-4">
+					<div class="file-upload position-relative">
+						<div class="d-flex flex-column align-items-center">
+							<i class="bi bi-cloud-arrow-up fs-1 text-muted mb-2"></i>
+							<div class="text-muted mb-2">Glissez votre image ici ou cliquez pour télécharger</div>
+							<span class="text-muted small">Formats supportés : JPG, PNG (Max 2MB)</span>
+						</div>
+						{{ form_widget(form.imageFile) }}
+					</div>
+				</div>
+
+				<div class="d-flex gap-3 mt-5">
+					<button type="submit" class="btn btn-primary flex-grow-1">
+						<i class="bi bi-send-check me-2"></i>
 						Publier la discussion
 					</button>
 					<a href="{{ path('app_forum_index') }}" class="btn btn-outline-secondary">

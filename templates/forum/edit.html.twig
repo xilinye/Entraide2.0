@@ -3,49 +3,175 @@
 {% block title %}Modifier la discussion
 {% endblock %}
 
-{% block body %}
-	<div class="container mt-5">
-		<h1 class="mb-4">Modifier la discussion</h1>
+{% block stylesheets %}
+	<style>
+		.edit-header {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+			padding: 3rem 0;
+			margin-bottom: 2rem;
+			border-bottom: 3px solid #4CAF50;
+		}
 
-		<div class="card">
-			<div class="card-body">
+		.edit-card {
+			border: none;
+			border-radius: 15px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+			overflow: hidden;
+		}
+
+		.form-label {
+			font-weight: 600;
+			color: #2c3e50;
+			margin-bottom: 0.5rem;
+		}
+
+		.form-control {
+			border: 2px solid #e9ecef;
+			border-radius: 8px;
+			padding: 0.75rem 1rem;
+			transition: all 0.3s ease;
+		}
+
+		.form-control:focus {
+			border-color: #4CAF50;
+			box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+		}
+
+		textarea.form-control {
+			min-height: 150px;
+			resize: vertical;
+		}
+
+		.current-image {
+			position: relative;
+			margin-bottom: 1.5rem;
+		}
+
+		.img-thumbnail {
+			border: 2px solid #dee2e6;
+			border-radius: 12px;
+			padding: 0.25rem;
+			transition: all 0.3s ease;
+		}
+
+		.img-thumbnail:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+		}
+
+		.form-check {
+			margin-top: 1rem;
+			padding: 0.75rem;
+			background: #fff8f8;
+			border-radius: 8px;
+			border: 1px solid #ffebeb;
+		}
+
+		.form-check-label {
+			color: #dc3545 !important;
+			font-weight: 500;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+			border: none;
+			padding: 0.75rem 2rem;
+			border-radius: 8px;
+			font-weight: 600;
+			transition: all 0.3s ease;
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+		}
+
+		.btn-outline-secondary {
+			border: 2px solid #dee2e6;
+			color: #6c757d;
+			transition: all 0.3s ease;
+		}
+
+		@media(max-width: 768px) {
+			.edit-header {
+				padding: 2rem 0;
+			}
+
+			.edit-card {
+				border-radius: 0;
+				box-shadow: none;
+			}
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div class="edit-header">
+		<div class="container">
+			<h1 class="display-5 fw-bold text-dark mb-0">Modifier la discussion</h1>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="edit-card">
+			<div class="card-body p-4">
 				{{ form_start(form) }}
-				{{ form_row(form.title) }}
-				{{ form_row(form.category) }}
-				{{ form_row(form.content, {
-                    attr: {
-                        'data-controller': 'textarea-autogrow'
-                    }
-                }) }}
-				{# Section image existante #}
+				<div class="mb-4">
+					{{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg'}}) }}
+				</div>
+
+				<div class="mb-4">
+					{{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.category, {'attr': {'class': 'form-select form-select-lg'}}) }}
+				</div>
+
+				<div class="mb-4">
+					{{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.content, {
+                        'attr': {
+                            'class': 'form-control',
+                            'data-controller': 'textarea-autogrow',
+                            'rows': '5'
+                        }
+                    }) }}
+				</div>
+
 				<div class="mb-4">
 					{% if forum.imageName %}
 						<div class="current-image">
-							<img src="{{ asset('uploads/forum/' ~ forum.imageName) }}" class="img-thumbnail mb-2" style="max-width: 300px;">
+							<img src="{{ asset('uploads/forum/' ~ forum.imageName) }}" class="img-thumbnail" style="max-width: 300px;" alt="Image actuelle">
 
-							<div class="form-check">
+							<div class="form-check mt-3">
 								<input type="checkbox" class="form-check-input" id="remove_image" name="remove_image">
-								<label class="form-check-label text-danger" for="remove_image">
+								<label class="form-check-label" for="remove_image">
+									<i class="bi bi-trash me-2"></i>
 									Supprimer cette image
 								</label>
 							</div>
 						</div>
 					{% endif %}
-					<small class="form-text text-muted">
-						Formats acceptés: JPEG, PNG (max 5Mo)
-					</small>
-					{{ form_row(form.imageFile) }}
-					<div class="mt-4">
-						<button type="submit" class="btn btn-primary">
-							<i class="bi bi-save"></i>
-							Enregistrer les modifications
-						</button>
-						<a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-outline-secondary">
-							Annuler
-						</a>
+
+					<div class="file-upload-card mt-3 p-4 border rounded-2">
+						<label class="form-label">Nouvelle image</label>
+						<small class="form-text text-muted d-block mb-2">
+							Formats acceptés : JPEG, PNG (max 5Mo)
+						</small>
+						{{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
 					</div>
-					{{ form_end(form) }}
 				</div>
+
+				<div class="d-flex gap-3 mt-5">
+					<button type="submit" class="btn btn-primary flex-grow-1">
+						<i class="bi bi-save me-2"></i>
+						Enregistrer les modifications
+					</button>
+					<a href="{{ path('app_forum_show', {'id': forum.id}) }}" class="btn btn-outline-secondary">
+						Annuler
+					</a>
+				</div>
+				{{ form_end(form) }}
 			</div>
 		</div>
-	{% endblock %}
+	</div>
+{% endblock %}

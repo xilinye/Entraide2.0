@@ -3,43 +3,163 @@
 {% block title %}Modifier la réponse
 {% endblock %}
 
+{% block stylesheets %}
+	<style>
+		.edit-response-header {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+			padding: 2rem 0;
+			margin-bottom: 2rem;
+			border-bottom: 3px solid #4CAF50;
+		}
+
+		.edit-form-container {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 2rem;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+		}
+
+		.content-editor {
+			border: 2px solid #e9ecef;
+			border-radius: 8px;
+			padding: 1rem;
+			min-height: 150px;
+			resize: vertical;
+			transition: all 0.3s ease;
+		}
+
+		.content-editor:focus {
+			border-color: #4CAF50;
+			box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+		}
+
+		.current-image-section {
+			border: 2px dashed #dee2e6;
+			border-radius: 12px;
+			padding: 1.5rem;
+			margin: 1.5rem 0;
+			position: relative;
+		}
+
+		.image-preview {
+			max-width: 100%;
+			height: auto;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			transition: transform 0.3s ease;
+		}
+
+		.image-preview:hover {
+			transform: translateY(-2px);
+		}
+
+		.delete-checkbox {
+			background: #fff3f3;
+			border: 1px solid #ffdfdf;
+			border-radius: 8px;
+			padding: 1rem;
+			margin-top: 1rem;
+		}
+
+		.file-upload-area {
+			border: 2px dashed #4CAF50;
+			background: rgba(76, 175, 80, 0.05);
+			border-radius: 12px;
+			padding: 2rem;
+			text-align: center;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.file-upload-area:hover {
+			background: rgba(76, 175, 80, 0.1);
+		}
+
+		.btn-save {
+			background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+			border: none;
+			padding: 0.75rem 2rem;
+			border-radius: 8px;
+			font-weight: 600;
+			transition: all 0.3s ease;
+		}
+
+		.btn-save:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+		}
+
+		@media(max-width: 768px) {
+			.edit-form-container {
+				padding: 1.5rem;
+				border-radius: 0;
+				box-shadow: none;
+			}
+		}
+	</style>
+{% endblock %}
+
 {% block body %}
-	<div class="container mt-5">
-		<h2 class="mb-4">Modifier la réponse</h2>
+	<div class="edit-response-header">
+		<div class="container">
+			<h2 class="display-6 fw-bold text-dark mb-0">Modifier la réponse</h2>
+		</div>
+	</div>
 
-		{{ form_start(form) }}
-		{{ form_widget(form.content) }}
+	<div class="container">
+		<div class="edit-form-container">
+			{{ form_start(form) }}
+			<div class="mb-4">
+				{{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold mb-3'}}) }}
+				{{ form_widget(form.content, {'attr': {'class': 'content-editor'}}) }}
+			</div>
 
-		<div class="mb-3">
-			<label class="form-label">Image actuelle :</label>
-			{% if response.imageName %}
-				<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" class="img-thumbnail mb-2" style="max-height: 200px;">
-				<div class="form-check">
-					<input type="checkbox" class="form-check-input" id="removeImage" name="removeImage">
-					<label class="form-check-label text-danger" for="removeImage">
-						Supprimer l'image
-					</label>
+			<div class="mb-4">
+				{% if response.imageName %}
+					<div class="current-image-section">
+						<label classform-label fw-bold mb-3">Image actuelle :</label>
+						<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" class="image-preview mb-3" alt="Image actuelle de la réponse">
+
+						<div class="delete-checkbox">
+							<div class="form-check">
+								<input type="checkbox" class="form-check-input" id="removeImage" name="removeImage">
+								<label class="form-check-label text-danger fw-medium" for="removeImage">
+									<i class="bi bi-trash me-2"></i>
+									Supprimer cette image
+								</label>
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<p class="text-muted fst-italic">Aucune image associée</p>
+				{% endif %}
+
+				<div class="file-upload-area mt-4">
+					<div class="mb-3">
+						<i class="bi bi-image text-success fs-1"></i>
+					</div>
+					<div class="mb-2 text-muted">
+						Glissez votre image ici ou cliquez pour télécharger
+					</div>
+					<small class="text-muted">
+						Formats acceptés : JPEG, PNG (max 5Mo)
+					</small>
+					{{ form_widget(form.imageFile, {'attr': {'class': 'd-none'}}) }}
 				</div>
-			{% else %}
-				<p>Aucune image</p>
-			{% endif %}
+			</div>
 
-			{{ form_label(form.imageFile) }}
-			{{ form_widget(form.imageFile) }}
-			<small class="form-text text-muted">
-				Formats acceptés: JPEG, PNG (max 5Mo)
-			</small>
+			<div class="d-flex gap-3 mt-5">
+				<button type="submit" class="btn btn-save">
+					<i class="bi bi-check-circle me-2"></i>
+					Enregistrer les modifications
+				</button>
+				<a href="{{ path('app_forum_show', {'id': response.forum.id}) }}" class="btn btn-outline-secondary px-4">
+					Annuler
+				</a>
+			</div>
+			{{ form_end(form) }}
 		</div>
-
-		<div class="d-flex gap-2">
-			<button type="submit" class="btn btn-primary">
-				<i class="bi bi-check-circle"></i>
-				Enregistrer
-			</button>
-			<a href="{{ path('app_forum_show', {'id': response.forum.id}) }}" class="btn btn-outline-secondary">
-				Annuler
-			</a>
-		</div>
-		{{ form_end(form) }}
 	</div>
 {% endblock %}

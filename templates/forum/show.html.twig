@@ -6,67 +6,252 @@
 
 {% block stylesheets %}
 	<style>
-		.response-rating {
-			position: relative;
-			padding-left: 100px;
+		.forum-header {
+			background: linear-gradient(145deg, #2E7D32, #43A047);
+			color: white;
+			border-radius: 15px 15px 0 0;
+			padding: 2rem;
 		}
+
+		.forum-header h1 {
+			font-weight: 700;
+			letter-spacing: -0.5px;
+			margin-bottom: 1.5rem;
+		}
+
+		.meta {
+			font-size: 0.9rem;
+			opacity: 0.9;
+		}
+
+		.forum-content {
+			font-size: 1.1rem;
+			line-height: 1.8;
+			border-left: 4px solid #4CAF50;
+			padding-left: 1.5rem;
+			margin: 2rem 0;
+		}
+
+		.response-card {
+			transition: all 0.3s ease;
+			border: 1px solid rgba(76, 175, 80, 0.15);
+			border-radius: 12px;
+			margin-bottom: 1.5rem;
+		}
+
+		.response-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 5px 25px rgba(76, 175, 80, 0.1);
+		}
+
+		.author-info {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.author-avatar {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background: #4CAF50;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: 500;
+		}
+
 		.rating-badge {
-			position: absolute;
-			left: 0;
-			top: 0;
-			width: 80px;
-			text-align: center;
-			background: rgba(255, 215, 0, 0.1);
-			border: 1px solid #ffd700;
-			border-radius: 4px;
-			padding: 5px;
+			background: #fff3cd;
+			color: #856404;
+			padding: 0.35em 0.65em;
+			border-radius: 20px;
+			font-weight: 500;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
 		}
-		.top-response {
-			border: 2px solid #ffd700;
-			background: #fffdf6;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		}
+
 		.star-rating {
 			direction: rtl;
-			display: inline-block;
+			display: inline-flex;
+			gap: 0.25rem;
 		}
-		.star-rating input[type="radio"] {
-			display: none;
-		}
+
 		.star-rating label {
-			color: #ccc;
+			color: #e4e5e9;
 			cursor: pointer;
-			font-size: 1.2em;
+			transition: all 0.2s ease;
 		}
+
 		.star-rating label:hover,
 		.star-rating label:hover ~ label,
 		.star-rating input[type="radio"]:checked ~ label {
-			color: #ffd700;
+			color: #ffc107;
 		}
-		.rating-badge {
+
+		.response-form {
 			background: #f8f9fa;
-			border: 1px solid #dee2e6;
-			position: static;
-			display: inline-block;
-			margin-right: 1rem;
+			border-radius: 12px;
+			border: 2px dashed #4CAF50;
+			padding: 2rem;
 		}
-		.star-rating label {
-			font-size: 1.5rem;
-			padding: 0 2px;
+
+		.response-form textarea {
+			min-height: 150px;
+			resize: none;
+			border-radius: 8px;
 		}
-		.collapse {
-			transition: all 0.3s ease;
+
+		.img-preview {
+			max-width: 300px;
+			border-radius: 8px;
+			margin-top: 1rem;
+			border: 2px solid #4CAF50;
+		}
+
+		.btn {
+			border-radius: 8px;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-weight: 500;
+			letter-spacing: 0.025em;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.btn-primary {
+			background: linear-gradient(145deg, #2E7D32, #43A047);
+			border: none;
+			padding: 0.75rem 1.5rem;
+			position: relative;
+		}
+
+		.btn-primary:hover {
+			background: linear-gradient(145deg, #43A047, #2E7D32);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+		}
+
+		.btn-success {
+			background: linear-gradient(145deg, #388E3C, #4CAF50);
+			border: none;
+			padding: 0.5rem 1.25rem;
+		}
+
+		.btn-success:hover {
+			background: linear-gradient(145deg, #4CAF50, #388E3C);
+			transform: translateY(-2px);
+		}
+
+		.btn-outline-primary {
+			border: 2px solid #4CAF50;
+			color: #2E7D32;
+		}
+
+		.btn-outline-primary:hover {
+			background: #4CAF50;
+			color: white !important;
+		}
+
+		.btn-outline-danger {
+			border: 2px solid #dc3545;
+		}
+
+		.btn-outline-danger:hover {
+			background: #dc3545;
+			color: white !important;
+		}
+
+		.btn i {
+			margin-right: 0.5rem;
+		}
+
+		/* Animation au clic */
+		.btn:active {
+			transform: translateY(1px) scale(0.98);
+		}
+
+		/* Bouton Détails*/
+		.collapse-toggle {
+			background: linear-gradient(145deg, #81C784, #66BB6A);
+			color: white !important;
+			border: 2px solid #4CAF50;
+			padding: 0.4rem 1rem;
+		}
+
+		.collapse-toggle:hover {
+			background: linear-gradient(145deg, #66BB6A, #81C784);
+		}
+
+		.collapse-toggle::after {
+			color: rgba(255, 255, 255, 0.8);
+			right: 10px;
+		}
+
+		.collapse-toggle[aria-expanded="true"]::after {
+			transform: translateY(-50%) rotate(180deg);
+		}
+
+		.rating-details {
+			background: rgba(255, 241, 184, 0.15);
+			border-radius: 8px;
+			padding: 1rem;
+			margin-top: 1rem;
+		}
+
+		.top-response {
+			border: 2px solid #ffd700;
+			background: linear-gradient(45deg, #fffdf6, #fff8e1);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.top-response::before {
+			content: "🌟";
+			position: absolute;
+			right: -20px;
+			top: -20px;
+			font-size: 4rem;
+			opacity: 0.1;
+			transform: rotate(20deg);
+		}
+
+		@media(max-width: 768px) {
+			.forum-header {
+				padding: 1.5rem;
+			}
+
+			.forum-content {
+				font-size: 1rem;
+			}
+
+			.response-form {
+				padding: 1.5rem;
+			}
 		}
 	</style>
 {% endblock %}
 
 {% block body %}
 	<div class="container mt-4">
-		<div class="card">
-			<div class="card-header">
-				<h1>{{ forum.title }}</h1>
-
-
+		<div class="forum-header">
+			<div class="d-flex justify-content-between align-items-start">
+				<div>
+					<h1 class="display-5">{{ forum.title }}</h1>
+					<div class="meta">
+						<span class="author-info">
+							<span class="author-avatar">{{ forum.author.pseudo|first|upper }}</span>
+							{{ forum.author.pseudo }}
+						</span>
+						•
+						<span class="publish-date">{{ forum.createdAt|date('d/m/Y H:i') }}</span>
+						•
+						<span class="badge bg-{{ forum.isOpen ? 'success' : 'danger' }} rounded-pill">
+							{{ forum.isOpen ? 'Ouvert' : 'Fermé' }}
+						</span>
+					</div>
+				</div>
 				<div class="btn-group">
 					{% if is_granted('ROLE_ADMIN') or forum.author == app.user %}
 						{# Bouton Éditer #}
@@ -96,165 +281,171 @@
 						</form>
 					{% endif %}
 				</div>
-
-				<div class="meta text-muted">
-					Par
-					{{ forum.author.pseudo }}
-					•
-					{{ forum.createdAt|date('d/m/Y H:i') }}
-					{% if forum.isOpen %}
-						<span class="badge bg-success">Ouvert</span>
-					{% else %}
-						<span class="badge bg-danger">Fermé</span>
-					{% endif %}
-				</div>
 			</div>
+		</div>
 
+		<div class="card shadow-sm">
 			<div class="card-body">
-				<div class="forum-content mb-5">
+				<div class="forum-content">
 					{{ forum.content|nl2br }}
 				</div>
+
 				{% if forum.imageName %}
-					<img src="{{ asset('uploads/forum/' ~ forum.imageName) }}" alt="Image pour {{ forum.title }}" class="img-fluid mb-4">
+					<div class="mt-4">
+						<img src="{{ asset('uploads/forum/' ~ forum.imageName) }}" class="img-fluid rounded-3 border" alt="Illustration de la discussion">
+					</div>
 				{% endif %}
-				{% if topResponses|length > 0 %}
-					<div class="top-responses mb-5">
-						<h4>🌟 Réponses les mieux notées</h4>
-						{% for topResponse in topResponses %}
-							{% set response = topResponse[0] %}
-							{% set averageRating = topResponse.average %}
-							<div class="card top-response mb-3">
+
+				<div class="responses mt-5">
+					<h4 class="mb-4 d-flex align-items-center gap-2">
+						<i class="bi bi-chat-dots"></i>
+						{{ forum.responses|length }}
+						réponses
+					</h4>
+
+					{% if topResponses|length > 0 %}
+						<div class="top-responses mb-5">
+							<h5 class="text-warning mb-4">💎 Réponses les mieux notées</h5>
+							{% for topResponse in topResponses %}
+								{% set response = topResponse[0] %}
+								{% set averageRating = topResponse.average %}
+								<div class="card top-response mb-3">
+									<div class="card-body">
+										<div class="d-flex justify-content-between align-items-center mb-2">
+											<div class="rating-badge">
+												★
+												{{ averageRating|number_format(1) }}
+											</div>
+											<strong>{{ response.author.pseudo }}</strong>
+											<small class="text-muted">
+												{{ response.createdAt|date('d/m/Y H:i') }}
+											</small>
+										</div>
+										<p class="mb-0">{{ response.content|nl2br }}</p>
+										{% if response.imageName %}
+											<div class="mt-3">
+												<img src="{{ asset('uploads/forum/' ~ response.imageName) }}" alt="Image jointe" class="img-fluid rounded" style="max-height: 300px;">
+											</div>
+										{% endif %}
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
+
+					<div class="responses">
+						<h4>{{ forum.responses|length }}
+							réponses</h4>
+
+						{% for response in forum.responses %}
+							<div class="card mb-4">
 								<div class="card-body">
 									<div class="d-flex justify-content-between align-items-center mb-2">
+										{% if is_granted('ROLE_ADMIN') or response.author == app.user %}
+											<div class="btn-group ms-2">
+												<a href="{{ path('app_forum_response_edit', {'id': response.id}) }}" class="btn btn-sm btn-outline-primary">
+													<i class="bi bi-pencil-square"></i>
+												</a>
+
+												<form method="post" action="{{ path('app_forum_response_delete', {'id': response.id}) }}" onsubmit="return confirm('Supprimer cette réponse ?');">
+													<input type="hidden" name="_token" value="{{ csrf_token('delete_response' ~ response.id) }}">
+													<button class="btn btn-sm btn-outline-danger">
+														<i class="bi bi-trash"></i>
+													</button>
+												</form>
+											</div>
+										{% endif %}
 										<div class="rating-badge">
 											★
-											{{ averageRating|number_format(1) }}
+											{{ averages[response.id]|number_format(1) }}
 										</div>
 										<strong>{{ response.author.pseudo }}</strong>
 										<small class="text-muted">
 											{{ response.createdAt|date('d/m/Y H:i') }}
 										</small>
 									</div>
-									<p class="mb-0">{{ response.content|nl2br }}</p>
+
+									<p>{{ response.content|nl2br }}</p>
 									{% if response.imageName %}
-										<div class="mt-3">
-											<img src="{{ asset('uploads/forum/' ~ response.imageName) }}" alt="Image jointe" class="img-fluid rounded" style="max-height: 300px;">
+										<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" class="img-preview" alt="Contenu visuel de la réponse">
+									{% endif %}
+									<button class="btn btn-success mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#ratings-{{ response.id }}">
+										<i class="bi bi-graph-up"></i>
+										Détails
+									</button>
+
+									<div class="collapse" id="ratings-{{ response.id }}">
+										<div class="card card-body">
+											<h6>Détail des notes</h6>
+											{% if response.ratings|length > 0 %}
+												{% for rating in response.ratings %}
+													<div class="mb-2">
+														<div>
+															<strong>{{ rating.rater.pseudo }}</strong>
+															a donné ★{{ rating.score }}
+															{% if rating.comment %}
+																:
+																<em>"{{ rating.comment }}"</em>
+															{% endif %}
+														</div>
+													</div>
+												{% endfor %}
+											{% else %}
+												<div class="text-muted">Aucune note pour cette réponse</div>
+											{% endif %}
+										</div>
+									</div>
+
+									{% if app.user and app.user != response.author and forum.isOpen %}
+										<div class="rating-form mt-3">
+											{{ form_start(responseForms[response.id]) }}
+											<div class="star-rating">
+												{% for i in range(5, 1, -1) %}
+													<input type="radio" id="response{{ response.id }}_star{{ i }}" name="{{ responseForms[response.id].score.vars.full_name }}" value="{{ i }}" {{ responseForms[response.id].score.vars.value == i ? 'checked' : '' }}/>
+													<label for="response{{ response.id }}_star{{ i }}">★</label>
+												{% endfor %}
+											</div>
+											{{ form_widget(responseForms[response.id].comment) }}
+											<button class="btn btn-sm btn-outline-primary mt-2">
+												{{ responseForms[response.id].vars.data.id ? 'Modifier' : 'Noter' }}
+											</button>
+											{{ form_end(responseForms[response.id]) }}
 										</div>
 									{% endif %}
 								</div>
 							</div>
 						{% endfor %}
 					</div>
-				{% endif %}
 
-				<div class="responses">
-					<h4>{{ forum.responses|length }}
-						réponses</h4>
-
-					{% for response in forum.responses %}
-						<div class="card mb-4">
-							<div class="card-body">
-								<div class="d-flex justify-content-between align-items-center mb-2">
-									{% if is_granted('ROLE_ADMIN') or response.author == app.user %}
-										<div class="btn-group ms-2">
-											<a href="{{ path('app_forum_response_edit', {'id': response.id}) }}" class="btn btn-sm btn-outline-primary">
-												<i class="bi bi-pencil-square"></i>
-											</a>
-
-											<form method="post" action="{{ path('app_forum_response_delete', {'id': response.id}) }}" onsubmit="return confirm('Supprimer cette réponse ?');">
-												<input type="hidden" name="_token" value="{{ csrf_token('delete_response' ~ response.id) }}">
-												<button class="btn btn-sm btn-outline-danger">
-													<i class="bi bi-trash"></i>
-												</button>
-											</form>
-										</div>
-									{% endif %}
-									<div class="rating-badge">
-										★
-										{{ averages[response.id]|number_format(1) }}
-									</div>
-									<strong>{{ response.author.pseudo }}</strong>
-									<small class="text-muted">
-										{{ response.createdAt|date('d/m/Y H:i') }}
-									</small>
-								</div>
-
-								<p>{{ response.content|nl2br }}</p>
-								{% if response.imageName %}
-									<div class="mt-3">
-										<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" alt="Image jointe" class="img-fluid rounded" style="max-height: 300px;">
-									</div>
-								{% endif %}
-								<button class="btn btn-sm btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#ratings-{{ response.id }}">
-									Détails
-								</button>
-
-								<div class="collapse" id="ratings-{{ response.id }}">
-									<div class="card card-body">
-										<h6>Détail des notes</h6>
-										{% if response.ratings|length > 0 %}
-											{% for rating in response.ratings %}
-												<div class="mb-2">
-													<div>
-														<strong>{{ rating.rater.pseudo }}</strong>
-														a donné ★{{ rating.score }}
-														{% if rating.comment %}
-															:
-															<em>"{{ rating.comment }}"</em>
-														{% endif %}
-													</div>
-												</div>
-											{% endfor %}
-										{% else %}
-											<div class="text-muted">Aucune note pour cette réponse</div>
-										{% endif %}
-									</div>
-								</div>
-
-								{% if app.user and app.user != response.author and forum.isOpen %}
-									<div class="rating-form mt-3">
-										{{ form_start(responseForms[response.id]) }}
-										<div class="star-rating">
-											{% for i in range(5, 1, -1) %}
-												<input type="radio" id="response{{ response.id }}_star{{ i }}" name="{{ responseForms[response.id].score.vars.full_name }}" value="{{ i }}" {{ responseForms[response.id].score.vars.value == i ? 'checked' : '' }}/>
-												<label for="response{{ response.id }}_star{{ i }}">★</label>
-											{% endfor %}
-										</div>
-										{{ form_widget(responseForms[response.id].comment) }}
-										<button class="btn btn-sm btn-outline-primary mt-2">
-											{{ responseForms[response.id].vars.data.id ? 'Modifier' : 'Noter' }}
-										</button>
-										{{ form_end(responseForms[response.id]) }}
-									</div>
-								{% endif %}
+					{% if forum.isOpen %}
+						<div class="response-form mt-5">
+							<h5 class="mb-4">✍️ Ajouter votre réponse</h5>
+							{{ form_start(responseForm) }}
+							<div class="mb-4">
+								{{ form_widget(responseForm.content, {'attr': {'class': 'form-control', 'placeholder': 'Votre réponse détaillée...'}}) }}
 							</div>
-						</div>
-					{% endfor %}
-				</div>
 
-				{% if forum.isOpen %}
-					<div class="add-response mt-5">
-						<h4>Ajouter une réponse</h4>
-						{{ form_start(responseForm) }}
-						{{ form_widget(responseForm.content) }}
-						<div class="mt-3">
-							{{ form_widget(responseForm.imageFile) }}
-							<small class="text-muted">Formats acceptés : JPEG, PNG (max 5Mo)</small>
+							<div class="mb-4">
+								<label class="form-label">
+									<i class="bi bi-image"></i>
+									Ajouter une image
+								</label>
+								{{ form_widget(responseForm.imageFile) }}
+							</div>
+
+							<button class="btn btn-primary px-5">
+								<i class="bi bi-send-check"></i>
+								Publier
+							</button>
+							{{ form_end(responseForm) }}
 						</div>
-						<button class="btn btn-primary mt-3">Publier</button>
-						{{ form_end(responseForm) }}
-					</div>
-				{% else %}
-					<div class="alert alert-warning mt-4">
-						Cette discussion est fermée aux nouvelles réponses
-					</div>
-				{% endif %}
+					{% endif %}
+				</div>
 			</div>
 		</div>
-	</div>
-	<div class="mt-4">
-		<a href="{{ path('app_forum_index') }}" class="btn btn-secondary">
-			Retour
-		</a>
-	</div>
-{% endblock %}
+		<div class="mt-4">
+			<a href="{{ path('app_forum_index') }}" class="btn btn-secondary">
+				Retour
+			</a>
+		</div>
+	{% endblock %}
