@@ -43,6 +43,11 @@ class Message
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageName = null;
 
+    #[Assert\File(
+        maxSize: '5M',
+        mimeTypes: ['image/jpeg', 'image/png'],
+        mimeTypesMessage: 'Veuillez télécharger une image JPEG ou PNG (max 5Mo).'
+    )]
     private $imageFile;
 
     public function __construct()

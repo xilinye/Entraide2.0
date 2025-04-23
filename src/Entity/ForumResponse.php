@@ -6,6 +6,7 @@ use App\Repository\ForumResponseRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumResponseRepository::class)]
 class ForumResponse
@@ -35,6 +36,11 @@ class ForumResponse
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageName = null;
 
+    #[Assert\File(
+        maxSize: "5M",
+        mimeTypes: ["image/jpeg", "image/png"],
+        mimeTypesMessage: "Veuillez télécharger une image JPEG ou PNG valide"
+    )]
     private $imageFile;
 
     public function __construct()

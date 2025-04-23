@@ -152,6 +152,11 @@
 					</div>
 					<div class="message-content">
 						{{ message.content|nl2br }}
+						{% if message.imageName %}
+							<div class="message-image mt-2">
+								<img src="{{ asset('uploads/message/' ~ message.imageName) }}" alt="Image du message" class="img-fluid rounded">
+							</div>
+						{% endif %}
 					</div>
 				</div>
 			{% endfor %}
@@ -178,6 +183,7 @@
                     'rows': 2
                 }
             }) }}
+					{{ form_row(form.imageFile) }}
 					<button type="submit" class="btn send-btn">
 						<i class="bi bi-send me-2"></i>Envoyer
 					</button>

@@ -5,7 +5,7 @@ namespace App\Form;
 use App\Entity\ForumResponse;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\{TextareaType, FileType};
 
 class ForumResponseType extends AbstractType
 {
@@ -17,6 +17,14 @@ class ForumResponseType extends AbstractType
                 'attr' => [
                     'rows' => 4,
                     'placeholder' => 'Votre réponse...'
+                ]
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Ajouter une image',
+                'required' => false,
+                'mapped' => true,
+                'attr' => [
+                    'accept' => 'image/jpeg,image/png'
                 ]
             ]);
     }

@@ -5,7 +5,7 @@ namespace App\Form;
 use App\Entity\Message;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{TextType, TextareaType, FileType};
 
 class MessageType extends AbstractType
 {
@@ -17,11 +17,16 @@ class MessageType extends AbstractType
                 'attr' => ['placeholder' => 'Entrez un titre clair']
             ]);
         }
-
-        $builder->add('content', TextareaType::class, [
-            'label' => 'Contenu',
-            'attr' => ['rows' => 5]
-        ]);
+        $builder
+            ->add('content', TextareaType::class, [
+                'label' => 'Contenu',
+                'attr' => ['rows' => 5]
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Image (JPEG/PNG)',
+                'required' => false,
+                'mapped' => true,
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

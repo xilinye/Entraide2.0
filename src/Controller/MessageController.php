@@ -53,6 +53,17 @@ class MessageController extends AbstractController
                 ->setReceiver($receiver)
                 ->setIsRead(false);
 
+            // Gestion de l'image
+            $imageFile = $message->getImageFile();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('message_images_directory'),
+                    $newFilename
+                );
+                $message->setImageName($newFilename);
+                $message->setImageFile(null);
+            }
             $em->persist($message);
             $em->flush();
 
@@ -126,6 +137,18 @@ class MessageController extends AbstractController
                 ->setSender($user)
                 ->setReceiver($otherUser)
                 ->setIsRead(false);
+
+            // Gestion de l'image
+            $imageFile = $message->getImageFile();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('message_images_directory'),
+                    $newFilename
+                );
+                $message->setImageName($newFilename);
+                $message->setImageFile(null);
+            }
 
             $em->persist($message);
             $em->flush();

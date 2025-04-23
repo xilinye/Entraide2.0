@@ -147,6 +147,21 @@ class ForumController extends AbstractController
             $response->setForum($forum)
                 ->setAuthor($this->getUser());
 
+            // Gestion de l'image
+            $imageFile = $response->getImageFile();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('forum_images_directory'),
+                    $newFilename
+                );
+                $response->setImageName($newFilename);
+                $response->setImageFile(null); // Important pour éviter les erreurs
+            }
+
+            $response->setForum($forum)
+                ->setAuthor($this->getUser());
+
             $this->em->persist($response);
             $this->em->flush();
 
