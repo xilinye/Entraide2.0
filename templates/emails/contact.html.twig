@@ -1,10 +1,24 @@
 {% extends 'emails/base_email.html.twig' %}
 
 {% block content %}
-<h3>Nouveau message de {{ sender_name }}</h3>
-<p>Email : {{ sender_email }}</p>
+	<div style="margin-bottom: 30px;">
+		<h1 style="color: var(--primary-color); margin-bottom: 5px;">
+			Nouveau message de
+			<span style="color: var(--text-color);">{{ sender_name }}</span>
+		</h1>
+		<p style="color: var(--secondary-color); margin: 0; font-size: 0.95em;">
+			{{ sender_email }}
+		</p>
+	</div>
 
-<div class="message-content">
-    {{ message|nl2br }}
-</div>
+	<div class="message-box" style="margin-bottom: 30px;">
+		<div style="font-size: 16px; line-height: 1.7;">
+			{{ message|nl2br }}
+		</div>
+	</div>
+
+	<p class="text-muted" style="margin-top: 25px;">
+		Vous recevez cette notification car vous avez reçu un message via Entr'Aide 2.0.<br>
+		Merci de ne pas répondre directement à cet email.
+	</p>
 {% endblock %}

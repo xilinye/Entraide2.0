@@ -1,32 +1,23 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<title>Nouveau message</title>
-	</head>
-	<body>
-		<h1 style="color: #4CAF50;">Nouveau message de
-			{{ sender.pseudo }}</h1>
+{% extends 'emails/base_email.html.twig' %}
 
-		<p>Bonjour
-			{{ message.receiver.pseudo }},</p>
+{% block content %}
+	<h3>Nouveau message de
+		{{ sender.pseudo }}</h3>
 
-		<p>Vous avez reçu un nouveau message de
-			{{ sender.pseudo }}
-			sur Entr'Aide 2.0.</p>
+	<p>Bonjour
+		{{ message.receiver.pseudo }},</p>
 
-		<div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-			<p style="margin: 0;">{{ message.content|nl2br }}</p>
-		</div>
+	<p>Vous avez reçu un nouveau message sur Entr'Aide 2.0 :</p>
 
-		<p>
-			<a href="{{ url('app_message_conversation', {id: sender.id}) }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-				Voir la conversation
-			</a>
-		</p>
+	<div class="message-box">
+		{{ message.content|nl2br }}
+	</div>
 
-		<p style="margin-top: 20px; color: #6c757d;">
-			Vous recevez cet email parce que vous avez reçu un message sur Entr'Aide 2.0.
-		</p>
-	</body>
-</html>
+	<div style="text-align: center; margin: 25px 0;">
+		<a href="{{ url('app_message_conversation', {id: sender.id}) }}" class="btn">
+			Voir la conversation
+		</a>
+	</div>
+
+	<p class="text-muted">Vous recevez cette notification car vous avez reçu un message sur notre plateforme.</p>
+{% endblock %}
