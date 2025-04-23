@@ -31,7 +31,7 @@ class ForumResponseType extends AbstractType
                         'mimeTypesMessage' => 'Format d\'image invalide'
                     ])
                 ]
-            ]);
+            ]);;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

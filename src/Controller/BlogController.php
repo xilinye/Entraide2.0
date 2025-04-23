@@ -142,6 +142,16 @@ class BlogController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de la suppression d'image
+            if ($request->request->get('remove_image')) {
+                if ($originalImage) {
+                    $imagePath = $this->getParameter('blog_images_directory') . '/' . $originalImage;
+                    if (file_exists($imagePath)) {
+                        unlink($imagePath);
+                    }
+                    $post->setImageName(null);
+                }
+            }
             // Gestion de l'image
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {

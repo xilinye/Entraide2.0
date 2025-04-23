@@ -20,19 +20,16 @@ class EventType extends AbstractType
                 'label' => 'Description'
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Image (JPEG ou PNG)',
+                'label' => 'Nouvelle image',
                 'required' => false,
                 'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '2M',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/png',
-                        ],
-                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
+                        'mimeTypesMessage' => 'Format d\'image invalide'
                     ])
-                ],
+                ]
             ])
             ->add('startDate', DateTimeType::class, [
                 'label' => 'Date de début',

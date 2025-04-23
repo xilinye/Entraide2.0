@@ -17,22 +17,39 @@
 			{{ event.title }}</h1>
 		{{ form_start(form) }}
 		{{ form_widget(form) }}
-		<button class="btn btn-primary">{{ button_label|default('Mettre à jour') }}</button>
-		{{ form_end(form) }}
-	</div>
-	<div class="mt-4">
-		<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-secondary">
-			Retour
-		</a>
-	</div>
-{% endblock %}
+		{# Section image existante #}
+		<div class="mb-4">
+			{% if event.imageName %}
+				<div class="current-image">
+					<img src="{{ asset('uploads/event/' ~ event.imageName) }}" class="img-thumbnail mb-2" style="max-width: 300px;">
 
-{% block javascripts %}
-	{{ parent() }}
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
+					<div class="form-check">
+						<input type="checkbox" class="form-check-input" id="remove_image" name="remove_image">
+						<label class="form-check-label text-danger" for="remove_image">
+							Supprimer cette image
+						</label>
+					</div>
+				</div>
+			{% endif %}
+			<small class="form-text text-muted">
+				Formats acceptés: JPEG, PNG (max 5Mo)
+			</small>
+			<button class="btn btn-primary">{{ button_label|default('Mettre à jour') }}</button>
+			{{ form_end(form) }}
+		</div>
+		<div class="mt-4">
+			<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-secondary">
+				Retour
+			</a>
+		</div>
+	{% endblock %}
+
+	{% block javascripts %}
+		{{ parent() }}
+		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
 flatpickr('.datetimepicker', {
 enableTime: true,
 dateFormat: "Y-m-d H:i",
@@ -44,5 +61,5 @@ altFormat: "j F Y à H:i",
 allowInput: true
 });
 });
-	</script>
-{% endblock %}
+		</script>
+	{% endblock %}

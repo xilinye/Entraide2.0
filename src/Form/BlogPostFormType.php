@@ -22,20 +22,17 @@ class BlogPostFormType extends AbstractType
                 'attr' => ['rows' => 12, 'placeholder' => 'Rédigez votre article ici...']
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Image (JPEG ou PNG)',
+                'label' => 'Nouvelle image',
                 'required' => false,
                 'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '2M',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/png',
-                        ],
-                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
+                        'mimeTypesMessage' => 'Format d\'image invalide'
                     ])
-                ],
-            ]);
+                ]
+            ]);;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
