@@ -170,24 +170,39 @@
 				</div>
 			{% else %}
 				{{ form_start(form, { 
-    'action': path('app_message_conversation', { 
-        'id': otherUser.id, 
-        'title': conversation_title 
-    }) 
-}) }}
-				<div class="input-group">
+            'action': path('app_message_conversation', { 
+                'id': otherUser.id, 
+                'title': conversation_title 
+            }),
+            'attr': {'class': 'form-inline'}
+        }) }}
+
+				{# Groupe principal pour la saisie du message #}
+				<div class="input-group mb-3">
 					{{ form_widget(form.content, {
-                'attr': {
-                    'class': 'form-control',
-                    'placeholder': 'Écrivez votre message...',
-                    'rows': 2
-                }
-            }) }}
-					{{ form_row(form.imageFile) }}
-					<button type="submit" class="btn send-btn">
-						<i class="bi bi-send me-2"></i>Envoyer
-					</button>
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Écrivez votre message...',
+                        'rows': 2
+                    }
+                }) }}
+
+					{# Bouton d'envoi intégré dans le groupe #}
+					<div class="input-group-append">
+						<button type="submit" class="btn send-btn">
+							<i class="bi bi-send me-2"></i>Envoyer
+						</button>
+					</div>
 				</div>
+
+				{# Champ fichier séparé #}
+				<div class="custom-file">
+					{{ form_widget(form.imageFile, {
+                    'attr': {'class': 'custom-file-input'},
+                    'label_attr': {'class': 'custom-file-label'}
+                }) }}
+				</div>
+
 				{{ form_end(form) }}
 			{% endif %}
 		</div>
