@@ -4,62 +4,125 @@
 {% endblock %}
 
 {% block body %}
-	<div class="container mt-5">
-		<h1 class="mb-4">Articles</h1>
+	<div
+		class="container mt-5">
+		<!-- En-tête avec couleur verte -->
+		<div class="d-flex justify-content-between align-items-center mb-5">
+			<h1 class="display-4 font-weight-bold text-success position-relative">
+				<span class="position-absolute h-100 bg-success start-0 top-0" style="width: 4px;"></span>
+				<span class="ms-3">Blog Entr'Aide</span>
+			</h1>
+			<a href="{{ path('app_blog_new') }}" class="btn btn-success btn-lg d-none d-md-inline-block">
+				<i class="bi bi-plus-circle me-2"></i>Nouvel article
+			</a>
+		</div>
 
-		<a href="{{ path('app_blog_new') }}" class="btn btn-success mb-4">
-			<i class="bi bi-plus-circle"></i>
-			Nouvel article
-		</a>
+		<!-- Bouton flottant vert -->
+		<div class="d-block d-md-none fixed-bottom text-end mb-3 me-3">
+			<a href="{{ path('app_blog_new') }}" class="btn btn-success btn-lg rounded-circle shadow-lg" style="width: 56px; height: 56px;">
+				<i class="bi bi-plus-circle fs-4"></i>
+			</a>
+		</div>
 
-
-		{# Barre de recherche #}
-		<div class="card mb-4 shadow-sm">
-			<div class="card-body">
-				{{ form_start(searchForm, {'attr': {'class': 'd-flex'}}) }}
-				{{ form_widget(searchForm.query) }}
-				<button type="submit" class="btn btn-primary ms-2">
-					<i class="bi bi-search"></i>
+		<!-- Barre de recherche verte -->
+		<div class="card mb-4 border-0 bg-light-green overflow-hidden">
+			<div class="card-body p-0">
+				{{ form_start(searchForm, {'attr': {'class': 'input-group bg-transparent'}}) }}
+				{{ form_widget(searchForm.query, {'attr': {
+                    'class': 'form-control border-0 py-3 px-4',
+                    'placeholder': 'Rechercher un article...'
+                }}) }}
+				<button type="submit" class="btn btn-success px-4 rounded-0">
+					<i class="bi bi-search fs-5"></i>
 				</button>
 				{{ form_end(searchForm) }}
 			</div>
 		</div>
 
-		{# Message si recherche #}
+		<!-- Message de recherche vert -->
 		{% if searchQuery %}
-			<div class="alert alert-info mb-4">
-				Résultats pour : "<strong>{{ searchQuery }}</strong>"
-				<a href="{{ path('app_blog_index') }}" class="float-end">
-					<i class="bi bi-x-circle"></i>
-					Effacer la recherche
+			<div class="alert alert-success mb-4 rounded-pill d-flex align-items-center shadow-sm">
+				<div class="flex-grow-1">
+					Résultats pour :
+					<strong>"{{ searchQuery }}"</strong>
+				</div>
+				<a href="{{ path('app_blog_index') }}" class="btn btn-link text-decoration-none p-0">
+					<i class="bi bi-x-circle me-1"></i>Effacer
 				</a>
 			</div>
 		{% endif %}
 
-		<div class="row">
+		<!-- Grille d'articles avec accents verts -->
+		<div class="row g-4">
 			{% for post in posts %}
-				<div class="col-md-6 col-lg-4 mb-4">
-					<div class="card h-100 shadow">
+				<div class="col-12 col-md-6 col-lg-4">
+					<div
+						class="card h-100 border-0 shadow-hover transition-all">
+						<!-- Image avec dégradé vert -->
+						<div class="card-img-top bg-success text-light position-relative overflow-hidden" style="height: 200px;">
+							<div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+								<i class="bi bi-card-image fs-1 opacity-25"></i>
+							</div>
+						</div>
+
 						<div class="card-body">
-							<h5 class="card-title">{{ post.title }}</h5>
-							<p class="card-text text-muted small">
-								Par
-								{{ post.author.pseudo }}
-								•
-								{{ post.createdAt|date('d/m/Y') }}
-							</p>
-							<p class="card-text">{{ post.content|slice(0, 100) }}...</p>
-							<a href="{{ path('app_blog_show', {'slug': post.slug}) }}" class="btn btn-primary">
-								Lire la suite
-							</a>
+							<div class="d-flex align-items-center mb-3">
+								<div class="badge bg-success bg-opacity-10 text-success rounded-pill me-2">
+									Catégorie
+								</div>
+								<small class="text-muted">{{ post.createdAt|date('d/m/Y') }}</small>
+							</div>
+							<h3 class="h5 card-title">{{ post.title }}</h3>
+							<p class="card-text text-muted mb-3">{{ post.content|slice(0, 120)|trim }}...</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<a href="{{ path('app_blog_show', {'slug': post.slug}) }}" class="btn btn-link text-success text-decoration-none p-0 stretched-link">
+									Lire la suite
+									<i class="bi bi-arrow-right ms-2 transition-all"></i>
+								</a>
+								<div class="d-flex align-items-center text-muted">
+									<i class="bi bi-person-circle me-2"></i>
+									<small>{{ post.author.pseudo }}</small>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			{% else %}
 				<div class="col-12">
-					<div class="alert alert-info">Aucun article disponible pour le moment</div>
+					<div class="alert alert-success rounded-3 shadow-sm">
+						<i class="bi bi-info-circle me-2"></i>Aucun article disponible pour le moment
+					</div>
 				</div>
 			{% endfor %}
 		</div>
 	</div>
+
+	<style>
+		/* Personnalisation des couleurs */
+		.bg-light-green {
+			background-color: #f0faf5;
+		}
+
+		.shadow-hover {
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+			box-shadow: 0 0.5rem 1rem rgba(40, 167, 69, 0.05);
+		}
+
+		.shadow-hover:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 1rem 2rem rgba(40, 167, 69, 0.1);
+		}
+
+		.transition-all {
+			transition: all 0.3s ease;
+		}
+
+		.btn-link:hover .bi-arrow-right {
+			transform: translateX(3px);
+		}
+
+		.card-img-top {
+			background: linear-gradient(45deg, #2b8a3e, #37b24d);
+		}
+	</style>
 {% endblock %}
