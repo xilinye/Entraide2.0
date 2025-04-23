@@ -59,10 +59,14 @@
 					<div
 						class="card h-100 border-0 shadow-hover transition-all">
 						<!-- Image avec dégradé vert -->
-						<div class="card-img-top bg-success text-light position-relative overflow-hidden" style="height: 200px;">
-							<div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
-								<i class="bi bi-card-image fs-1 opacity-25"></i>
-							</div>
+						<div class="card-img-top position-relative overflow-hidden" style="height: 200px;">
+							{% if post.imageName %}
+								<img src="{{ asset('uploads/blog/' ~ post.imageName) }}" alt="{{ post.title }}" class="w-100 h-100 object-fit-cover">
+							{% else %}
+								<div class="w-100 h-100 bg-success d-flex align-items-center justify-content-center">
+									<i class="bi bi-card-image fs-1 text-light opacity-25"></i>
+								</div>
+							{% endif %}
 						</div>
 
 						<div class="card-body">
