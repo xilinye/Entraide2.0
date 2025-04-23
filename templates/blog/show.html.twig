@@ -52,7 +52,9 @@
 			<div class="content mb-5">
 				{{ post.content|nl2br }}
 			</div>
-
+			{% if post.imageName %}
+				<img src="{{ asset('uploads/blog/' ~ post.imageName) }}" alt="Image pour {{ post.title }}" class="img-fluid mb-4">
+			{% endif %}
 			<div class="rating-section">
 				<div class="average-rating alert alert-info">
 					<h4>Note moyenne :
@@ -83,7 +85,7 @@
 									<small class="text-muted">
 										Par
 										{{ rating.rater.pseudo }}, 
-																																																																																																																																																																																																																																																																																																																						le
+																																																																																																																																																																																																																																																																																																																																										le
 										{{ rating.createdAt|date('d/m/Y') }}
 									</small>
 								</div>

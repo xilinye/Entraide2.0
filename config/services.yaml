@@ -8,6 +8,12 @@ parameters:
   app.mailer_from_name: "EntrAide 2.0"
   locale: "fr"
   profile_images_directory: "%kernel.project_dir%/public/uploads/profile"
+  blog_images_directory: "%kernel.project_dir%/public/uploads/blog"
+  forum_images_directory: "%kernel.project_dir%/public/uploads/forum"
+  forumResponse_images_directory: "%kernel.project_dir%/public/uploads/forumResponse"
+  event_images_directory: "%kernel.project_dir%/public/uploads/event"
+  message_images_directory: "%kernel.project_dir%/public/uploads/message"
+
 services:
   # default configuration for services in *this* file
   _defaults:

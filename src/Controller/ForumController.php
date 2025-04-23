@@ -48,6 +48,18 @@ class ForumController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $forum->setAuthor($this->getUser());
+
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('forum_images_directory'),
+                    $newFilename
+                );
+                $forum->setImageName($newFilename);
+            }
+
             $em->persist($forum);
             $em->flush();
 
@@ -66,10 +78,30 @@ class ForumController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $originalImage = $forum->getImageName();
         $form = $this->createForm(ForumType::class, $forum);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Suppression ancienne image
+                if ($originalImage) {
+                    $oldImagePath = $this->getParameter('forum_images_directory') . '/' . $originalImage;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                // Upload nouvelle image
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('forum_images_directory'),
+                    $newFilename
+                );
+                $forum->setImageName($newFilename);
+            }
+
             $em->flush();
 
             $this->addFlash('success', 'La discussion a été modifiée avec succès.');
@@ -87,6 +119,14 @@ class ForumController extends AbstractController
     {
         if ($forum->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException();
+        }
+
+        // Suppression de l'image
+        if ($forum->getImageName()) {
+            $imagePath = $this->getParameter('forum_images_directory') . '/' . $forum->getImageName();
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         $em->remove($forum);

@@ -5,7 +5,8 @@ namespace App\Form;
 use App\Entity\Event;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{DateTimeType, IntegerType};
+use Symfony\Component\Form\Extension\Core\Type\{DateTimeType, IntegerType, FileType};
+use Symfony\Component\Validator\Constraints\File;
 
 class EventType extends AbstractType
 {
@@ -17,6 +18,21 @@ class EventType extends AbstractType
             ])
             ->add('description', null, [
                 'label' => 'Description'
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Image (JPEG ou PNG)',
+                'required' => false,
+                'mapped' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+                    ])
+                ],
             ])
             ->add('startDate', DateTimeType::class, [
                 'label' => 'Date de début',

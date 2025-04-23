@@ -11,7 +11,9 @@
 		<div class="row mt-4">
 			<div class="col-md-8">
 				<p class="lead">{{ event.description }}</p>
-
+				{% if event.imageName %}
+					<img src="{{ asset('uploads/event/' ~ event.imageName) }}" alt="Image pour {{ event.title }}" class="img-fluid mb-4">
+				{% endif %}
 				<div class="row">
 					<div class="col-md-6">
 						<div class="card mb-3">
@@ -125,7 +127,7 @@
 							<small class="text-muted">
 								Par
 								{{ rating.rater.pseudo }}, 
-																																																																																																																																																																																																																																																																																																										le
+																																																																																																																																																																																																																																																																																																																										le
 								{{ rating.createdAt|date('d/m/Y') }}
 							</small>
 						</div>

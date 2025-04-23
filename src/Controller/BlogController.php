@@ -50,6 +50,17 @@ class BlogController extends AbstractController
             $post->setAuthor($this->getUser());
             $post->computeSlug($this->slugger);
 
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('blog_images_directory'),
+                    $newFilename
+                );
+                $post->setImageName($newFilename);
+            }
+
             $this->em->persist($post);
             $this->em->flush();
 
@@ -65,6 +76,7 @@ class BlogController extends AbstractController
     #[Route('/{slug}', name: 'show')]
     public function show(BlogPost $post, Request $request): Response
     {
+
         $existingRating = $this->em->getRepository(Rating::class)->findOneBy([
             'blogPost' => $post,
             'rater' => $this->getUser()
@@ -124,11 +136,30 @@ class BlogController extends AbstractController
     public function edit(Request $request, BlogPost $post): Response
     {
         $originalTitle = $post->getTitle();
+        $originalImage = $post->getImageName();
 
         $form = $this->createForm(BlogPostFormType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Suppression ancienne image
+                if ($originalImage) {
+                    $oldImagePath = $this->getParameter('blog_images_directory') . '/' . $originalImage;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                // Upload nouvelle image
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('blog_images_directory'),
+                    $newFilename
+                );
+                $post->setImageName($newFilename);
+            }
             // Regénérer le slug seulement si le titre a changé
             if ($post->getTitle() !== $originalTitle) {
                 $post->computeSlug($this->slugger);
@@ -151,6 +182,14 @@ class BlogController extends AbstractController
     public function delete(Request $request, BlogPost $post): Response
     {
         if ($this->isCsrfTokenValid('delete' . $post->getId(), $request->request->get('_token'))) {
+            // Suppression de l'image
+            if ($post->getImageName()) {
+                $imagePath = $this->getParameter('blog_images_directory') . '/' . $post->getImageName();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+
             $this->em->remove($post);
             $this->em->flush();
             $this->addFlash('success', 'Article supprimé avec succès');

@@ -32,6 +32,11 @@ class ForumResponse
     #[ORM\OneToMany(mappedBy: 'forumResponse', targetEntity: Rating::class)]
     private Collection $ratings;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageName = null;
+
+    private $imageFile;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -94,5 +99,27 @@ class ForumResponse
     public function getRatings(): Collection
     {
         return $this->ratings;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function setImageName(?string $imageName): static
+    {
+        $this->imageName = $imageName;
+        return $this;
+    }
+
+    public function getImageFile()
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile($imageFile): static
+    {
+        $this->imageFile = $imageFile;
+        return $this;
     }
 }

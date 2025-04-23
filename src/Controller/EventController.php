@@ -34,6 +34,16 @@ class EventController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('event_images_directory'),
+                    $newFilename
+                );
+                $event->setImageName($newFilename);
+            }
             $entityManager->persist($event);
             $entityManager->flush();
 
@@ -112,10 +122,29 @@ class EventController extends AbstractController
             return $this->redirectToRoute('app_event_show', ['id' => $event->getId()]);
         }
 
+        $originalImage = $event->getImageName();
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Suppression ancienne image
+                if ($originalImage) {
+                    $oldImagePath = $this->getParameter('event_images_directory') . '/' . $originalImage;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                // Upload nouvelle image
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('event_images_directory'),
+                    $newFilename
+                );
+                $event->setImageName($newFilename);
+            }
             $entityManager->flush();
 
             $this->addFlash('success', 'Événement mis à jour');
@@ -174,6 +203,13 @@ class EventController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete' . $event->getId(), $request->request->get('_token'))) {
+            // Suppression de l'image
+            if ($event->getImageName()) {
+                $imagePath = $this->getParameter('event_images_directory') . '/' . $event->getImageName();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
             $entityManager->remove($event);
             $entityManager->flush();
 

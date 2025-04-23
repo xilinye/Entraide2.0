@@ -37,6 +37,11 @@ class Forum
     #[ORM\OneToMany(targetEntity: ForumResponse::class, mappedBy: 'forum', orphanRemoval: true)]
     private Collection $responses;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageName = null;
+
+    private $imageFile;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -144,6 +149,28 @@ class Forum
             }
         }
 
+        return $this;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function setImageName(?string $imageName): static
+    {
+        $this->imageName = $imageName;
+        return $this;
+    }
+
+    public function getImageFile()
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile($imageFile): static
+    {
+        $this->imageFile = $imageFile;
         return $this;
     }
 }

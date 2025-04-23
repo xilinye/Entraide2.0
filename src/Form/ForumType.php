@@ -6,7 +6,8 @@ use App\Entity\{Forum, Category};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{TextType, TextareaType, FileType};
+use Symfony\Component\Validator\Constraints\File;
 
 class ForumType extends AbstractType
 {
@@ -23,6 +24,21 @@ class ForumType extends AbstractType
                     'rows' => 8,
                     'placeholder' => 'Décrivez votre problème ou question en détail...'
                 ]
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Image (JPEG ou PNG)',
+                'required' => false,
+                'mapped' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+                    ])
+                ],
             ])
             ->add('category', EntityType::class, [
                 'class' => Category::class,
