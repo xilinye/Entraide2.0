@@ -5,22 +5,119 @@
 
 {% block body %}
 	<div class="container mt-5">
-		<h1 class="mb-4">Créer un nouvel article</h1>
+		<div class="row justify-content-center">
+			<div
+				class="col-lg-8">
+				<!-- En-tête stylisé -->
+				<div class="d-flex align-items-center mb-5">
+					<div class="border-start border-success border-4 me-3" style="height: 40px;"></div>
+					<h1 class="display-5 fw-bold text-success">
+						<i class="bi bi-pencil-square me-2"></i>Créer un nouvel article
+					</h1>
+				</div>
 
-		{{ form_start(form) }}
-		{{ form_row(form.title) }}
-		{{ form_row(form.content) }}
-		{{ form_row(form.imageFile) }}
+				<!-- Formulaire dans une carte -->
+				<div class="card border-0 shadow-lg">
+					<div class="card-body p-4 p-lg-5">
+						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
 
-		<button type="submit" class="btn btn-primary">
-			<i class="bi bi-save"></i>
-			Publier l'article
-		</button>
-		{{ form_end(form) }}
+						<!-- Titre -->
+						<div class="mb-4">
+							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+							{{ form_widget(form.title, {'attr': {
+                            'class': 'form-control form-control-lg rounded-3',
+                            'placeholder': 'Titre percutant...'
+                        }}) }}
+							<div class="form-text">Maximum 120 caractères</div>
+						</div>
+
+						<!-- Contenu -->
+						<div class="mb-4">
+							{{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+							{{ form_widget(form.content, {'attr': {
+                            'class': 'form-control rounded-3',
+                            'rows': 8,
+                            'placeholder': 'Commencez à écrire votre article ici...'
+                        }}) }}
+							<div class="form-text">Utilisez le Markdown pour la mise en forme</div>
+						</div>
+
+						<!-- Upload d'image -->
+						<div class="mb-5">
+							<label class="form-label fw-bold d-block">Image mise en avant</label>
+							<div class="file-upload-wrapper">
+								{{ form_widget(form.imageFile, {'attr': {
+                                'class': 'form-control visually-hidden',
+                                'onchange': 'previewFile()'
+                            }}) }}
+								<label for="{{ form.imageFile.vars.id }}" class="btn btn-outline-success w-100 py-3">
+									<i class="bi bi-cloud-upload me-2"></i>Choisir une image
+								</label>
+								<div class="form-text">Formats supportés : JPG, PNG (Max 2MB)</div>
+								<div id="preview" class="mt-3 text-center"></div>
+							</div>
+						</div>
+
+						<!-- Boutons d'action -->
+						<div class="d-flex justify-content-between align-items-center border-top pt-4">
+							<a href="{{ path('app_blog_index') }}" class="btn btn-link text-decoration-none">
+								<i class="bi bi-arrow-left me-2"></i>Retour aux articles
+							</a>
+							<button type="submit" class="btn btn-success btn-lg px-5 py-3">
+								<i class="bi bi-send-check me-2"></i>Publier l'article
+							</button>
+						</div>
+
+						{{ form_end(form) }}
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-	<div class="mt-4">
-		<a href="{{ path('app_blog_index') }}" class="btn btn-secondary">
-			Retour
-		</a>
-	</div>
+
+	<style>
+		.file-upload-wrapper {
+			transition: all 0.3s ease;
+		}
+
+		.file-upload-wrapper:hover {
+			transform: translateY(-2px);
+		}
+
+		.form-control {
+			border: 2px solid #dee2e6;
+			transition: border-color 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.form-control:focus {
+			border-color: #198754;
+			box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+		}
+
+		#preview img {
+			max-width: 200px;
+			border-radius: 8px;
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+		}
+	</style>
+
+	<script>
+		function previewFile() {
+const preview = document.getElementById('preview');
+const file = document.querySelector('input[type=file]').files[0];
+const reader = new FileReader();
+
+reader.onloadend = function () {
+preview.innerHTML = `<img src="${
+reader.result
+}" class="img-fluid mt-2" alt="Aperçu">`;
+}
+
+if (file) {
+reader.readAsDataURL(file);
+} else {
+preview.innerHTML = '';
+}
+}
+	</script>
 {% endblock %}
