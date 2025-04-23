@@ -250,4 +250,82 @@ class ForumController extends AbstractController
 
         return $this->redirectToRoute('app_forum_show', ['id' => $response->getForum()->getId()]);
     }
+
+    #[Route('/response/{id}/edit', name: 'response_edit', methods: ['GET', 'POST'])]
+    public function editResponse(Request $request, ForumResponse $response): Response
+    {
+        if ($response->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $form = $this->createForm(ForumResponseType::class, $response);
+        $form->handleRequest($request);
+        $originalImage = $response->getImageName();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            // Gestion de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Suppression ancienne image
+                if ($originalImage) {
+                    $oldImagePath = $this->getParameter('forumResponse_images_directory') . '/' . $originalImage;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                // Upload nouvelle image
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move(
+                    $this->getParameter('forumResponse_images_directory'),
+                    $newFilename
+                );
+                $response->setImageName($newFilename);
+            }
+            // Gestion de la suppression d'image
+            if ($request->request->get('removeImage')) {
+                if ($originalImage) {
+                    $imagePath = $this->getParameter('forumResponse_images_directory') . '/' . $originalImage;
+                    if (file_exists($imagePath)) {
+                        unlink($imagePath);
+                    }
+                    $response->setImageName(null);
+                }
+            }
+            $this->em->flush();
+            $this->addFlash('success', 'Réponse modifiée !');
+            return $this->redirectToRoute('app_forum_show', ['id' => $response->getForum()->getId()]);
+        }
+
+        return $this->render('forum/edit_response.html.twig', [
+            'form' => $form->createView(),
+            'response' => $response,
+        ]);
+    }
+
+    #[Route('/response/{id}/delete', name: 'response_delete', methods: ['POST'])]
+    public function deleteResponse(Request $request, ForumResponse $response): Response
+    {
+        if ($response->getAuthor() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($this->isCsrfTokenValid('delete_response' . $response->getId(), $request->request->get('_token'))) {
+            $forumId = $response->getForum()->getId();
+
+            // Suppression de l'image associée
+            if ($response->getImageName()) {
+                $imagePath = $this->getParameter('forumResponse_images_directory') . '/' . $response->getImageName();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+
+            $this->em->remove($response);
+            $this->em->flush();
+            $this->addFlash('success', 'Réponse supprimée !');
+        }
+
+        return $this->redirectToRoute('app_forum_show', ['id' => $forumId]);
+    }
 }

@@ -6,6 +6,7 @@ use App\Entity\ForumResponse;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\{TextareaType, FileType};
+use Symfony\Component\Validator\Constraints\File;
 
 class ForumResponseType extends AbstractType
 {
@@ -20,11 +21,15 @@ class ForumResponseType extends AbstractType
                 ]
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Ajouter une image',
+                'label' => 'Nouvelle image',
                 'required' => false,
-                'mapped' => true,
-                'attr' => [
-                    'accept' => 'image/jpeg,image/png'
+                'mapped' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
+                        'mimeTypesMessage' => 'Format d\'image invalide'
+                    ])
                 ]
             ]);
     }
