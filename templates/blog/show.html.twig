@@ -308,7 +308,7 @@
 									<small class="text-muted">
 										Par
 										{{ rating.rater.pseudo }}, 
-																																																																																																																																																																																																																																																																																																																																																																																																																																				le
+																																																																																																																																																																																																																																																																																																																																																																																																																																														le
 										{{ rating.createdAt|date('d/m/Y') }}
 									</small>
 								</div>
@@ -350,6 +350,11 @@
 				{% endif %}
 			</div>
 		</article>
+	</div>
+	<div class="mt-4">
+		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
+			Retour
+		</a>
 	</div>
 {% endblock %}
 {% block javascripts %}
