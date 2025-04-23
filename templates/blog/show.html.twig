@@ -7,6 +7,102 @@
 
 {% block stylesheets %}
 	<style>
+		.blog-post-container {
+			max-width: 800px;
+			margin: 2rem auto;
+			padding: 2rem;
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 10px 30px rgba(76, 175, 80, 0.1);
+		}
+
+		.blog-post h1 {
+			font-size: 2.5rem;
+			color: #2E7D32;
+			margin-bottom: 1.5rem;
+			position: relative;
+			padding-bottom: 0.5rem;
+			background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		.blog-post .meta {
+			font-size: 0.95rem;
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem;
+			background: #f8f9fa;
+			border-radius: 8px;
+			margin-bottom: 2rem;
+		}
+
+		.blog-post .meta::before {
+			content: '📝';
+			font-size: 1.2rem;
+		}
+
+		.blog-post .content {
+			font-size: 1.1rem;
+			line-height: 1.8;
+			color: #4a5568;
+			border-left: 4px solid #4CAF50;
+			padding-left: 1.5rem;
+			margin-bottom: 3rem;
+		}
+
+		.blog-post .content img {
+			border-radius: 12px;
+			margin: 2rem 0;
+			box-shadow: 0 10px 20px rgba(76, 175, 80, 0.15);
+			transition: transform 0.3s ease;
+		}
+
+		.blog-post .content img:hover {
+			transform: scale(1.02);
+		}
+
+		.rating-section {
+			border-top: 2px solid #e2e8f0;
+			padding-top: 2rem;
+			margin-top: 3rem;
+		}
+
+		.average-rating {
+			background: linear-gradient(145deg, #f8fff8, #ffffff);
+			border: none;
+			border-radius: 12px;
+			padding: 1.5rem;
+			box-shadow: 0 5px 15px rgba(76, 175, 80, 0.1);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.average-rating::before {
+			content: '⭐';
+			position: absolute;
+			right: 1rem;
+			top: 50%;
+			transform: translateY(-50%);
+			opacity: 0.15;
+			font-size: 3rem;
+		}
+
+		.rating-form {
+			background: #ffffff;
+			border: 2px solid #e8f5e9;
+			border-radius: 12px;
+			padding: 2rem;
+			margin-top: 2rem;
+			transition: all 0.3s ease;
+		}
+
+		.rating-form:hover {
+			border-color: #4CAF50;
+			transform: translateY(-3px);
+		}
+
 		.star-rating {
 			display: flex;
 			gap: 5px;
@@ -33,6 +129,112 @@
 			fill: currentColor;
 			width: 2.5em;
 			height: 2.5em;
+		}
+		.btn-group {
+			gap: 0.8rem;
+		}
+
+		.btn-primary,
+		.btn-danger {
+			padding: 0.75rem 1.5rem;
+			border-radius: 8px;
+			font-weight: 600;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.6rem;
+			border: none;
+			position: relative;
+			overflow: hidden;
+			font-size: 0.95rem;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+			box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+		}
+
+		.btn-primary::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+		.btn-primary:hover::before {
+			opacity: 1;
+		}
+
+		.btn-danger {
+			background: linear-gradient(135deg, #c62828 0%, #ef5350 100%);
+			box-shadow: 0 4px 6px rgba(239, 83, 80, 0.2);
+		}
+
+		.btn-danger:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(239, 83, 80, 0.3);
+		}
+
+		.btn-danger::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+		.btn-danger:hover::before {
+			opacity: 1;
+		}
+
+		.btn-primary i,
+		.btn-danger i {
+			font-size: 1.1em;
+			position: relative;
+		}
+
+		.btn-primary span,
+		.btn-danger span {
+			position: relative;
+		}
+
+		@media(max-width: 768px) {
+			.blog-post-container {
+				padding: 1.5rem;
+				margin: 1rem;
+			}
+
+			.blog-post h1 {
+				font-size: 2rem;
+			}
+
+			.blog-post .content {
+				font-size: 1rem;
+			}
+			.btn-group {
+				flex-direction: column;
+				width: 100%;
+			}
+
+			.btn-primary,
+			.btn-danger {
+				width: 100%;
+				justify-content: center;
+			}
 		}
 	</style>
 {% endblock %}
@@ -106,7 +308,7 @@
 									<small class="text-muted">
 										Par
 										{{ rating.rater.pseudo }}, 
-																																																																																																																																																																																																																																																																																																																																																				le
+																																																																																																																																																																																																																																																																																																																																																																																																																																				le
 										{{ rating.createdAt|date('d/m/Y') }}
 									</small>
 								</div>
