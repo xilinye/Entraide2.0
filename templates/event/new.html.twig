@@ -7,39 +7,145 @@
 {% block stylesheets %}
 	{{ parent() }}
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<style>
+		.form-section {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 2rem;
+			margin-bottom: 2rem;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.required-label::after {
+			content: '*';
+			color: #dc3545;
+			margin-left: 4px;
+		}
+		.form-illustration {
+			max-width: 150px;
+			margin: 0 auto 2rem;
+			display: block;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		<h1>Créer un nouvel événement</h1>
-		{{ form_start(form) }}
-		{{ form_widget(form) }}
-		<button class="btn btn-success">{{ button_label|default('Créer') }}</button>
-		{{ form_end(form) }}
-	</div>
-	<div class="mt-4">
-		<a href="{{ path('app_event_index') }}" class="btn btn-secondary">
-			Retour
-		</a>
-	</div>
+<div class="container py-5">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="text-center mb-5">
+				<img src="{{ asset('images/event-illustration.svg') }}" alt="Création d'événement" class="form-illustration">
+				<h1 class="h2 mb-3">Créer un nouvel événement</h1>
+				<p class="text-muted">Remplissez les détails de votre événement</p>
+			</div>
+
+			<div class="form-section">
+				{{ form_start(form) }}
+				<div
+					class="row g-3">
+					<!-- Titre -->
+					<div class="col-12">
+						{{ form_row(form.title, {
+                                label: 'Titre de l\'événement',
+                                label_attr: { class: 'form-label fw-bold required-label' },
+                                attr: { class: 'form-control-lg' }
+                            }) }}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            {{ form_row(form.description, {
+                                label: 'Description détaillée',
+                                label_attr: { class: 'form-label fw-bold required-label' },
+                                attr: { rows: 5 }
+                            }) }}
+                        </div>
+
+                        <!-- Image -->
+                        <div class="col-12">
+                            {{ form_row(form.imageFile, {
+                                label: 'Image principale',
+                                label_attr: { class: 'form-label fw-bold' },
+                                help_attr: { class: 'form-text text-muted' }
+                            }) }}
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="col-md-6">
+                            {{ form_row(form.startDate, {
+                                label: 'Date de début',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.endDate, {
+                                label: 'Date de fin',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+                        </div>
+
+                        <!-- Lieu et Participants -->
+                        <div class="col-md-8">
+                            {{ form_row(form.location, {
+                                label: 'Lieu de l\'événement',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+					</div>
+					<div class="col-md-4">
+						{{ form_row(form.maxAttendees, {
+                                label: 'Places disponibles',
+                                label_attr: { class: 'form-label fw-bold' },
+                                help: '0 pour illimité',
+                                help_attr: { class: 'form-text text-muted' }
+                            }) }}
+					</div>
+				</div>
+
+				<!-- Boutons -->
+				<div class="mt-5 d-flex justify-content-between align-items-center">
+					<button class="btn btn-success btn-lg px-5">
+						<i class="bi bi-calendar-plus me-2"></i>
+						{{ button_label|default('Créer l\'événement') }}
+                        </button>
+                        <a href="{{ path('app_event_index') }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Retour à la liste
+                        </a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-flatpickr('.datetimepicker', {
-enableTime: true,
-dateFormat: "Y-m-d H:i",
-time_24hr: true,
-locale: "fr",
-minDate: "today",
-altInput: true,
-altFormat: "j F Y à H:i",
-allowInput: true
-});
-});
-	</script>
-{% endblock %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const options = {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true,
+                locale: "fr",
+                minDate: "today",
+                altInput: true,
+                altFormat: "j F Y à H:i",
+                allowInput: true
+            };
+            
+            const startDatePicker = flatpickr('#{{ form.startDate.vars.id }}', options);
+							            const endDatePicker = flatpickr('#{{ form.endDate.vars.id }}', {
+							                ...options,
+							                minDate: startDatePicker.selectedDates[0] || "today"
+							            });
+							
+							            // Mise à jour dynamique de la date minimum pour la date de fin
+							            startDatePicker.config.onChange.push((selectedDates) => {
+							                endDatePicker.set('minDate', selectedDates[0] || "today");
+							            });
+							        });
+						</script>
+					{% endblock %}

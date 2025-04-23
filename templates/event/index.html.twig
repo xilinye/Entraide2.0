@@ -4,60 +4,164 @@
 {% endblock %}
 
 {% block body %}
-	<div class="text-end mb-4">
-		<a href="{{ path('app_event_new') }}" class="btn btn-success">
-			<i class="bi bi-calendar-plus"></i>
-			Créer un événement
-		</a>
+	<div
+		class="container py-5">
+		<!-- En-tête -->
+		<div class="d-flex justify-content-between align-items-center mb-5">
+			<h1 class="display-4 fw-bold text-success position-relative">
+				<span class="position-absolute h-100 bg-success start-0 top-0" style="width: 4px;"></span>
+				<span class="ms-3">Événements Entr'Aide</span>
+			</h1>
+			<a href="{{ path('app_event_new') }}" class="btn btn-success btn-lg d-none d-md-inline-block shadow-hover">
+				<i class="bi bi-lightning-charge-fill me-2"></i>Créer un événement
+			</a>
+		</div>
+
+		<!-- Bouton mobile -->
+		<div class="d-block d-md-none fixed-bottom text-end mb-3 me-3">
+			<a href="{{ path('app_event_new') }}" class="btn btn-success btn-lg rounded-circle shadow-lg" style="width: 56px; height: 56px;">
+				<i class="bi bi-plus fs-4"></i>
+			</a>
+		</div>
+
+		<!-- Événements à venir -->
+		<section class="mb-5">
+			<h2 class="h3 mb-4 text-uppercase fw-bold text-success">
+				<i class="bi bi-rocket-takeoff me-2"></i>À venir
+			</h2>
+
+			{% if upcoming_events is empty %}
+				<div class="alert alert-info rounded-4 shadow-sm d-flex align-items-center">
+					<i class="bi bi-info-circle me-3 fs-4"></i>
+					Aucun événement à venir
+				</div>
+			{% else %}
+				<div class="row g-4">
+					{% for event in upcoming_events %}
+						<div class="col-12 col-md-6 col-lg-4">
+							<div class="card h-100 border-0 shadow-hover transition-all">
+								<div class="card-img-top position-relative overflow-hidden" style="height: 200px;">
+									{% if event.imageName %}
+										<img src="{{ asset('uploads/event/' ~ event.imageName) }}" alt="{{ event.title }}" class="img-fluid h-100 w-100 object-fit-cover">
+									{% else %}
+										<div class="bg-success text-light h-100 w-100 position-absolute">
+											<div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+												<i class="bi bi-calendar-event fs-1 opacity-25"></i>
+											</div>
+										</div>
+									{% endif %}
+									<div class="position-absolute bottom-0 start-0 p-3">
+										<span class="badge bg-white text-success rounded-pill shadow-sm">
+											{{ event.startDate|date('d/m/Y') }}
+										</span>
+									</div>
+								</div>
+
+								<div class="card-body">
+									<h3 class="h5 card-title fw-bold">{{ event.title }}</h3>
+									<p class="card-text text-muted mb-3">{{ event.description|u.truncate(100, '...') }}</p>
+									<div class="d-flex justify-content-between align-items-center">
+										<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-link text-success text-decoration-none p-0 stretched-link">
+											Voir détails
+											<i class="bi bi-arrow-right-short ms-2 transition-all"></i>
+										</a>
+										<small class="text-muted">
+											<i class="bi bi-clock-history me-1"></i>
+											{{ event.startDate|date('H:i') }}
+										</small>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</section>
+
+		<!-- Événements passés -->
+		<section class="mt-5">
+			<h2 class="h3 mb-4 text-uppercase fw-bold text-muted">
+				<i class="bi bi-archive me-2"></i>Passés
+			</h2>
+
+			{% if past_events is empty %}
+				<div class="alert alert-secondary rounded-4 shadow-sm d-flex align-items-center">
+					<i class="bi bi-info-circle me-3 fs-4"></i>
+					Aucun événement passé
+				</div>
+			{% else %}
+				<div class="row g-4">
+					{% for event in past_events %}
+						<div class="col-12 col-md-6 col-lg-4">
+							<div class="card h-100 border-0 shadow-hover transition-all opacity-75">
+								<div class="card-img-top position-relative overflow-hidden" style="height: 200px;">
+									{% if event.imageName %}
+										<img src="{{ asset('uploads/event/' ~ event.imageName) }}" alt="{{ event.title }}" class="img-fluid h-100 w-100 object-fit-cover">
+									{% else %}
+										<div class="bg-secondary text-light h-100 w-100 position-absolute">
+											<div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+												<i class="bi bi-calendar-check fs-1 opacity-25"></i>
+											</div>
+										</div>
+									{% endif %}
+									<div class="position-absolute bottom-0 start-0 p-3">
+										<span class="badge bg-white text-secondary rounded-pill shadow-sm">
+											{{ event.startDate|date('d/m/Y') }}
+										</span>
+									</div>
+								</div>
+
+								<div class="card-body">
+									<h3 class="h5 card-title fw-bold text-muted">{{ event.title }}</h3>
+									<p class="card-text text-muted mb-3">{{ event.description|u.truncate(100, '...') }}</p>
+									<div class="d-flex justify-content-between align-items-center">
+										<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-link text-muted text-decoration-none p-0 stretched-link">
+											Voir détails
+											<i class="bi bi-arrow-right-short ms-2 transition-all"></i>
+										</a>
+										<small class="text-muted">
+											<i class="bi bi-clock-history me-1"></i>
+											{{ event.startDate|date('H:i') }}
+										</small>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</section>
 	</div>
 
-	<h1 class="mb-4">Événements à venir</h1>
-	{% if upcoming_events is empty %}
-		<div class="alert alert-info">Aucun événement à venir</div>
-	{% else %}
-		<div class="row row-cols-1 row-cols-md-3 g-4">
-			{% for event in upcoming_events %}
-				<div class="col">
-					<div class="card h-100">
-						<div class="card-body">
-							<h5 class="card-title">{{ event.title }}</h5>
-							<p class="card-text">{{ event.description|u.truncate(100, '...') }}</p>
-							<p class="text-muted">
-								<small>Début :
-									{{ event.startDate|date('d/m/Y H:i') }}</small>
-							</p>
-							<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-primary">
-								Voir détails
-							</a>
-						</div>
-					</div>
-				</div>
-			{% endfor %}
-		</div>
-	{% endif %}
+	<style>
+		.shadow-hover {
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+			box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.05);
+		}
 
-	<h1 class="mt-5 mb-4">Événements passés</h1>
-	{% if past_events is empty %}
-		<div class="alert alert-info">Aucun événement passé</div>
-	{% else %}
-		<div class="row row-cols-1 row-cols-md-3 g-4">
-			{% for event in past_events %}
-				<div class="col">
-					<div class="card h-100">
-						<div class="card-body">
-							<h5 class="card-title">{{ event.title }}</h5>
-							<p class="card-text">{{ event.description|u.truncate(100, '...') }}</p>
-							<p class="text-muted">
-								<small>Début :
-									{{ event.startDate|date('d/m/Y H:i') }}</small>
-							</p>
-							<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-outline-secondary">
-								Voir détails
-							</a>
-						</div>
-					</div>
-				</div>
-			{% endfor %}
-		</div>
-	{% endif %}
+		.shadow-hover:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 1rem 2rem rgba(25, 135, 84, 0.1);
+		}
+
+		.transition-all {
+			transition: all 0.3s ease;
+		}
+
+		.btn-link:hover .bi-arrow-right-short {
+			transform: translateX(3px);
+		}
+
+		.card-img-top.bg-success {
+			background: linear-gradient(45deg, #198754, #2ea37c) !important;
+		}
+
+		.opacity-75:hover {
+			opacity: 1 !important;
+		}
+
+		.badge.text-success {
+			background-color: #d1e7dd !important;
+		}
+	</style>
 {% endblock %}

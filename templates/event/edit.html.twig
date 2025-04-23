@@ -5,52 +5,149 @@
 	{{ event.title }}
 {% endblock %}
 
-
 {% block stylesheets %}
 	{{ parent() }}
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<style>
+		.form-section {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 20px;
+			margin-bottom: 30px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.required-label::after {
+			content: '*';
+			color: #dc3545;
+			margin-left: 4px;
+		}
+		.image-preview {
+			max-width: 300px;
+			border: 2px solid #dee2e6;
+			border-radius: 5px;
+			padding: 5px;
+			margin: 10px 0;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		<h1>Modifier
-			{{ event.title }}</h1>
-		{{ form_start(form) }}
-		{{ form_widget(form) }}
-		{# Section image existante #}
-		<div class="mb-4">
-			{% if event.imageName %}
-				<div class="current-image">
-					<img src="{{ asset('uploads/event/' ~ event.imageName) }}" class="img-thumbnail mb-2" style="max-width: 300px;">
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<h1 class="mb-4">Modifier
+					{{ event.title }}</h1>
 
-					<div class="form-check">
-						<input type="checkbox" class="form-check-input" id="remove_image" name="remove_image">
-						<label class="form-check-label text-danger" for="remove_image">
-							Supprimer cette image
-						</label>
+				<div class="form-section">
+					{{ form_start(form) }}
+
+					<div
+						class="row g-3">
+						<!-- Titre -->
+						<div class="col-12">
+							{{ form_row(form.title, {
+                                label: 'Titre',
+                                label_attr: { class: 'form-label fw-bold required-label' },
+                                attr: { class: 'form-control-lg' }
+                            }) }}
+						</div>
+
+						<!-- Description -->
+						<div class="col-12">
+							{{ form_row(form.description, {
+                                label: 'Description',
+                                label_attr: { class: 'form-label fw-bold required-label' },
+                                attr: { rows: 4 }
+                            }) }}
+						</div>
+
+						<!-- Image -->
+						<div class="col-12">
+							{{ form_row(form.imageFile, {
+                                label: 'Image de l\'événement',
+                                label_attr: { class: 'form-label fw-bold' },
+                                attr: { class: 'form-control' }
+                            }) }}
+                            
+                            {% if event.imageName %}
+                                <div class="current-image mt-3">
+                                    <img src="{{ asset('uploads/event/' ~ event.imageName) }}" 
+                                         class="image-preview"
+                                         alt="Image actuelle">
+                                    <div class="mt-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                   class="form-check-input" 
+                                                   id="remove_image" 
+                                                   name="remove_image">
+                                            <label class="form-check-label text-danger" 
+                                                   for="remove_image">
+                                                <i class="bi bi-trash me-1"></i>
+                                                Supprimer cette image
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="col-md-6">
+                            {{ form_row(form.startDate, {
+                                label: 'Date de début',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.endDate, {
+                                label: 'Date de fin',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+                        </div>
+
+                        <!-- Lieu et Participants -->
+                        <div class="col-md-8">
+                            {{ form_row(form.location, {
+                                label: 'Lieu',
+                                label_attr: { class: 'form-label fw-bold required-label' }
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.maxAttendees, {
+                                label: 'Participants maximum',
+                                label_attr: { class: 'form-label fw-bold' },
+                                help_attr: { class: 'form-text text-muted' }
+                            }) }}
+                        </div>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="mt-5 d-flex justify-content-between align-items-center">
+                        <button class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>
+                            {{ button_label|default('Mettre à jour') }}
+                        </button>
+                        <a href="{{ path('app_event_show', {'id': event.id}) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Retour à l'événement
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+						</div>
 					</div>
 				</div>
-			{% endif %}
-			<small class="form-text text-muted">
-				Formats acceptés: JPEG, PNG (max 5Mo)
-			</small>
-			<button class="btn btn-primary">{{ button_label|default('Mettre à jour') }}</button>
-			{{ form_end(form) }}
-		</div>
-		<div class="mt-4">
-			<a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-secondary">
-				Retour
-			</a>
-		</div>
-	{% endblock %}
+			</div>
+		{% endblock %}
 
-	{% block javascripts %}
-		{{ parent() }}
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-		<script>
-			document.addEventListener('DOMContentLoaded', function () {
-flatpickr('.datetimepicker', {
+		{% block javascripts %}
+			{{ parent() }}
+			<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+			<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+			<script>
+				document.addEventListener('DOMContentLoaded', function () {
+const options = {
 enableTime: true,
 dateFormat: "Y-m-d H:i",
 time_24hr: true,
@@ -59,7 +156,13 @@ minDate: "today",
 altInput: true,
 altFormat: "j F Y à H:i",
 allowInput: true
+};
+
+flatpickr('# {{ form.startDate.vars.id }}', options);
+flatpickr('# {{ form.endDate.vars.id }}', {
+... options,
+minDate: document.getElementById('{{ form.startDate.vars.id }}').value
 });
 });
-		</script>
-	{% endblock %}
+			</script>
+		{% endblock %}
