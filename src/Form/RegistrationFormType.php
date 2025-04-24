@@ -64,7 +64,7 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'constraints' => [
                     new Assert\IsTrue([
-                        'message' => 'Vous devez accepter nos conditions.',
+                        'message' => 'Vous devez accepter les CGU et la politique de confidentialité.',
                     ]),
                 ],
                 'label' => false,

@@ -94,9 +94,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'ratedUser', targetEntity: Rating::class)]
     private Collection $ratingsReceived;
 
-    #[Assert\IsTrue(message: "Vous devez accepter les CGU et la politique de confidentialité.")]
-    private bool $agreeTerms = false;
-
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -538,15 +535,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $details;
-    }
-    public function isAgreeTerms(): bool
-    {
-        return $this->agreeTerms;
-    }
-
-    public function setAgreeTerms(bool $agreeTerms): self
-    {
-        $this->agreeTerms = $agreeTerms;
-        return $this;
     }
 }
