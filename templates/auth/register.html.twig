@@ -78,7 +78,19 @@
                                 row_attr: {class: 'form-group'}
                             }) }}
 						</div>
-
+						<div class="mb-3 form-check d-flex align-items-center">
+							{{ form_widget(registrationForm.agreeTerms, {
+        'attr': {'class': 'form-check-input me-2'},
+    }) }}
+							<label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
+								<i class="bi bi-shield-check me-2"></i>
+								J'accepte les
+								<a href="{{ path('app_page_terms') }}" class="text-decoration-none">CGU</a>
+								et la
+								<a href="{{ path('app_page_privacy') }}" class="text-decoration-none">politique de confidentialité</a>
+							</label>
+							{{ form_errors(registrationForm.agreeTerms) }}
+						</div>
 						<div class="d-grid gap-2 mt-5">
 							<button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold">
 								<i class="bi bi-send-check me-2"></i>S'inscrire

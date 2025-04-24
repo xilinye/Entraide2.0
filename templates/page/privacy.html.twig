@@ -1,58 +1,106 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Politique de confidentialité - Entr'Aide 2.0{% endblock %}
+{% block title %}Politique de confidentialité - Entr'Aide 2.0
+{% endblock %}
 
 {% block body %}
 
-<div class="card shadow-lg">
-    <div class="card-header text-white" style="background-color: #4CAF50;">
-        <h2 class="mb-0 display-5 fw-bold">Politique de Confidentialité</h2>
-    </div>
-    <div class="card-body legal-content px-lg-5 py-4">
-        <article class="mb-5">
-            <h3>1. Collecte des données</h3>
-            <p class="ps-4">
-                Nous collectons uniquement les données nécessaires au bon fonctionnement de la plateforme :<br>
-                pseudonyme, email et compétences déclarées. Aucune donnée sensible n'est stockée.
-            </p>
-        </article>
+	<div class="card shadow-lg">
+		<div class="card-header text-white" style="background-color: #4CAF50;">
+			<h2 class="mb-0 display-5 fw-bold">Politique de Confidentialité</h2>
+		</div>
+		<div class="card-body legal-content px-lg-5 py-4">
+			<article class="mb-5">
+				<h3>1. Collecte des données</h3>
+				<p class="ps-4">
+					Nous collectons uniquement les données nécessaires au bon fonctionnement de la plateforme :<br>
+					pseudonyme, email et compétences déclarées. Aucune donnée sensible n'est stockée.
+				</p>
+			</article>
 
-        <article class="mb-5">
-            <h3>2. Utilisation des données</h3>
-            <div class="ps-4">
-                <p>Vos données sont utilisées pour :</p>
-                <ul>
-                    <li>Faciliter les échanges entre membres</li>
-                    <li>Personnaliser votre expérience utilisateur</li>
-                    <li>Envoyer des notifications essentielles</li>
-                </ul>
-            </div>
-        </article>
+			<article class="mb-5">
+				<h3>2. Utilisation des données</h3>
+				<div class="ps-4">
+					<p>Vos données sont utilisées pour :</p>
+					<ul>
+						<li>Faciliter les échanges entre membres</li>
+						<li>Personnaliser votre expérience utilisateur</li>
+						<li>Envoyer des notifications essentielles</li>
+					</ul>
+				</div>
+			</article>
 
-        <article class="mb-5">
-            <h3>3. Protection des données</h3>
-            <div class="ps-4">
-                <p>Nous utilisons des mesures de sécurité conformes au RGPD :</p>
-                <ul>
-                    <li>Chiffrement des mots de passe</li>
-                    <li>Accès restreint aux données</li>
-                    <li>Hébergement sécurisé en UE</li>
-                </ul>
-            </div>
-        </article>
+			<article class="mb-5">
+				<h3>3. Protection des données</h3>
+				<div class="ps-4">
+					<p>Nous utilisons des mesures de sécurité conformes au RGPD :</p>
+					<ul>
+						<li>Chiffrement des mots de passe</li>
+						<li>Accès restreint aux données</li>
+						<li>Hébergement sécurisé en UE</li>
+					</ul>
+				</div>
+			</article>
 
-        <article class="mb-5">
-            <h3>4. Vos droits</h3>
-            <div class="ps-4">
-                <p>Conformément au RGPD, vous pouvez :</p>
-                <ul>
-                    <li>Accéder à vos données</li>
-                    <li>Demander leur rectification</li>
-                    <li>Demander leur suppression</li>
-                </ul>
-                <p>Contactez-nous via le <a href="{{ path('app_page_contact') }}">formulaire de contact</a>.</p>
-            </div>
-        </article>
-    </div>
-</div>
+			<article class="mb-5">
+				<h3>4. Vos droits</h3>
+				<div class="ps-4">
+					<p>Conformément au RGPD, vous pouvez :</p>
+					<ul>
+						<li>Accéder à vos données</li>
+						<li>Demander leur rectification</li>
+						<li>Demander leur suppression</li>
+					</ul>
+					<p>Contactez-nous via le
+						<a href="{{ path('app_page_contact') }}">formulaire de contact</a>.</p>
+				</div>
+			</article>
+			<article class="mb-5">
+				<h3>5. Conservation des données</h3>
+				<div class="ps-4">
+					<p>Vos données sont conservées pendant :</p>
+					<ul>
+						<li>Comptes actifs : Jusqu'à suppression par l'utilisateur</li>
+						<li>Comptes inactifs : 3 ans après dernière connexion</li>
+						<li>Données de navigation : 13 mois</li>
+					</ul>
+				</div>
+			</article>
+			<article class="mb-5">
+				<h3>6. Destinataires des données</h3>
+				<div class="ps-4">
+					<p>Nous partageons vos données avec :</p>
+					<ul>
+						<li>Notre hébergeur :
+						</li>
+						<li>Notre service d'emails :
+						</li>
+						<li>Aucun autre tiers sans consentement</li>
+					</ul>
+				</div>
+			</article>
+			<article class="mb-5">
+				<h3>7. Contact RGPD</h3>
+				<div class="ps-4">
+					<p>Notre Délégué à la Protection des Données :</p>
+					<address>
+						Email : dpo@entraide20.com<br>
+						Adresse :
+					</address>
+				</div>
+			</article>
+		</div>
+	</div>
+	<div class="card-footer text-muted small">
+		Éditeur : [Nom société]<br>
+		RCS : [Numéro RCS]<br>
+		Directeur de publication : [Nom responsable]
+	</div>
+	<p class="text-end small text-muted mt-4">
+		Dernière mise à jour : 25/09/2023
+	</p>
+	<a href="javascript:window.print()" class="btn btn-outline-secondary">
+		<i class="bi bi-printer"></i>
+		Version imprimable
+	</a>
 {% endblock %}

@@ -46,6 +46,7 @@ security:
     - { path: ^/recherche, roles: ROLE_USER }
     - { path: ^/blog, roles: ROLE_USER }
     - { path: ^/forum, roles: ROLE_USER }
+    - { path: ^/evenement, roles: ROLE_USER }
     - { path: ^/admin, roles: ROLE_ADMIN }
 
 when@test:

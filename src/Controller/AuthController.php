@@ -34,7 +34,10 @@ class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
+            if (!$form->get('agreeTerms')->getData()) {
+                $this->addFlash('error', 'Vous devez accepter les conditions générales.');
+                return $this->redirectToRoute('app_auth_register');
+            }
             // Hash du mot de passe
             $user->setPassword(
                 $passwordHasher->hashPassword(

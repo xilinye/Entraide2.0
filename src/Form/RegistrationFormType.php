@@ -6,7 +6,8 @@ use App\Entity\User;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\Validator\Constraints\{Regex, Length, NotBlank, Email};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\{TextType, EmailType, PasswordType, RepeatedType};
+use Symfony\Component\Form\Extension\Core\Type\{TextType, EmailType, PasswordType, RepeatedType, CheckboxType};
+use Symfony\Component\Validator\Constraints as Assert;
 
 class RegistrationFormType extends AbstractType
 {
@@ -58,6 +59,16 @@ class RegistrationFormType extends AbstractType
                 ],
                 'second_options' => ['label' => 'Confirmation'],
                 'mapped' => false
+            ])
+            ->add('agreeTerms', CheckboxType::class, [
+                'mapped' => false,
+                'constraints' => [
+                    new Assert\IsTrue([
+                        'message' => 'Vous devez accepter nos conditions.',
+                    ]),
+                ],
+                'label' => false,
+                'required' => true,
             ]);
     }
 
