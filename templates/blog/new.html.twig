@@ -74,7 +74,8 @@
 			</div>
 		</div>
 	</div>
-
+{% endblock %}
+{% block stylesheets %}
 	<style>
 		.file-upload-wrapper {
 			transition: all 0.3s ease;
@@ -100,7 +101,8 @@
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 		}
 	</style>
-
+{% endblock %}
+{% block javascripts %}
 	<script>
 		function previewFile() {
 const preview = document.getElementById('preview');
