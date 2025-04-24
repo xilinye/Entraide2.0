@@ -347,6 +347,8 @@ button {
     padding: 1rem 2.5rem;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    position: relative;
+    z-index: 10;
 }
 .cta-button:hover {
     background: #4CAF50 !important;

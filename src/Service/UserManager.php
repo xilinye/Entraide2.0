@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\{User, ConversationDeletion, BlogPost};
+use App\Entity\{User, ConversationDeletion, BlogPost, Forum, ForumResponse, Rating, Event};
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -71,10 +71,52 @@ class UserManager
 
     private function handleSoftDelete(User $user): void
     {
+        $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
+
+        // Transfert des réponses de forum
+        $this->em->createQueryBuilder()
+            ->update(ForumResponse::class, 'fr')
+            ->set('fr.author', ':anonymous')
+            ->where('fr.author = :user')
+            ->setParameter('anonymous', $anonymousUser)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        // Transfert des événements organisés
+        $this->em->createQueryBuilder()
+            ->update(Event::class, 'e')
+            ->set('e.organizer', ':anonymous')
+            ->where('e.organizer = :user')
+            ->setParameter('anonymous', $anonymousUser)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        // Gestion des évaluations
+        // Supprime les évaluations où l'utilisateur est l'auteur (rater)
+        $this->em->createQueryBuilder()
+            ->delete(Rating::class, 'r')
+            ->where('r.rater = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        // Transfère les évaluations où l'utilisateur est évalué (ratedUser) à l'utilisateur anonyme
+        $this->em->createQueryBuilder()
+            ->update(Rating::class, 'r')
+            ->set('r.ratedUser', ':anonymousUser')
+            ->where('r.ratedUser = :user')
+            ->setParameter('anonymousUser', $anonymousUser)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
         $this->transferConversationDeletions($user);
         $this->cleanOtherUserDeletions($user);
         $this->anonymizer->anonymize($user);
-        $this->em->remove($user);
+        // Ne PAS appeler remove($user) ici
+        $this->em->flush(); // S'assurer que les changements sont sauvegardés
     }
 
     private function transferConversationDeletions(User $user): void
@@ -103,6 +145,30 @@ class UserManager
 
     private function hardDeleteUser(User $user): void
     {
+        // Suppression des réponses de forum
+        $this->em->createQueryBuilder()
+            ->delete(ForumResponse::class, 'fr')
+            ->where('fr.author = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        // Suppression des événements organisés
+        $this->em->createQueryBuilder()
+            ->delete(Event::class, 'e')
+            ->where('e.organizer = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
+        // Suppression des notes données/reçues
+        $this->em->createQueryBuilder()
+            ->delete(Rating::class, 'r')
+            ->where('r.rater = :user OR r.ratedUser = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+
         // Suppression massive des dépendances
         $this->em->createQueryBuilder()
             ->delete(ConversationDeletion::class, 'cd')
