@@ -28,19 +28,19 @@
 						<div class="mb-4">
 							{{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
 							{{ form_widget(form.title, {'attr': {
-                            'class': 'form-control form-control-lg rounded-3',
-                            'placeholder': 'Titre de l\'article'
-                        }}) }}
-                    </div>
+                                'class': 'form-control form-control-lg rounded-3',
+                                'placeholder': 'Titre de l\'article'
+                            }}) }}
+						</div>
 
-                    <!-- Section Contenu -->
-                    <div class="mb-4">
-                        {{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.content, {'attr': {
-                            'class': 'form-control rounded-3',
-                            'rows': 8,
-                            'placeholder': 'Contenu de l\'article...'
-                        }}) }}
+						<!-- Section Contenu -->
+						<div class="mb-4">
+							{{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+							{{ form_widget(form.content, {'attr': {
+                                'class': 'form-control rounded-3',
+                                'rows': 8,
+                                'placeholder': 'Contenu de l\'article...'
+                            }}) }}
 							<div class="form-text mt-2">Utilisez le Markdown pour la mise en forme</div>
 						</div>
 
@@ -67,69 +67,72 @@
 							<!-- Upload de nouvelle image -->
 							<div class="file-upload-wrapper">
 								{{ form_widget(form.imageFile, {'attr': {
-                                'class': 'form-control visually-hidden',
-                                'onchange': 'previewFile()'
-                            }}) }}
+                                    'class': 'form-control visually-hidden',
+                                    'onchange': 'previewFile()'}}) }}
 								<label for="{{ form.imageFile.vars.id }}" class="btn btn-outline-success w-100 py-3">
 									<i class="bi bi-cloud-upload me-2"></i>
 									{{ post.imageName ? 'Changer l\'image' : 'Ajouter une image' }}
-                            </label>
-                            <div class="form-text mt-2">Formats supportés : JPG, PNG (Max 5Mo)</div>
-                            <div id="preview" class="mt-3 text-center"></div>
-                        </div>
-                    </div>
+								</label>
+								<div class="form-text mt-2">Formats supportés : JPG, PNG (Max 5Mo)</div>
+								<div id="preview" class="mt-3 text-center"></div>
+							</div>
+						</div>
 
-                    <!-- Boutons d'action -->
-                    <div class="d-flex justify-content-between align-items-center border-top pt-4">
-                        <a href="{{ path('app_blog_show', {'slug': post.slug}) }}" 
-                           class="btn btn-outline-secondary px-4">
-                            <i class="bi bi-x-circle me-2"></i>Annuler
-                        </a>
-                        <button type="submit" class="btn btn-success px-5 py-2">
-                            <i class="bi bi-save2 me-2"></i>Enregistrer
-                        </button>
-                    </div>
-
-                    {{ form_end(form) }}
+						<!-- Boutons d'action -->
+						<div class="d-flex justify-content-between align-items-center border-top pt-4">
+							<a href="{{ path('app_blog_show', {'slug': post.slug}) }}" 
+							   class="btn btn-outline-secondary px-4">
+								<i class="bi bi-x-circle me-2"></i>Annuler
+							</a>
+							<button type="submit" class="btn btn-success px-5 py-2">
+								<i class="bi bi-save2 me-2"></i>Enregistrer
+							</button>
+						</div>
+						{{ form_end(form) }}
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{% block stylesheets %}
+	<style>
+		.file-upload-wrapper {
+			transition: transform 0.2s ease;
+		}
 
-				<style>
-					.file-upload-wrapper {
-						transition: transform 0.2s ease;
-					}
+		.file-upload-wrapper:hover {
+			transform: translateY(-2px);
+		}
 
-					.file-upload-wrapper:hover {
-						transform: translateY(-2px);
-					}
+		.current-image {
+			background-color: #f8f9fa;
+			border: 2px dashed #dee2e6 !important;
+		}
 
-					.current-image {
-						background-color: #f8f9fa;
-						border: 2px dashed #dee2e6 !important;
-					}
+		.form-control {
+			border: 2px solid #dee2e6;
+			transition: border-color 0.3s ease;
+		}
 
-					.form-control {
-						border: 2px solid #dee2e6;
-						transition: border-color 0.3s ease;
-					}
+		.form-control:focus {
+			border-color: #198754;
+			box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+		}
 
-					.form-control:focus {
-						border-color: #198754;
-						box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-					}
-
-					#preview img {
-						max-width: 250px;
-						border-radius: 12px;
-						box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-					}
-				</style>
-
-				<script>
-					function previewFile() {
+		#preview img {
+			max-width: 250px;
+			border-radius: 12px;
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+		}
+	</style>
+{% endblock %}
+{% block javascripts %}
+	<script>
+		function previewFile() {
 const preview = document.getElementById('preview');
 const file = document.querySelector('input[type=file]').files[0];
 const reader = new FileReader();
@@ -150,5 +153,5 @@ reader.readAsDataURL(file);
 preview.innerHTML = '';
 }
 }
-				</script>
-			{% endblock %}
+	</script>
+{% endblock %}

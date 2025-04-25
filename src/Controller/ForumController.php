@@ -163,11 +163,11 @@ class ForumController extends AbstractController
             if ($imageFile) {
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
                 $imageFile->move(
-                    $this->getParameter('forum_images_directory'),
+                    $this->getParameter('forumResponse_images_directory'),
                     $newFilename
                 );
                 $response->setImageName($newFilename);
-                $response->setImageFile(null); // Important pour éviter les erreurs
+                $response->setImageFile(null);
             }
 
             $response->setForum($forum)

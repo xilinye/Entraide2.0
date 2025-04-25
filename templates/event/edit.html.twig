@@ -139,14 +139,16 @@
 					</div>
 				</div>
 			</div>
-		{% endblock %}
+		</div>
+	</div>
+{% endblock %}
 
-		{% block javascripts %}
-			{{ parent() }}
-			<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-			<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-			<script>
-				document.addEventListener('DOMContentLoaded', function () {
+{% block javascripts %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
 const options = {
 enableTime: true,
 dateFormat: "Y-m-d H:i",
@@ -158,11 +160,11 @@ altFormat: "j F Y à H:i",
 allowInput: true
 };
 
-flatpickr('# {{ form.startDate.vars.id }}', options);
-flatpickr('# {{ form.endDate.vars.id }}', {
+flatpickr('#    {{ form.startDate.vars.id }}', options);
+flatpickr('#    {{ form.endDate.vars.id }}', {
 ... options,
 minDate: document.getElementById('{{ form.startDate.vars.id }}').value
 });
 });
-			</script>
-		{% endblock %}
+	</script>
+{% endblock %}

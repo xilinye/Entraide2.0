@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[Route('/profile', name: 'app_profile_')]
 #[IsGranted('ROLE_USER')]
@@ -137,12 +138,26 @@ class ProfileController extends AbstractController
         if ($file) {
             $uploadsDir = $this->getParameter('profile_images_directory');
             $filename = md5(uniqid()) . '.' . $file->guessExtension();
+            $oldImage = $user->getProfileImage();
 
-            $file->move($uploadsDir, $filename);
-            $user->setProfileImage($filename);
+            try {
+                $file->move($uploadsDir, $filename);
+                $user->setProfileImage($filename);
+                $this->userManager->saveUser($user, true);
 
-            $this->userManager->saveUser($user, true);
-            $this->addFlash('success', 'Photo de profil mise à jour !');
+                // Delete old image after successful update
+                if ($oldImage) {
+                    $filesystem = new Filesystem();
+                    $oldImagePath = $uploadsDir . '/' . $oldImage;
+                    if ($filesystem->exists($oldImagePath)) {
+                        $filesystem->remove($oldImagePath);
+                    }
+                }
+
+                $this->addFlash('success', 'Photo de profil mise à jour !');
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur lors de la mise à jour de la photo de profil');
+            }
         }
 
         return $this->redirectToRoute('app_profile_index');

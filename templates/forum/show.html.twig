@@ -324,7 +324,7 @@
 										<p class="mb-0">{{ response.content|nl2br }}</p>
 										{% if response.imageName %}
 											<div class="mt-3">
-												<img src="{{ asset('uploads/forum/' ~ response.imageName) }}" alt="Image jointe" class="img-fluid rounded" style="max-height: 300px;">
+												<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" alt="Image jointe" class="img-fluid rounded" style="max-height: 300px;">
 											</div>
 										{% endif %}
 									</div>
@@ -448,4 +448,5 @@
 				Retour
 			</a>
 		</div>
-	{% endblock %}
+	</div>
+{% endblock %}

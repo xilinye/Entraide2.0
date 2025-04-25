@@ -102,53 +102,53 @@
 {% endblock %}
 
 {% block body %}
-	<div class="edit-response-header">
-		<div class="container">
-			<h2 class="display-6 fw-bold text-dark mb-0">Modifier la réponse</h2>
-		</div>
-	</div>
-
+<div class="edit-response-header">
 	<div class="container">
-		<div class="edit-form-container">
-			{{ form_start(form) }}
-			<div class="mb-4">
-				{{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold mb-3'}}) }}
-				{{ form_widget(form.content, {'attr': {'class': 'content-editor'}}) }}
-			</div>
+		<h2 class="display-6 fw-bold text-dark mb-0">Modifier la réponse</h2>
+	</div>
+</div>
 
-			<div class="mb-4">
-				{% if response.imageName %}
-					<div class="current-image-section">
-						<label classform-label fw-bold mb-3">Image actuelle :</label>
-						<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" class="image-preview mb-3" alt="Image actuelle de la réponse">
+<div class="container">
+	<div class="edit-form-container">
+		{{ form_start(form) }}
+		<div class="mb-4">
+			{{ form_label(form.content, null, {'label_attr': {'class': 'form-label fw-bold mb-3'}}) }}
+			{{ form_widget(form.content, {'attr': {'class': 'content-editor'}}) }}
+		</div>
 
-						<div class="delete-checkbox">
-							<div class="form-check">
-								<input type="checkbox" class="form-check-input" id="removeImage" name="removeImage">
-								<label class="form-check-label text-danger fw-medium" for="removeImage">
-									<i class="bi bi-trash me-2"></i>
-									Supprimer cette image
-								</label>
-							</div>
+		<div class="mb-4">
+			{% if response.imageName %}
+				<div class="current-image-section">
+					<label classform-label fw-bold mb-3">Image actuelle :</label>
+					<img src="{{ asset('uploads/forumResponse/' ~ response.imageName) }}" class="image-preview mb-3" alt="Image actuelle de la réponse"/>
+
+					<div class="delete-checkbox">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="removeImage" name="removeImage"/>
+							<label class="form-check-label text-danger fw-medium" for="removeImage">
+								<i class="bi bi-trash me-2"></i>
+								Supprimer cette image
+							</label>
 						</div>
 					</div>
-				{% else %}
-					<p class="text-muted fst-italic">Aucune image associée</p>
-				{% endif %}
-
-				<div class="file-upload-area mt-4">
-					<div class="mb-3">
-						<i class="bi bi-image text-success fs-1"></i>
-					</div>
-					<div class="mb-2 text-muted">
-						Glissez votre image ici ou cliquez pour télécharger
-					</div>
-					<small class="text-muted">
-						Formats acceptés : JPEG, PNG (max 5Mo)
-					</small>
-					{{ form_widget(form.imageFile, {'attr': {'class': 'd-none'}}) }}
 				</div>
-			</div>
+			{% else %}
+				<p class="text-muted fst-italic">Aucune image associée</p>
+			{% endif %}
+
+			<!-- Upload de nouvelle image -->
+			<div class="file-upload-wrapper">
+				{{ form_widget(form.imageFile, {'attr': {
+                                'class': 'form-control visually-hidden',
+                                'onchange': 'previewFile()'
+                            }}) }}
+				<label for="{{ form.imageFile.vars.id }}" class="btn btn-outline-success w-100 py-3">
+					<i class="bi bi-cloud-upload me-2"></i>
+					{{ response.imageName ? 'Changer l\'image' : 'Ajouter une image' }}
+                </label>
+                            <div class="form-text mt-2">Formats supportés : JPG, PNG (Max 5Mo)</div>
+                            <div id="preview" class="mt-3 text-center"></div>
+            </div>
 
 			<div class="d-flex gap-3 mt-5">
 				<button type="submit" class="btn btn-save">
@@ -162,4 +162,5 @@
 			{{ form_end(form) }}
 		</div>
 	</div>
+</div>
 {% endblock %}
