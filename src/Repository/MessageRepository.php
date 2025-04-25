@@ -19,7 +19,7 @@ class MessageRepository extends ServiceEntityRepository
             ->select([
                 'CASE WHEN m.sender = :user THEN r.id ELSE s.id END AS other_user_id',
                 'COALESCE(MAX(CASE WHEN m.sender = :user THEN r.pseudo ELSE s.pseudo END), \'Utilisateur supprimé\') AS other_user_pseudo',
-                'm.title as last_title',
+                'm.title as conversation_title',
                 'MAX(m.createdAt) as last_message_date',
                 'SUM(CASE WHEN m.receiver = :user AND m.isRead = false THEN 1 ELSE 0 END) as unread_count',
                 'MAX(cd.deletedAt) as deletion_date'
@@ -30,7 +30,7 @@ class MessageRepository extends ServiceEntityRepository
                 'App\Entity\ConversationDeletion',
                 'cd',
                 'WITH',
-                'cd.user = :user AND cd.otherUser = CASE WHEN m.sender = :user THEN r ELSE s END'
+                'cd.user = :user AND cd.otherUser = CASE WHEN m.sender = :user THEN r ELSE s END AND cd.conversationTitle = m.title'
             )
             ->where('m.sender = :user OR m.receiver = :user')
             ->groupBy('other_user_id, m.title')

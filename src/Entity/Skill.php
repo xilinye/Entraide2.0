@@ -47,6 +47,7 @@ class Skill
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'skills')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Veuillez choisir une catégorie.")]
     private ?Category $category = null;
 
     public function __construct()

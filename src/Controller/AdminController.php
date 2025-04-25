@@ -71,7 +71,11 @@ class AdminController extends AbstractController
                 $this->skillManager->createSkill($skill);
                 $this->addFlash('success', 'Compétence crée avec succès');
             } catch (ValidationFailedException $e) {
-                $this->addFlash('danger', (string) $e->getViolations());
+                $errors = [];
+                foreach ($e->getViolations() as $violation) {
+                    $errors[] = $violation->getMessage();
+                }
+                $this->addFlash('danger', implode('<br>', $errors));
             } catch (\Exception $e) {
                 $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
             }

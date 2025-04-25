@@ -95,29 +95,29 @@ class ProfileController extends AbstractController
     }
 
     #[Route('/supprimer', name: 'delete', methods: ['POST'])]
-    public function deleteAccount(
-        Request $request,
-        Security $security
-    ): Response {
-        $user = $this->getAuthenticatedUser();
+    public function deleteAccount(Request $request, Security $security): Response
+    {
+        if ($this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+            try {
+                $user = $this->getUser();
 
-        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+                if ($this->userManager->shouldBeFullyDeleted($user)) {
+                    $this->addFlash('success', 'Compte supprimé définitivement');
+                } else {
+                    $this->addFlash('warning', 'Vos contributions publiques ont été anonymisées');
+                }
+
+                $this->userManager->deleteUser($user);
+                $security->logout(false);
+                $request->getSession()->invalidate();
+                return $this->redirectToRoute('app_page_home');
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur lors de la suppression : ' . $e->getMessage());
+            }
+        } else {
             $this->addFlash('danger', 'Token CSRF invalide');
-            return $this->redirectToRoute('app_profile_index');
         }
-
-        try {
-            $this->userManager->deleteUser($user);
-
-            $response = $security->logout(false);
-            $request->getSession()->invalidate();
-
-            $this->addFlash('success', 'Compte supprimé avec succès');
-            return $this->redirectToRoute('app_page_home');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur lors de la suppression : ' . $e->getMessage());
-            return $this->redirectToRoute('app_profile_index');
-        }
+        return $this->redirectToRoute('app_profile_index');
     }
 
     private function getAuthenticatedUser(): User

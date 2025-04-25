@@ -6,15 +6,17 @@ use App\Entity\{User, ConversationDeletion};
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
-
 
 class UserManager
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UserAnonymizer $anonymizer,
-        private readonly UserRepository $userRepository
+        private readonly UserRepository $userRepository,
+        private readonly ParameterBagInterface $params,
+        private readonly Filesystem $filesystem
     ) {}
 
     public function promoteToAdmin(User $user): void
@@ -43,20 +45,50 @@ class UserManager
 
     public function deleteUser(User $user): void
     {
-        $this->anonymizer->anonymize($user);
-        $this->cleanConversationDeletions($user);
+        if ($this->shouldBeFullyDeleted($user)) {
+            $this->fullDelete($user);
+        } else {
+            $this->anonymizer->anonymize($user);
+            $this->cleanUserData($user);
+        }
 
-        // Suppression de l'image de profil
+        $this->em->flush();
+    }
+
+    public function shouldBeFullyDeleted(User $user): bool
+    {
+        return $this->countUserRelationships($user) === 0;
+    }
+
+    private function countUserRelationships(User $user): int
+    {
+        return
+            $user->getSentMessages()->count() +
+            $user->getReceivedMessages()->count() +
+            $user->getBlogPosts()->count() +
+            $user->getForums()->count() +
+            $user->getForumResponses()->count() +
+            $user->getOrganizedEvents()->count() +
+            $user->getAttendedEvents()->count() +
+            $user->getRatingsReceived()->count();
+    }
+
+    private function fullDelete(User $user): void
+    {
         if ($user->getProfileImage()) {
-            $fs = new Filesystem();
-            $path = $this->getParameter('profile_images_directory') . '/' . $user->getProfileImage();
-            if ($fs->exists($path)) {
-                $fs->remove($path);
+            $directory = $this->params->get('profile_images_directory');
+            $imagePath = $directory . '/' . $user->getProfileImage();
+            if ($this->filesystem->exists($imagePath)) {
+                $this->filesystem->remove($imagePath);
             }
         }
 
         $this->em->remove($user);
-        $this->em->flush();
+    }
+
+    private function cleanUserData(User $user): void
+    {
+        $this->cleanConversationDeletions($user);
     }
 
     private function cleanConversationDeletions(User $user): void

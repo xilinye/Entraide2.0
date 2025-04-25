@@ -23,11 +23,9 @@ class SkillFormType extends AbstractType
             ->add('category', EntityType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
-                'label' => 'Catégorie',
-                'attr' => [
-                    'class' => 'form-select'
-                ],
-                'placeholder' => 'Choisir une catégorie'
+                'label' => 'Catégorie associée',
+                'required' => true,
+                'placeholder' => 'Choisissez une catégorie'
             ]);
     }
 

@@ -24,6 +24,9 @@ class ConversationDeletion
     #[ORM\Column]
     private ?\DateTimeImmutable $deletedAt = null; // Date de suppression
 
+    #[ORM\Column(length: 255)]
+    private ?string $conversationTitle = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,5 +74,16 @@ class ConversationDeletion
         if ($this->deletedAt === null) {
             $this->deletedAt = new \DateTimeImmutable();
         }
+    }
+
+    public function getConversationTitle(): ?string
+    {
+        return $this->conversationTitle;
+    }
+
+    public function setConversationTitle(string $conversationTitle): static
+    {
+        $this->conversationTitle = $conversationTitle;
+        return $this;
     }
 }

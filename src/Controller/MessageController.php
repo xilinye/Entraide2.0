@@ -192,37 +192,31 @@ class MessageController extends AbstractController
     }
 
     #[Route('/conversation/{id}/delete', name: 'delete_conversation', methods: ['POST'])]
-    public function deleteConversation(
-        Request $request,
-        User $otherUser,
-        EntityManagerInterface $em,
-        MessageRepository $messageRepository
-    ): Response {
-        $csrfToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete_conversation_' . $otherUser->getId(), $csrfToken)) {
-            $this->addFlash('error', 'Jeton de sécurité invalide');
-            return $this->redirectToRoute('app_message_index');
-        }
-
+    public function deleteConversation(Request $request, User $otherUser, EntityManagerInterface $em): Response
+    {
         $user = $this->getUser();
+        $title = $request->request->get('title');
 
-        $existingDeletion = $em->getRepository(ConversationDeletion::class)->findOneBy([
-            'user' => $user,
-            'otherUser' => $otherUser
-        ]);
+        if ($this->isCsrfTokenValid('delete_conversation_' . $otherUser->getId() . '_' . $title, $request->request->get('_token'))) {
+            $existingDeletion = $em->getRepository(ConversationDeletion::class)->findOneBy([
+                'user' => $user,
+                'otherUser' => $otherUser,
+                'conversationTitle' => $title
+            ]);
 
-        if ($existingDeletion) {
-            $existingDeletion->setDeletedAt(new \DateTimeImmutable());
-        } else {
-            $deletion = new ConversationDeletion();
-            $deletion->setUser($user)
-                ->setOtherUser($otherUser)
-                ->setDeletedAt(new \DateTimeImmutable());
-            $em->persist($deletion);
+            if (!$existingDeletion) {
+                $deletion = new ConversationDeletion();
+                $deletion->setUser($user)
+                    ->setOtherUser($otherUser)
+                    ->setConversationTitle($title)
+                    ->setDeletedAt(new \DateTimeImmutable());
+
+                $em->persist($deletion);
+                $em->flush();
+            }
+
+            $this->addFlash('success', 'Conversation masquée avec succès');
         }
-
-        $em->flush();
-        $this->addFlash('success', 'Conversation masquée avec succès');
 
         return $this->redirectToRoute('app_message_index');
     }

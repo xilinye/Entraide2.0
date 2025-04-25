@@ -88,6 +88,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Event::class)]
     private Collection $organizedEvents;
 
+    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'attendees')]
+    private Collection $attendedEvents;
+
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $profileImage = null;
 
@@ -479,6 +482,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    public function getAttendedEvents(): Collection
+    {
+        return $this->attendedEvents;
+    }
+
+    public function addAttendedEvent(Event $event): self
+    {
+        if (!$this->attendedEvents->contains($event)) {
+            $this->attendedEvents->add($event);
+            $event->addAttendee($this);
+        }
+        return $this;
+    }
+
+    public function removeAttendedEvent(Event $event): self
+    {
+        if ($this->attendedEvents->removeElement($event)) {
+            $event->removeAttendee($this);
+        }
         return $this;
     }
 

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250424222659 extends AbstractMigration
+final class Version20250425230904 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -27,7 +27,7 @@ final class Version20250424222659 extends AbstractMigration
             CREATE TABLE category (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE conversation_deletion (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, other_user_id INT NOT NULL, deleted_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_CD936635A76ED395 (user_id), INDEX IDX_CD936635B4334DF9 (other_user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE conversation_deletion (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, other_user_id INT NOT NULL, deleted_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', conversation_title VARCHAR(255) NOT NULL, INDEX IDX_CD936635A76ED395 (user_id), INDEX IDX_CD936635B4334DF9 (other_user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE event (id INT AUTO_INCREMENT NOT NULL, organizer_id INT NOT NULL, title VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, start_date DATETIME NOT NULL, end_date DATETIME NOT NULL, location VARCHAR(255) NOT NULL, max_attendees INT NOT NULL, image_name VARCHAR(255) DEFAULT NULL, INDEX IDX_3BAE0AA7876C4DDA (organizer_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -55,6 +55,9 @@ final class Version20250424222659 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE user_skill (user_id INT NOT NULL, skill_id INT NOT NULL, INDEX IDX_BCFF1F2FA76ED395 (user_id), INDEX IDX_BCFF1F2F5585C142 (skill_id), PRIMARY KEY(user_id, skill_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE user_event (user_id INT NOT NULL, event_id INT NOT NULL, INDEX IDX_D96CF1FFA76ED395 (user_id), INDEX IDX_D96CF1FF71F7E88B (event_id), PRIMARY KEY(user_id, event_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', available_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', delivered_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -118,6 +121,12 @@ final class Version20250424222659 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE user_skill ADD CONSTRAINT FK_BCFF1F2F5585C142 FOREIGN KEY (skill_id) REFERENCES skill (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE user_event ADD CONSTRAINT FK_D96CF1FFA76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE user_event ADD CONSTRAINT FK_D96CF1FF71F7E88B FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
         SQL);
     }
 
@@ -185,6 +194,12 @@ final class Version20250424222659 extends AbstractMigration
             ALTER TABLE user_skill DROP FOREIGN KEY FK_BCFF1F2F5585C142
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE user_event DROP FOREIGN KEY FK_D96CF1FFA76ED395
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE user_event DROP FOREIGN KEY FK_D96CF1FF71F7E88B
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE blog_post
         SQL);
         $this->addSql(<<<'SQL'
@@ -219,6 +234,9 @@ final class Version20250424222659 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE user_skill
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE user_event
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE messenger_messages
