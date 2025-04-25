@@ -246,6 +246,11 @@
 		transform: scale(1.05);
 	}
 
+	.default-profile-image {
+		filter: grayscale(100%);
+		opacity: 0.8;
+	}
+
 	.avatar-edit-overlay {
 		position: absolute;
 		top: 0;
@@ -258,6 +263,7 @@
 		justify-content: center;
 		opacity: 0;
 		transition: opacity 0.3s ease;
+		cursor: pointer;
 	}
 
 	.avatar-container:hover .avatar-edit-overlay {
@@ -282,16 +288,17 @@
 			<h1 class="h3 mb-3">
 				<i class="bi bi-person-badge me-2"></i>Mon Profil
 			</h1>
-			<label for="profileImageInput" class="avatar-container mx-auto bg-white">
-				<div class="avatar-edit-overlay">
-					<i class="bi bi-camera text-white fs-1"></i>
-				</div>
+			<div class="avatar-container mx-auto bg-white position-relative">
 				{% if user.profileImage %}
 					<img src="{{ asset('uploads/profile/' ~ user.profileImage) }}" class="profile-image rounded-circle" alt="Photo de profil">
 				{% else %}
-					<i class="bi bi-person-circle fs-1 text-primary"></i>
+					<img src="{{ asset('images/default-profile.png') }}" class="profile-image rounded-circle" alt="Image par défaut">
 				{% endif %}
-			</label>
+
+				<div class="avatar-edit-overlay">
+					<i class="bi bi-camera text-white fs-3"></i>
+				</div>
+			</div>
 			<form id="profileImageForm" action="{{ path('app_profile_image_update') }}" method="POST" enctype="multipart/form-data">
 				<input type="file" name="profile_image" id="profileImageInput" accept="image/*">
 				<input type="hidden" name="_token" value="{{ csrf_token('profile_image') }}">
@@ -436,24 +443,16 @@
 </div>{% endblock %}{% block javascripts %}
 {{ parent() }}
 <script>
-	document.getElementById('profileImageInput').addEventListener('change', function () {
+	document.querySelector('.avatar-container').addEventListener('click', function () {
+document.getElementById('profileImageInput').click();
+});
+
+document.getElementById('profileImageInput').addEventListener('change', function () {
 if (this.files && this.files[0]) {
 const reader = new FileReader();
-
 reader.onload = function (e) {
-const img = document.querySelector('.profile-image');
-if (img) {
-img.src = e.target.result;
-} else {
-const icon = document.querySelector('.bi-person-circle');
-if (icon) {
-icon.parentElement.innerHTML = `<img src="${
-e.target.result
-}" class="profile-image rounded-circle">`;
-}
-}
+document.querySelector('.profile-image').src = e.target.result;
 };
-
 reader.readAsDataURL(this.files[0]);
 document.getElementById('profileImageForm').submit();
 }

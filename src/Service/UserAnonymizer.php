@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\{User, Message};
+use App\Entity\{User, Message, Rating};
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -19,6 +19,12 @@ class UserAnonymizer
 
         $this->processMessages($user, $anonymousUser);
         $this->processBlogPosts($user, $anonymousUser);
+        $this->processEvents($user, $anonymousUser);
+        $this->processForums($user, $anonymousUser);
+        $this->processForumResponses($user, $anonymousUser);
+        $this->processRatings($user, $anonymousUser);
+
+        $this->em->flush();
     }
 
     private function processMessages(User $user, User $anonymousUser): void
@@ -70,5 +76,44 @@ class UserAnonymizer
         foreach ($user->getBlogPosts() as $post) {
             $post->setAuthor($anonymousUser);
         }
+    }
+
+    private function processEvents(User $user, User $anonymousUser): void
+    {
+        foreach ($user->getOrganizedEvents() as $event) {
+            $event->setOrganizer($anonymousUser);
+        }
+        $this->em->flush();
+    }
+
+    private function processForums(User $user, User $anonymousUser): void
+    {
+        foreach ($user->getForums() as $forum) {
+            $forum->setAuthor($anonymousUser);
+        }
+        $this->em->flush();
+    }
+
+    private function processForumResponses(User $user, User $anonymousUser): void
+    {
+        foreach ($user->getForumResponses() as $response) {
+            $response->setAuthor($anonymousUser);
+        }
+        $this->em->flush();
+    }
+
+    private function processRatings(User $user, User $anonymousUser): void
+    {
+        $ratingsGiven = $this->em->getRepository(Rating::class)->findBy(['rater' => $user]);
+        foreach ($ratingsGiven as $rating) {
+            $rating->setRater($anonymousUser);
+        }
+
+        $ratingsReceived = $this->em->getRepository(Rating::class)->findBy(['ratedUser' => $user]);
+        foreach ($ratingsReceived as $rating) {
+            $rating->setRatedUser($anonymousUser);
+        }
+
+        $this->em->flush();
     }
 }

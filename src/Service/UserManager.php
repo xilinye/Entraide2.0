@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
-use App\Entity\{User, ConversationDeletion, BlogPost};
+use App\Entity\{User, ConversationDeletion};
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Filesystem\Filesystem;
+
 
 class UserManager
 {
@@ -41,15 +43,19 @@ class UserManager
 
     public function deleteUser(User $user): void
     {
-        // Nettoyage initial des dépendances
+        $this->anonymizer->anonymize($user);
         $this->cleanConversationDeletions($user);
 
-        if ($this->shouldDeletePermanently($user)) {
-            $this->hardDeleteUser($user);
-        } else {
-            $this->handleSoftDelete($user); // Utilisation de la méthode dédiée
+        // Suppression de l'image de profil
+        if ($user->getProfileImage()) {
+            $fs = new Filesystem();
+            $path = $this->getParameter('profile_images_directory') . '/' . $user->getProfileImage();
+            if ($fs->exists($path)) {
+                $fs->remove($path);
+            }
         }
 
+        $this->em->remove($user);
         $this->em->flush();
     }
 
@@ -61,66 +67,6 @@ class UserManager
             ->setParameter('user', $user)
             ->getQuery()
             ->execute();
-    }
-
-    private function shouldDeletePermanently(User $user): bool
-    {
-        return $user->getSentMessages()->isEmpty()
-            && $user->getReceivedMessages()->isEmpty();
-    }
-
-    private function handleSoftDelete(User $user): void
-    {
-        $this->transferConversationDeletions($user);
-        $this->cleanOtherUserDeletions($user);
-        $this->anonymizer->anonymize($user);
-        $this->em->remove($user);
-    }
-
-    private function transferConversationDeletions(User $user): void
-    {
-        $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
-
-        $this->em->createQueryBuilder()
-            ->update(ConversationDeletion::class, 'cd')
-            ->set('cd.user', ':anonymousUser')
-            ->where('cd.user = :user')
-            ->setParameter('user', $user)
-            ->setParameter('anonymousUser', $anonymousUser)
-            ->getQuery()
-            ->execute();
-    }
-
-    private function cleanOtherUserDeletions(User $user): void
-    {
-        $this->em->createQueryBuilder()
-            ->delete(ConversationDeletion::class, 'cd')
-            ->where('cd.otherUser = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->execute();
-    }
-
-    private function hardDeleteUser(User $user): void
-    {
-        // Suppression massive des dépendances
-        $this->em->createQueryBuilder()
-            ->delete(ConversationDeletion::class, 'cd')
-            ->where('cd.user = :user OR cd.otherUser = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->execute();
-
-        // Suppression en cascade des entités liées
-        $this->em->createQueryBuilder()
-            ->delete(BlogPost::class, 'bp')
-            ->where('bp.author = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->execute();
-
-        // Suppression finale
-        $this->em->remove($user);
     }
 
     public function saveUser(User $user, bool $flush = true): void

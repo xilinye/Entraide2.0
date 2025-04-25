@@ -145,7 +145,6 @@ class ProfileController extends AbstractController
                 $user->setProfileImage($filename);
                 $this->userManager->saveUser($user, true);
 
-                // Delete old image after successful update
                 if ($oldImage) {
                     $filesystem = new Filesystem();
                     $oldImagePath = $uploadsDir . '/' . $oldImage;
@@ -158,6 +157,32 @@ class ProfileController extends AbstractController
             } catch (\Exception $e) {
                 $this->addFlash('danger', 'Erreur lors de la mise à jour de la photo de profil');
             }
+        }
+
+        return $this->redirectToRoute('app_profile_index');
+    }
+
+    #[Route('/image/delete', name: 'image_delete', methods: ['POST'])]
+    public function deleteProfileImage(Request $request): Response
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if (!$this->isCsrfTokenValid('delete_profile_image', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide');
+            return $this->redirectToRoute('app_profile_index');
+        }
+
+        $oldImage = $user->getProfileImage();
+        if ($oldImage) {
+            $uploadsDir = $this->getParameter('profile_images_directory');
+            $filesystem = new Filesystem();
+            $oldImagePath = $uploadsDir . '/' . $oldImage;
+            if ($filesystem->exists($oldImagePath)) {
+                $filesystem->remove($oldImagePath);
+            }
+            $user->setProfileImage(null);
+            $this->userManager->saveUser($user, true);
+            $this->addFlash('success', 'Photo de profil supprimée avec succès');
         }
 
         return $this->redirectToRoute('app_profile_index');

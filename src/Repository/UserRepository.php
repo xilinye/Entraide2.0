@@ -126,7 +126,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $anonymousUser->setPassword(bin2hex(random_bytes(16)));
             $anonymousUser->setIsVerified(true);
             $anonymousUser->setRoles(['ROLE_ANONYMOUS']);
-
             $this->em->persist($anonymousUser);
             $this->em->flush();
         }
