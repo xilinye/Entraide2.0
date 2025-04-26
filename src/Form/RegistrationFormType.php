@@ -55,6 +55,10 @@ class RegistrationFormType extends AbstractType
                             'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères',
                             'max' => 4096,
                         ]),
+                        new Regex([
+                            'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/',
+                            'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
+                        ])
                     ],
                 ],
                 'second_options' => ['label' => 'Confirmation'],

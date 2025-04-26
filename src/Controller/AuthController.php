@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Form\RegistrationFormType;
+use App\Form\{RegistrationFormType, NewPasswordFormType};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -204,10 +204,14 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_auth_forgot_password_request');
         }
 
-        if ($request->isMethod('POST')) {
-            $newPassword = $request->request->get('password');
+        // Création du formulaire de mot de passe
+        $form = $this->createForm(NewPasswordFormType::class);
+        $form->handleRequest($request);
 
-            // Validation du mot de passe
+        if ($form->isSubmitted() && $form->isValid()) {
+            $newPassword = $form->get('plainPassword')->getData();
+
+            // Validation et mise à jour
             $user->setPassword(
                 $passwordHasher->hashPassword($user, $newPassword)
             );
@@ -220,7 +224,7 @@ class AuthController extends AbstractController
         }
 
         return $this->render('auth/reset_password.html.twig', [
-            'token' => $token
+            'form' => $form->createView()
         ]);
     }
 }

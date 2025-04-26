@@ -58,6 +58,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->createQueryBuilder('u')
             ->where('u.deletedAt IS NULL')
+            ->andWhere('u.roles NOT LIKE :role')
+            ->setParameter('role', '%ROLE_ANONYMOUS%')
             ->orderBy('u.createdAt', 'DESC')
             ->setMaxResults($maxResults)
             ->getQuery()
@@ -68,6 +70,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->createQueryBuilder('u')
             ->where('u.deletedAt IS NULL')
+            ->andWhere('u.roles NOT LIKE :role')
+            ->setParameter('role', '%ROLE_ANONYMOUS%')
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
@@ -156,6 +160,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.deletedAt IS NULL')
+            ->andWhere('u.roles NOT LIKE :role')
+            ->setParameter('role', '%ROLE_ANONYMOUS%')
             ->getQuery()
             ->getSingleScalarResult();
     }

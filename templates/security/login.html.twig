@@ -52,7 +52,12 @@
 
 							<div class="mb-4">
 								<label for="inputPassword" class="form-label fw-medium">Mot de passe</label>
-								<input type="password" name="password" id="inputPassword" class="form-control form-control-lg rounded-3" placeholder="••••••••" autocomplete="current-password" required>
+								<div class="input-group">
+									<input type="password" name="password" id="inputPassword" class="form-control form-control-lg rounded-3 password-input" placeholder="••••••••" autocomplete="current-password" required>
+									<button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Afficher le mot de passe">
+										<i class="bi bi-eye-slash"></i>
+									</button>
+								</div>
 							</div>
 
 							<div class="d-grid gap-2 mt-5">
@@ -79,4 +84,32 @@
 			</div>
 		</div>
 	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const toggleButtons = document.querySelectorAll('.password-toggle');
+
+toggleButtons.forEach(button => {
+button.addEventListener('click', function (e) {
+const input = this.previousElementSibling;
+const icon = this.querySelector('i');
+
+// Toggle input type
+const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+input.setAttribute('type', type);
+
+// Toggle icon
+icon.classList.toggle('bi-eye');
+icon.classList.toggle('bi-eye-slash');
+
+// Accessibilité
+const label = type === 'password' ? 'Afficher le mot de passe' : 'Masquer le mot de passe';
+this.setAttribute('aria-label', label);
+});
+});
+});
+	</script>
 {% endblock %}

@@ -60,28 +60,47 @@
 
 						<div class="mb-4">
 							{{ form_errors(registrationForm.plainPassword) }}
-							{{ form_row(registrationForm.plainPassword.first, {
-                                label: 'Mot de passe',
-                                attr: { 
-                                    class: 'form-control form-control-lg rounded-3',
-                                    placeholder: '8 caractères minimum'
-                                },
-                                row_attr: {class: 'form-group'}
-                            }) }}
 
-							{{ form_row(registrationForm.plainPassword.second, {
-                                label: 'Confirmation',
-                                attr: { 
-                                    class: 'form-control form-control-lg rounded-3',
-                                    placeholder: 'Répétez votre mot de passe'
-                                },
-                                row_attr: {class: 'form-group'}
-                            }) }}
+							<div class="form-group">
+								<label class="form-label">Mot de passe</label>
+								<div class="input-group">
+									{{ form_widget(registrationForm.plainPassword.first, {
+										attr: { 
+											class: 'form-control form-control-lg rounded-3 password-input',
+											placeholder: '8 caractères avec majuscule, minuscule, chiffre et symbole'
+										}
+									}) }}
+									<button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Afficher le mot de passe">
+										<i class="bi bi-eye-slash"></i>
+									</button>
+								</div>
+								<small class="form-text text-muted">
+									Symboles autorisés : ! @ # $ % ^ & * ( ) - + = _ { } [ ] etc.
+								</small>
+								{{ form_errors(registrationForm.plainPassword.first) }}
+							</div>
+
+							<div class="form-group mt-3">
+								<label class="form-label">Confirmation</label>
+								<div class="input-group">
+									{{ form_widget(registrationForm.plainPassword.second, {
+										attr: { 
+											class: 'form-control form-control-lg rounded-3 password-input',
+											placeholder: 'Répétez votre mot de passe'
+										}
+									}) }}
+									<button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Afficher le mot de passe">
+										<i class="bi bi-eye-slash"></i>
+									</button>
+								</div>
+								{{ form_errors(registrationForm.plainPassword.second) }}
+							</div>
 						</div>
+
 						<div class="mb-3 form-check d-flex align-items-center">
 							{{ form_widget(registrationForm.agreeTerms, {
-        'attr': {'class': 'form-check-input me-2'},
-    }) }}
+                                'attr': {'class': 'form-check-input me-2'},
+                            }) }}
 							<label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
 								<i class="bi bi-shield-check me-2"></i>
 								J'accepte les
@@ -113,4 +132,32 @@
 			</div>
 		</div>
 	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const toggleButtons = document.querySelectorAll('.password-toggle');
+
+toggleButtons.forEach(button => {
+button.addEventListener('click', function (e) {
+const input = this.previousElementSibling;
+const icon = this.querySelector('i');
+
+// Toggle input type
+const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+input.setAttribute('type', type);
+
+// Toggle icon
+icon.classList.toggle('bi-eye');
+icon.classList.toggle('bi-eye-slash');
+
+// Accessibilité
+const label = type === 'password' ? 'Afficher le mot de passe' : 'Masquer le mot de passe';
+this.setAttribute('aria-label', label);
+});
+});
+});
+	</script>
 {% endblock %}
