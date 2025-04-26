@@ -19,7 +19,11 @@
 				<!-- Formulaire dans une carte -->
 				<div class="card border-0 shadow-lg">
 					<div class="card-body p-4 p-lg-5">
-						{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+						{{ form_start(form, {
+    'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'},
+    'enctype': 'multipart/form-data'
+}) }}
+						{{ form_errors(form) }}
 
 						<!-- Titre -->
 						<div class="mb-4">
@@ -28,6 +32,7 @@
                             'class': 'form-control form-control-lg rounded-3',
                             'placeholder': 'Titre percutant...'
                         }}) }}
+							{{ form_errors(form.title) }}
 							<div class="form-text">Maximum 120 caractères</div>
 						</div>
 
@@ -39,6 +44,7 @@
                             'rows': 8,
                             'placeholder': 'Commencez à écrire votre article ici...'
                         }}) }}
+							{{ form_errors(form.content) }}
 							<div class="form-text">Utilisez le Markdown pour la mise en forme</div>
 						</div>
 

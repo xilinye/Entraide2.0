@@ -41,7 +41,7 @@ class AdminController extends AbstractController
     public function dashboard(): Response
     {
         return $this->render('admin/dashboard.html.twig', [
-            'users_count' => $this->userRepository->count([]),
+            'users_count' => $this->userRepository->countActiveUsers(),
             'skills_count' => $this->skillRepository->count([]),
             'categories_count' => $this->categoryRepository->count([]),
             'messages_count' => $this->messageRepository->count([]),
@@ -161,10 +161,10 @@ class AdminController extends AbstractController
                 // Vérification sécurisée de l'utilisateur connecté
                 $currentUser = $this->getUser();
                 $isSelfDelete = ($currentUser instanceof User) && ($user->getId() === $currentUser->getId());
-
-                // Suppression technique
+                // Suppression 
                 $this->userManager->deleteUser($user);
-
+                $user->setDeletedAt(new \DateTimeImmutable());
+                $this->em->flush();
                 // Gestion spécifique de l'auto-suppression
                 if ($isSelfDelete) {
                     $security->logout(false);

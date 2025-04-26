@@ -57,6 +57,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findRecent(int $maxResults): array
     {
         return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
             ->orderBy('u.createdAt', 'DESC')
             ->setMaxResults($maxResults)
             ->getQuery()
@@ -66,6 +67,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function paginate(int $page, int $limit): array
     {
         return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
@@ -147,5 +149,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('role', '%ROLE_ANONYMOUS%')
             ->getQuery()
             ->getResult();
+    }
+
+    public function countActiveUsers(): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.deletedAt IS NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

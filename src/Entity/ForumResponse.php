@@ -30,7 +30,7 @@ class ForumResponse
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'forumResponse', targetEntity: Rating::class)]
+    #[ORM\OneToMany(mappedBy: 'forumResponse', targetEntity: Rating::class, cascade: ['remove'])]
     private Collection $ratings;
 
     #[ORM\Column(length: 255, nullable: true)]

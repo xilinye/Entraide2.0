@@ -46,10 +46,10 @@ class UserManager
     public function deleteUser(User $user): void
     {
         if ($this->shouldBeFullyDeleted($user)) {
-            $this->fullDelete($user);
+            $this->fullDelete($user); // Suppression physique
         } else {
-            $this->anonymizer->anonymize($user);
-            $this->cleanUserData($user);
+            $this->anonymizer->anonymize($user); // Anonymisation
+            $user->setDeletedAt(new \DateTimeImmutable()); // Soft delete
         }
 
         $this->em->flush();

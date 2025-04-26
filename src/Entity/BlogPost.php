@@ -41,7 +41,7 @@ class BlogPost
     #[ORM\Column(length: 255, unique: true)]
     private string $slug;
 
-    #[ORM\OneToMany(mappedBy: 'blogPost', targetEntity: Rating::class)]
+    #[ORM\OneToMany(mappedBy: 'blogPost', targetEntity: Rating::class, cascade: ['remove'])]
     private Collection $ratings;
 
     #[ORM\Column(length: 255, nullable: true)]

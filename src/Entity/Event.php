@@ -19,7 +19,7 @@ class Event
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 5, max: 255)]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -54,7 +54,7 @@ class Event
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'attendedEvents')]
     private Collection $attendees;
 
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Rating::class)]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Rating::class, cascade: ['remove'])]
     private Collection $ratings;
 
     #[ORM\Column(length: 255, nullable: true)]
