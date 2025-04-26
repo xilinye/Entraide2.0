@@ -97,6 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'ratedUser', targetEntity: Rating::class)]
     private Collection $ratingsReceived;
 
+    #[ORM\OneToMany(mappedBy: 'rater', targetEntity: Rating::class)]
+    private Collection $ratingsGiven;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
 
@@ -114,6 +117,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->forumResponses = new ArrayCollection();
         $this->organizedEvents = new ArrayCollection();
         $this->ratingsReceived = new ArrayCollection();
+        $this->ratingsGiven = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -574,5 +578,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->deletedAt = $deletedAt;
         return $this;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
+    }
+
+    public function getRatingsGiven(): Collection
+    {
+        return $this->ratingsGiven;
     }
 }

@@ -98,22 +98,11 @@ class ProfileController extends AbstractController
     public function deleteAccount(Request $request, Security $security): Response
     {
         if ($this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
-            try {
-                $user = $this->getUser();
-
-                if ($this->userManager->shouldBeFullyDeleted($user)) {
-                    $this->addFlash('success', 'Compte supprimé définitivement');
-                } else {
-                    $this->addFlash('warning', 'Vos contributions publiques ont été anonymisées');
-                }
-
-                $this->userManager->deleteUser($user);
-                $security->logout(false);
-                $request->getSession()->invalidate();
-                return $this->redirectToRoute('app_page_home');
-            } catch (\Exception $e) {
-                $this->addFlash('danger', 'Erreur lors de la suppression : ' . $e->getMessage());
-            }
+            $user = $this->getUser();
+            $this->userManager->deleteUser($user);
+            $security->logout(false);
+            $request->getSession()->invalidate();
+            return $this->redirectToRoute('app_page_home');
         } else {
             $this->addFlash('danger', 'Token CSRF invalide');
         }

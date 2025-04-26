@@ -45,60 +45,73 @@ class UserManager
 
     public function deleteUser(User $user): void
     {
-        if ($this->shouldBeFullyDeleted($user)) {
-            $this->fullDelete($user); // Suppression physique
-        } else {
-            $this->anonymizer->anonymize($user); // Anonymisation
-            $user->setDeletedAt(new \DateTimeImmutable()); // Soft delete
+        // 1. Suppression du contenu créé
+        $this->deleteCreatedContent($user);
+
+        // 2. Anonymisation des participations si elles existent
+        if ($this->hasParticipations($user)) {
+            $this->anonymizer->anonymizeParticipations($user);
+        }
+
+        // 3. Suppression définitive TOUJOURS effectuée
+        $this->fullDeleteUser($user);
+
+        $this->em->flush();
+    }
+
+    private function deleteCreatedContent(User $user): void
+    {
+        // Suppression des blogs
+        foreach ($user->getBlogPosts() as $blogPost) {
+            if ($blogPost->getImageName()) {
+                $imagePath = $this->params->get('blog_images_directory') . '/' . $blogPost->getImageName();
+                $this->filesystem->remove($imagePath);
+            }
+            $this->em->remove($blogPost);
+        }
+
+        // Suppression des forums
+        foreach ($user->getForums() as $forum) {
+            if ($forum->getImageName()) {
+                $imagePath = $this->params->get('forum_images_directory') . '/' . $forum->getImageName();
+                $this->filesystem->remove($imagePath);
+            }
+            $this->em->remove($forum);
+        }
+
+        // Suppression des événements organisés
+        foreach ($user->getOrganizedEvents() as $event) {
+            if ($event->getImageName()) {
+                $imagePath = $this->params->get('event_images_directory') . '/' . $event->getImageName();
+                $this->filesystem->remove($imagePath);
+            }
+            $this->em->remove($event);
         }
 
         $this->em->flush();
     }
 
-    public function shouldBeFullyDeleted(User $user): bool
+    private function hasParticipations(User $user): bool
     {
-        return $this->countUserRelationships($user) === 0;
+        return $user->getSentMessages()->count() > 0 ||
+            $user->getReceivedMessages()->count() > 0 ||
+            $user->getForumResponses()->count() > 0 ||
+            $user->getAttendedEvents()->count() > 0 ||
+            $user->getRatingsReceived()->count() > 0 ||
+            $user->getRatingsGiven()->count() > 0 ||
+            $user->getConversationDeletions()->count() > 0;
     }
 
-    private function countUserRelationships(User $user): int
+    private function fullDeleteUser(User $user): void
     {
-        return
-            $user->getSentMessages()->count() +
-            $user->getReceivedMessages()->count() +
-            $user->getBlogPosts()->count() +
-            $user->getForums()->count() +
-            $user->getForumResponses()->count() +
-            $user->getOrganizedEvents()->count() +
-            $user->getAttendedEvents()->count() +
-            $user->getRatingsReceived()->count();
-    }
-
-    private function fullDelete(User $user): void
-    {
+        // Suppression de l'image de profil
         if ($user->getProfileImage()) {
-            $directory = $this->params->get('profile_images_directory');
-            $imagePath = $directory . '/' . $user->getProfileImage();
-            if ($this->filesystem->exists($imagePath)) {
-                $this->filesystem->remove($imagePath);
-            }
+            $imagePath = $this->params->get('profile_images_directory') . '/' . $user->getProfileImage();
+            $this->filesystem->remove($imagePath);
         }
 
+        // Suppression définitive de l'utilisateur
         $this->em->remove($user);
-    }
-
-    private function cleanUserData(User $user): void
-    {
-        $this->cleanConversationDeletions($user);
-    }
-
-    private function cleanConversationDeletions(User $user): void
-    {
-        $this->em->createQueryBuilder()
-            ->delete(ConversationDeletion::class, 'cd')
-            ->where('cd.user = :user OR cd.otherUser = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->execute();
     }
 
     public function saveUser(User $user, bool $flush = true): void

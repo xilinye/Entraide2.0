@@ -150,30 +150,26 @@ class AdminController extends AbstractController
         ]);
     }
 
+
     #[Route('/utilisateurs/{id}/supprimer', name: 'delete_user', methods: ['POST'])]
-    public function deleteUser(
-        Request $request,
-        User $user,
-        Security $security
-    ): Response {
+    public function deleteUser(Request $request, User $user): Response
+    {
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
             try {
-                // Vérification sécurisée de l'utilisateur connecté
-                $currentUser = $this->getUser();
-                $isSelfDelete = ($currentUser instanceof User) && ($user->getId() === $currentUser->getId());
-                // Suppression 
-                $this->userManager->deleteUser($user);
-                $user->setDeletedAt(new \DateTimeImmutable());
-                $this->em->flush();
-                // Gestion spécifique de l'auto-suppression
-                if ($isSelfDelete) {
-                    $security->logout(false);
-                    $request->getSession()->invalidate();
-                    $this->em->clear(); // Nettoyage du cache Doctrine
-                    return $this->redirectToRoute('app_page_home');
-                }
+                // Sauvegarder l'ID avant suppression
+                $userId = $user->getId();
 
-                $this->addFlash('success', 'Utilisateur supprimé avec succès');
+                // Appel au UserManager pour gérer la suppression
+                $this->userManager->deleteUser($user);
+
+                // Vérifier si l'utilisateur existe toujours (anonymisé) ou a été complètement supprimé
+                $existingUser = $this->em->getRepository(User::class)->find($userId);
+
+                if ($existingUser) {
+                    $this->addFlash('warning', 'Les contributions publiques ont été anonymisées');
+                } else {
+                    $this->addFlash('success', 'Utilisateur supprimé définitivement');
+                }
             } catch (\Exception $e) {
                 $this->addFlash('danger', 'Erreur : ' . $e->getMessage());
             }

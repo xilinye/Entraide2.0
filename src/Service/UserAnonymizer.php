@@ -10,11 +10,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class UserAnonymizer
 {
-    private function getParameter(string $name): string
-    {
-        return $this->params->get($name);
-    }
-
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $em,
@@ -22,106 +17,52 @@ class UserAnonymizer
         private readonly Filesystem $filesystem
     ) {}
 
-    public function anonymize(User $user): void
+    // src/Service/UserAnonymizer.php
+
+    public function anonymizeParticipations(User $user): void
     {
         $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
 
-        $this->processMessages($user, $anonymousUser);
-        $this->processBlogPosts($user, $anonymousUser);
-        $this->processEvents($user, $anonymousUser);
-        $this->processForums($user, $anonymousUser);
-        $this->processForumResponses($user, $anonymousUser);
-        $this->processRatings($user, $anonymousUser);
+        // Transfert des participations
+        $this->transferParticipations($user, $anonymousUser);
+
+        $this->em->flush();
     }
 
-    private function processMessages(User $user, User $anonymousUser): void
+    private function transferParticipations(User $user, User $anonymousUser): void
     {
-        foreach ($user->getSentMessages() as $message) {
-            $receiver = $message->getReceiver();
-            if ($receiver->isAnonymous()) {
-                $this->em->remove($message);
-            } else {
-                $message->setSender($anonymousUser);
-            }
-        }
+        // Messages
+        $this->em->createQuery('UPDATE App\Entity\Message m SET m.sender = :anon WHERE m.sender = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
 
-        foreach ($user->getReceivedMessages() as $message) {
-            $sender = $message->getSender();
-            if ($sender->isAnonymous()) {
-                $this->em->remove($message);
-            } else {
-                $message->setReceiver($anonymousUser);
-            }
-        }
-    }
+        $this->em->createQuery('UPDATE App\Entity\Message m SET m.receiver = :anon WHERE m.receiver = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
 
-    private function processBlogPosts(User $user, User $anonymousUser): void
-    {
-        foreach ($user->getBlogPosts() as $post) {
-            if ($post->getImageName()) {
-                $imagePath = $this->getParameter('blog_images_directory') . '/' . $post->getImageName();
-                if ($this->filesystem->exists($imagePath)) {
-                    $this->filesystem->remove($imagePath);
-                }
-            }
-            $this->em->remove($post);
-        }
-    }
+        // Réponses aux forums
+        $this->em->createQuery('UPDATE App\Entity\ForumResponse fr SET fr.author = :anon WHERE fr.author = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
 
-    private function processEvents(User $user, User $anonymousUser): void
-    {
-        foreach ($user->getOrganizedEvents() as $event) {
-            if ($event->getImageName()) {
-                $imagePath = $this->getParameter('event_images_directory') . '/' . $event->getImageName();
-                if ($this->filesystem->exists($imagePath)) {
-                    $this->filesystem->remove($imagePath);
-                }
-            }
-            $this->em->remove($event);
-        }
-
+        // Participation aux événements
         foreach ($user->getAttendedEvents() as $event) {
             $event->removeAttendee($user);
             $event->addAttendee($anonymousUser);
         }
-    }
 
-    private function processForums(User $user, User $anonymousUser): void
-    {
-        foreach ($user->getForums() as $forum) {
-            if ($forum->getImageName()) {
-                $imagePath = $this->getParameter('forum_images_directory') . '/' . $forum->getImageName();
-                if ($this->filesystem->exists($imagePath)) {
-                    $this->filesystem->remove($imagePath);
-                }
-            }
-            $this->em->remove($forum);
-        }
-    }
+        // Évaluations
+        $this->em->createQuery('UPDATE App\Entity\Rating r SET r.rater = :anon WHERE r.rater = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
 
-    private function processForumResponses(User $user, User $anonymousUser): void
-    {
-        foreach ($user->getForumResponses() as $response) {
-            $response->setAuthor($anonymousUser);
-            if ($response->getImageName()) {
-                $imagePath = $this->getParameter('forumResponse_images_directory') . '/' . $response->getImageName();
-                if ($this->filesystem->exists($imagePath)) {
-                    $this->filesystem->remove($imagePath);
-                }
-            }
-        }
-    }
+        $this->em->createQuery('UPDATE App\Entity\Rating r SET r.ratedUser = :anon WHERE r.ratedUser = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
 
-    private function processRatings(User $user, User $anonymousUser): void
-    {
-        $ratingsGiven = $this->em->getRepository(Rating::class)->findBy(['rater' => $user]);
-        foreach ($ratingsGiven as $rating) {
-            $rating->setRater($anonymousUser);
-        }
-
-        $ratingsReceived = $this->em->getRepository(Rating::class)->findBy(['ratedUser' => $user]);
-        foreach ($ratingsReceived as $rating) {
-            $rating->setRatedUser($anonymousUser);
-        }
+        // Suppressions de conversations
+        $this->em->createQuery('UPDATE App\Entity\ConversationDeletion cd SET cd.user = :anon WHERE cd.user = :user')
+            ->setParameters(['anon' => $anonymousUser, 'user' => $user])
+            ->execute();
     }
 }
