@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\{User, ConversationDeletion};
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;

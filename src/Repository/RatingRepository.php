@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\{BlogPost, Event, Forum, ForumResponse, Rating};
+use App\Entity\{BlogPost, Event, ForumResponse, Rating};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

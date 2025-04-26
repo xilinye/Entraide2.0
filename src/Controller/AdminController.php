@@ -16,7 +16,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 
 #[Route('/admin', name: 'app_admin_')]
 #[IsGranted('ROLE_ADMIN')]
