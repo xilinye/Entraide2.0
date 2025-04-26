@@ -120,6 +120,7 @@
 		padding: 0.25rem;
 		border-radius: 8px;
 		backdrop-filter: blur(2px);
+		z-index: 2;
 	}
 
 	.conversation-card:hover .card-actions {
@@ -279,7 +280,7 @@
 									<form action="{{ path('app_message_delete_conversation', {id: conversation.other_user_id}) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?')">
 										<input type="hidden" name="_token" value="{{ csrf_token('delete_conversation_' ~ conversation.other_user_id ~ '_' ~ conversation.conversation_title|slug) }}">
 										<input type="hidden" name="title" value="{{ conversation.conversation_title }}">
-										<button type="submit" class="btn btn-sm delete-btn" title="Masquer cette conversation">
+										<button type="submit" class="btn btn-sm delete-btn" title="Masquer cette conversation" onclick="event.stopPropagation()">
 											<i class="bi bi-eye-slash text-danger"></i>
 										</button>
 									</form>
