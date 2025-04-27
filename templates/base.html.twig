@@ -14,7 +14,7 @@
 		</head>
 		<body class="bg-light">
 			<nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm" style="background: linear-gradient(145deg, #2E7D32, #43A047);
-																							box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
+																												box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
 				<div class="container">
 					<a class="navbar-brand fw-bold d-flex align-items-center" href="{{ path('app_page_home') }}">
 						<i class="bi bi-people-fill me-2"></i>
@@ -211,6 +211,29 @@
 				</footer>
 
 				<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+				<div id="cookieConsent" class="alert alert-dark fixed-bottom m-3 d-none">
+					<div class="d-flex gap-3 align-items-center">
+						<i class="bi bi-cookie fs-4"></i>
+						<div>
+							Nous utilisons des cookies essentiels au fonctionnement.
+							<a href="{{ path('app_page_privacy') }}" class="alert-link">En savoir plus</a>
+						</div>
+						<button class="btn btn-sm btn-primary ms-auto" onclick="hideConsent()">Accepter</button>
+					</div>
+				</div>
+
+				<script>
+					document.addEventListener('DOMContentLoaded', function () {
+if (!localStorage.getItem('cookieConsent')) {
+document.getElementById('cookieConsent').classList.remove('d-none');
+}
+});
+
+function hideConsent() {
+localStorage.setItem('cookieConsent', 'true');
+document.getElementById('cookieConsent').classList.add('d-none');
+}
+				</script>
 				{% block javascripts %}
 					<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 					<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
