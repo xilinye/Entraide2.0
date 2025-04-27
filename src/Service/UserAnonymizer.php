@@ -17,8 +17,6 @@ class UserAnonymizer
         private readonly Filesystem $filesystem
     ) {}
 
-    // src/Service/UserAnonymizer.php
-
     public function anonymizeParticipations(User $user): void
     {
         $anonymousUser = $this->userRepository->findOrCreateAnonymousUser();
