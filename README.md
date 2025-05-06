@@ -1,8 +1,12 @@
 composer install permet d'installer les dépendances
 <br>commande pour démarrer le site : symfony serve -d
 <br>démarer la base de donnée et simulateur : docker compose up -d
-<br>commande pour la base crée sur le local : symfony console doctrine:database:create --if-not-exits
+<br>commande pour la base crée sur le local : symfony console doctrine:database:create --if-not-exists
 <br>commande pour mise à jour : symfony console doctrine:migrations:migrate
+<br>crée base de donné test : docker compose exec php bin/console doctrine:database:create --env=test
+<br>mise à jour base de donnée de test : docker compose exec php bin/console doctrine:migrations:migrate --env=test
+<br>lancer les test : docker compose exec php ./bin/phpunit -c phpunit.xml.dist
+<br>lancer un test : docker compose exec php bin/phpunit tests/Entity/BlogPostTest.php
 <br>Donner le droit à une premier personne : symfony console app:promote-admin exemple@mail.com
 <br>url du site : https://127.0.0.1:8000/
 <br> url du simulateur : http://localhost:8025/

@@ -11,6 +11,7 @@ services:
       MYSQL_DEFAULT_TIME_ZONE: '+02:00'
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
     healthcheck:
@@ -62,6 +63,24 @@ services:
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html:cached
+      - ./var:/var/www/html/var
+    environment:
+      - DATABASE_URL=mysql://entraide_user:mysql_password@database:3306/entraide?serverVersion=8.0
+      - MERCURE_URL=http://mercure/.well-known/mercure
+      - APP_ENV=dev
+    depends_on:
+      - database
+      - mercure
+      - mailer
+    ports:
+      - "8001:8000"
 
 volumes:
   mysql_data:
