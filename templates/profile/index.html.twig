@@ -240,6 +240,7 @@
 		overflow: hidden;
 		cursor: pointer;
 		transition: all 0.3s ease;
+		border-radius: 50%;
 	}
 
 	.avatar-container:hover {
@@ -270,15 +271,11 @@
 		opacity: 1;
 	}
 
-	.profile-image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+	#profileImageInput {
+    	display: none;
 	}
 
-	#profileImageInput {
-		display: none;
-	}
+
 </style>{% endblock %}{% block body %}
 <div class="container py-5">
 	<div
