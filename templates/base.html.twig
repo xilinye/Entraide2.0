@@ -91,13 +91,21 @@
 								<!-- Menu utilisateur -->
 								<li class="nav-item dropdown">
 									<a class="profile-icon" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-										<img src="{{ asset('uploads/profile/' ~ app.user.profileImage) }}" class="profile-image-button rounded-circle" alt="Photo de profil">
-									</a>
+    {% if app.user.profileImage %}
+        <img src="{{ asset('uploads/profile/' ~ app.user.profileImage) }}" class="profile-image-button rounded-circle" alt="Photo de profil">
+    {% else %}
+        <i class="bi bi-person-circle profile-icon-default"></i>
+    {% endif %}
+</a>
 									<ul class="dropdown-menu dropdown-menu-end shadow">
 										<li class="menu-header">
 											<div class="menu-header-profile-image">
-												<img src="{{ asset('uploads/profile/' ~ app.user.profileImage) }}" class="profile-image rounded-circle" alt="Photo de profil">
-											</div>
+    {% if app.user.profileImage %}
+        <img src="{{ asset('uploads/profile/' ~ app.user.profileImage) }}" class="profile-image rounded-circle" alt="Photo de profil">
+    {% else %}
+        <i class="bi bi-person-circle profile-icon-default-lg"></i>
+    {% endif %}
+</div>
 											<div class="menu-header-identity">
 												<p>{{ app.user.pseudo }}<br>{{ app.user.email }}</p>
 											</div>
@@ -318,4 +326,3 @@ $('.select2-multiple').select2({placeholder: 'Choisissez vos compétences...', a
 				{% endblock %}
 			</body>
 		</html>
-
