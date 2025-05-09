@@ -24,7 +24,7 @@ class Rating
     #[ORM\JoinColumn(nullable: false)]
     private User $ratedUser;
 
-    #[ORM\ManyToOne(targetEntity: BlogPost::class)]
+    #[ORM\ManyToOne(targetEntity: BlogPost::class, inversedBy: 'ratings')]
     private ?BlogPost $blogPost = null;
 
     #[ORM\ManyToOne(targetEntity: Event::class)]
@@ -34,8 +34,7 @@ class Rating
     private ?ForumResponse $forumResponse = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Assert\NotBlank(message: "Veuillez sélectionner une note.")]
-    #[Assert\Range(min: 1, max: 5)]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: 'La note doit être entre 1 et 5.')]
     private int $score = 0;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -57,6 +56,11 @@ class Rating
             $this->event,
             $this->forumResponse
         ]);
+        if (count($targets) !== 1) {
+            $context->buildViolation('Une note doit être associée à exactement un élément (article, événement ou réponse).')
+                ->atPath('blogPost')
+                ->addViolation();
+        }
     }
 
     public function getId(): ?int
@@ -129,10 +133,21 @@ class Rating
 
     public function setBlogPost(?BlogPost $blogPost): static
     {
-        $this->blogPost = $blogPost;
+        if ($this->blogPost !== $blogPost) {
+            $oldBlogPost = $this->blogPost;
+            $this->blogPost = $blogPost;
+
+            if ($oldBlogPost !== null) {
+                $oldBlogPost->removeRating($this);
+            }
+
+            if ($blogPost !== null) {
+                $blogPost->addRating($this);
+            }
+        }
+
         return $this;
     }
-
     public function getEvent(): ?Event
     {
         return $this->event;
@@ -140,7 +155,12 @@ class Rating
 
     public function setEvent(?Event $event): static
     {
-        $this->event = $event;
+        if ($this->event !== $event) {
+            $this->event = $event;
+            if ($event !== null) {
+                $event->addRating($this);
+            }
+        }
         return $this;
     }
 
@@ -149,9 +169,27 @@ class Rating
         return $this->forumResponse;
     }
 
-    public function setForumResponse(?ForumResponse $forumResponse): static
+    public function setForumResponse(?ForumResponse $forumResponse): self
     {
+        // Si la réponse est la même, on ne fait rien
+        if ($this->forumResponse === $forumResponse) {
+            return $this;
+        }
+
+        // On conserve l'ancienne réponse
+        $oldForumResponse = $this->forumResponse;
         $this->forumResponse = $forumResponse;
+
+        // On se retire de l'ancienne réponse
+        if ($oldForumResponse !== null) {
+            $oldForumResponse->removeRating($this);
+        }
+
+        // On s'ajoute à la nouvelle réponse
+        if ($forumResponse !== null) {
+            $forumResponse->addRating($this);
+        }
+
         return $this;
     }
 }

@@ -116,7 +116,23 @@ class Skill
 
     public function setCategory(?Category $category): static
     {
+        if ($this->category === $category) {
+            return $this;
+        }
+
+        $oldCategory = $this->category;
         $this->category = $category;
+
+        // Retirer de l'ancienne catégorie
+        if ($oldCategory !== null) {
+            $oldCategory->removeSkill($this);
+        }
+
+        // Ajouter à la nouvelle catégorie
+        if ($category !== null && !$category->getSkills()->contains($this)) {
+            $category->addSkill($this);
+        }
+
         return $this;
     }
 

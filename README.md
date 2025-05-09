@@ -4,7 +4,13 @@ composer install permet d'installer les dépendances
 <br>commande pour la base crée sur le local : symfony console doctrine:database:create --if-not-exists
 <br>commande pour mise à jour : symfony console doctrine:migrations:migrate
 <br>crée base de donné test : docker compose exec php bin/console doctrine:database:create --env=test
+<br>connectez à un compte administrateur : docker compose exec database mysql -u root -p
+<br>mot de passe :root_password
 <br>mise à jour base de donnée de test : docker compose exec php bin/console doctrine:migrations:migrate --env=test
+<br>GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER
+ON entraide_test.\*
+TO 'entraide_user'@'%';
+FLUSH PRIVILEGES;
 <br>lancer les test : docker compose exec php ./bin/phpunit -c phpunit.xml.dist
 <br>lancer un test : docker compose exec php bin/phpunit tests/Entity/BlogPostTest.php
 <br>Donner le droit à une premier personne : symfony console app:promote-admin exemple@mail.com

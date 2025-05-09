@@ -1,4 +1,4 @@
-thread:
+forum:
   title:
     not_blank: "Le titre ne peut pas être vide"
     length: "Le titre doit contenir entre 5 et 255 caractères"

@@ -33,10 +33,6 @@ class Event
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank]
-    #[Assert\Expression(
-        "this.getStartDate() < this.getEndDate()",
-        message: "La date de fin doit être postérieure à la date de début"
-    )]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 255)]
@@ -44,7 +40,7 @@ class Event
     private ?string $location = null;
 
     #[ORM\Column]
-    #[Assert\PositiveOrZero]
+    #[Assert\PositiveOrZero(message: "Cette valeur doit être positive ou nulle.")]
     private ?int $maxAttendees = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizedEvents')]
@@ -227,6 +223,15 @@ class Event
     public function setImageFile($imageFile): static
     {
         $this->imageFile = $imageFile;
+        return $this;
+    }
+
+    public function addRating(Rating $rating): self
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings[] = $rating;
+            $rating->setEvent($this);
+        }
         return $this;
     }
 }

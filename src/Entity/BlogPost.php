@@ -7,7 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{Collection, ArrayCollection};
 
 #[ORM\Entity(repositoryClass: BlogPostRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -61,6 +61,7 @@ class BlogPost
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->slug = '';
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -185,6 +186,26 @@ class BlogPost
     public function setImageFile($imageFile): static
     {
         $this->imageFile = $imageFile;
+        return $this;
+    }
+
+    public function addRating(Rating $rating): self
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings[] = $rating;
+            $rating->setBlogPost($this);
+        }
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): self
+    {
+        if ($this->ratings->removeElement($rating)) {
+            if ($rating->getBlogPost() === $this) {
+                $rating->setBlogPost(null);
+            }
+        }
+
         return $this;
     }
 }

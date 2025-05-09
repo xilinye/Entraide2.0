@@ -116,6 +116,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->forums = new ArrayCollection();
         $this->forumResponses = new ArrayCollection();
         $this->organizedEvents = new ArrayCollection();
+        $this->attendedEvents = new ArrayCollection();
         $this->ratingsReceived = new ArrayCollection();
         $this->ratingsGiven = new ArrayCollection();
     }
@@ -299,6 +300,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->receivedMessages->contains($message)) {
             $this->receivedMessages->add($message);
             $message->setReceiver($this);
+        }
+        return $this;
+    }
+
+    public function removeReceivedMessage(Message $message): static
+    {
+        if ($this->receivedMessages->removeElement($message)) {
+            if ($message->getReceiver() === $this) {
+                $message->setReceiver(null);
+            }
         }
         return $this;
     }

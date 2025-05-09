@@ -6,6 +6,7 @@ use App\Repository\ForumRepository;
 use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
 class Forum
@@ -16,13 +17,17 @@ class Forum
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre ne peut pas être vide")]
+    #[Assert\Length(max: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Le contenu ne peut pas être vide")]
     private ?string $content = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'auteur est obligatoire")]
     private ?User $author = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'forums')]
@@ -84,8 +89,11 @@ class Forum
 
     public function setAuthor(?User $author): static
     {
-        $this->author = $author;
-
+        if ($this->author !== $author) {
+            $this->author?->removeForum($this);
+            $this->author = $author;
+            $author?->addForum($this);
+        }
         return $this;
     }
 
@@ -96,7 +104,22 @@ class Forum
 
     public function setCategory(?Category $category): static
     {
+        if ($this->category === $category) {
+            return $this;
+        }
+
+        $oldCategory = $this->category;
         $this->category = $category;
+
+        // Retirer de l'ancienne catégorie
+        if ($oldCategory !== null) {
+            $oldCategory->removeForum($this);
+        }
+
+        // Ajouter à la nouvelle catégorie
+        if ($category !== null && !$category->getForums()->contains($this)) {
+            $category->addForum($this);
+        }
 
         return $this;
     }
@@ -131,7 +154,7 @@ class Forum
         return $this->responses;
     }
 
-    public function addesponse(ForumResponse $response): static
+    public function addResponse(ForumResponse $response): static
     {
         if (!$this->responses->contains($response)) {
             $this->responses->add($response);
@@ -172,5 +195,10 @@ class Forum
     {
         $this->imageFile = $imageFile;
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? 'Nouveau forum';
     }
 }

@@ -1,0 +1,3 @@
+turbo:
+  broadcast:
+    enabled: false

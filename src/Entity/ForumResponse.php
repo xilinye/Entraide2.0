@@ -128,4 +128,26 @@ class ForumResponse
         $this->imageFile = $imageFile;
         return $this;
     }
+
+    public function addRating(Rating $rating): self
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings[] = $rating;
+            $rating->setForumResponse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): self
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // Désactive la relation si nécessaire
+            if ($rating->getForumResponse() === $this) {
+                $rating->setForumResponse(null);
+            }
+        }
+
+        return $this;
+    }
 }
