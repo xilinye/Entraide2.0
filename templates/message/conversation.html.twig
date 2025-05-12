@@ -169,13 +169,20 @@
 					Cet utilisateur a supprimé son compte. Les nouvelles réponses ne sont plus autorisées.
 				</div>
 			{% else %}
-				{{ form_start(form, { 
-            'action': path('app_message_conversation', { 
-                'id': otherUser.id, 
-                'title': conversation_title 
-            }),
-            'attr': {'class': 'form-inline'}
-        }) }}
+			{{ form_start(form, { 
+    			'action': path('app_message_conversation', { 
+        			'id': otherUser.id, 
+        			'title': conversation_title 
+    			}),
+    			'attr': {
+        			'id': 'messageForm',
+        			'class': 'form-inline',
+        			'data-action': path('app_message_conversation', { 
+            			'id': otherUser.id, 
+            			'title': conversation_title 
+        			})
+   		 		}
+			}) }}
 
 				{# Groupe principal pour la saisie du message #}
 				<div class="input-group mb-3">
@@ -212,26 +219,59 @@
 {% block javascripts %}
 	{{ parent() }}
 	<script>
-		document.addEventListener('DOMContentLoaded', () => { // Auto-scroll to bottom with smooth animation
-const chatHistory = document.querySelector('.message-history');
-if (chatHistory) {
-chatHistory.scrollTo({top: chatHistory.scrollHeight, behavior: 'smooth'});
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const chatHistory = document.querySelector('.message-history');
+    if (chatHistory) {
+        chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+    }
 
-// Auto-resize textarea with max-height limit
-const textarea = document.querySelector('textarea');
-textarea.addEventListener('input', () => {
-textarea.style.height = 'auto';
-textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-});
+    const textarea = document.querySelector('textarea');
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    });
 
-// Submit form with Ctrl+Enter
-textarea.addEventListener('keydown', (e) => {
-if (e.ctrlKey && e.key === 'Enter') {
-e.preventDefault();
-document.querySelector('form').submit();
-}
-});
+    textarea.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('#messageForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+    });
+
+    // AJAX submission
+    document.querySelector('#messageForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const url = form.dataset.action;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de l’envoi');
+            }
+
+            const html = await response.text();
+
+            // Met à jour l'historique des messages (optionnel : extrais uniquement le bloc des messages avec DOMParser)
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newMessages = doc.querySelector('.message-history');
+            if (newMessages && chatHistory) {
+                chatHistory.innerHTML = newMessages.innerHTML;
+                chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+            }
+
+            form.reset();
+            textarea.style.height = 'auto';
+        } catch (error) {
+            console.error('Erreur AJAX :', error);
+        }
+    });
 });
 	</script>
 {% endblock %}
