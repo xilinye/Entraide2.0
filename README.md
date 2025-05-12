@@ -11,8 +11,8 @@ composer install permet d'installer les dépendances
 ON entraide_test.\*
 TO 'entraide_user'@'%';
 FLUSH PRIVILEGES;
-<br>lancer les test : docker compose exec php ./bin/phpunit -c phpunit.xml.dist
-<br>lancer un test : docker compose exec php bin/phpunit tests/Entity/BlogPostTest.php
+<br>lancer les test : docker compose exec php bash -c "APP_ENV=test php ./bin/phpunit -c phpunit.xml.dist"
+<br>lancer un test : docker compose exec php bash -c "APP_ENV=test php bin/phpunit tests/Entity/BlogPostTest.php"
 <br>Donner le droit à une premier personne : symfony console app:promote-admin exemple@mail.com
 <br>url du site : https://127.0.0.1:8000/
 <br> url du simulateur : http://localhost:8025/
