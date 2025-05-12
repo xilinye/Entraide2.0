@@ -3,7 +3,7 @@ composer install permet d'installer les dépendances
 <br>démarer la base de donnée et simulateur : docker compose up -d
 <br>commande pour la base crée sur le local : symfony console doctrine:database:create --if-not-exists
 <br>commande pour mise à jour : symfony console doctrine:migrations:migrate
-<br>crée base de donné test : docker compose exec php bin/console doctrine:database:create --env=test
+<br>crée base de donné test : docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:schema:create"
 <br>connectez à un compte administrateur : docker compose exec database mysql -u root -p
 <br>mot de passe :root_password
 <br>mise à jour base de donnée de test : docker compose exec php bin/console doctrine:migrations:migrate --env=test
