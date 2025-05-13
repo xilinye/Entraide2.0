@@ -172,4 +172,49 @@ class RatingTest extends KernelTestCase
         $violations = $this->validator->validate($rating);
         $this->assertCount(0, $violations); // Ajuster si une règle est ajoutée
     }
+
+    public function testScoreUpperBoundary(): void
+    {
+        $rating = $this->createRatingWithBlogPost();
+        $rating->setScore(6);
+        $violations = $this->validator->validate($rating);
+        $this->assertCount(1, $violations);
+    }
+
+    public function testValidRatingWithEvent(): void
+    {
+        $event = new Event();
+        $rating = (new Rating())
+            ->setRater($this->rater)
+            ->setRatedUser($this->ratedUser)
+            ->setScore(3)
+            ->setEvent($event);
+
+        $violations = $this->validator->validate($rating);
+        $this->assertCount(0, $violations);
+        $this->assertContains($rating, $event->getRatings());
+    }
+
+    public function testEventInverseSideUpdated(): void
+    {
+        $event = new Event();
+        $rating = new Rating();
+        $rating->setEvent($event);
+
+        $this->assertContains($rating, $event->getRatings());
+    }
+
+    public function testBlogPostChangeUpdatesBothSides(): void
+    {
+        $blogPost1 = new BlogPost();
+        $blogPost2 = new BlogPost();
+        $rating = new Rating();
+
+        $rating->setBlogPost($blogPost1);
+        $this->assertContains($rating, $blogPost1->getRatings());
+
+        $rating->setBlogPost($blogPost2);
+        $this->assertNotContains($rating, $blogPost1->getRatings());
+        $this->assertContains($rating, $blogPost2->getRatings());
+    }
 }

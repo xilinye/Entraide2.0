@@ -113,4 +113,38 @@ class CategoryTest extends TestCase
         $category->removeSkill($skill); // Suppression non existante
         $this->assertCount(0, $category->getSkills());
     }
+
+    public function testDuplicateForumAddition(): void
+    {
+        $category = new Category();
+        $forum = new Forum();
+
+        $category->addForum($forum);
+        $category->addForum($forum); // Ajout doublon
+
+        $this->assertCount(1, $category->getForums());
+    }
+
+    public function testRemoveNonexistentForum(): void
+    {
+        $category = new Category();
+        $forum = new Forum();
+
+        $category->removeForum($forum); // Suppression non existante
+        $this->assertCount(0, $category->getForums());
+    }
+
+    public function testForumRelationshipBetweenCategories(): void
+    {
+        $category1 = new Category();
+        $category2 = new Category();
+        $forum = new Forum();
+
+        $category1->addForum($forum);
+        $this->assertSame($category1, $forum->getCategory());
+
+        $category2->addForum($forum);
+        $this->assertSame($category2, $forum->getCategory());
+        $this->assertCount(0, $category1->getForums());
+    }
 }

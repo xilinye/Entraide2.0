@@ -45,6 +45,7 @@ class Event
 
     #[ORM\ManyToOne(inversedBy: 'organizedEvents')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull]
     private ?User $organizer = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'attendedEvents')]

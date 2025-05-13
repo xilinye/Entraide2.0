@@ -5,6 +5,7 @@ namespace App\Tests\Entity;
 use App\Entity\{Forum, User, Category, ForumResponse};
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ForumTest extends TestCase
 {
@@ -143,5 +144,28 @@ class ForumTest extends TestCase
             ->getValidator();
 
         return $validator->validate($forum);
+    }
+
+    public function testCategoryRemoval(): void
+    {
+        $category = new Category();
+        $forum = $this->createValidForum()->setCategory($category);
+        $originalCategory = $forum->getCategory();
+        $forum->setCategory(null);
+
+        $this->assertNull($forum->getCategory());
+        $this->assertFalse($originalCategory->getForums()->contains($forum));
+    }
+
+    public function testAuthorChangeUpdatesRelations(): void
+    {
+        $oldAuthor = new User();
+        $newAuthor = new User();
+        $forum = $this->createValidForum()->setAuthor($oldAuthor);
+
+        $forum->setAuthor($newAuthor);
+
+        $this->assertFalse($oldAuthor->getForums()->contains($forum));
+        $this->assertTrue($newAuthor->getForums()->contains($forum));
     }
 }

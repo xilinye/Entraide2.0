@@ -417,4 +417,45 @@ class UserTest extends TestCase
         $user->eraseCredentials();
         $this->assertTrue(true);
     }
+
+    public function testHasRoleCaseInsensitive(): void
+    {
+        $user = new User();
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->assertTrue($user->hasRole('role_admin'));
+        $this->assertTrue($user->hasRole('ROLE_ADMIN'));
+    }
+
+    public function testAddDuplicateSkill(): void
+    {
+        $user = new User();
+        $skill = new Skill();
+        $user->addSkill($skill);
+        $user->addSkill($skill); // Doublon
+        $this->assertCount(1, $user->getSkills());
+    }
+
+    public function testSetProfileImageToNull(): void
+    {
+        $user = new User();
+        $user->setProfileImage(null);
+        $this->assertNull($user->getProfileImage());
+    }
+
+    public function testRatingDetailsWithNoRatings(): void
+    {
+        $user = new User();
+        $details = $user->getRatingDetails();
+        $this->assertEquals(0, $details['blog']['total']);
+        $this->assertEquals(0, $details['event']['total']);
+        $this->assertEquals(0, $details['forum']['total']);
+    }
+
+    public function testRemoveNonExistentSkill(): void
+    {
+        $user = new User();
+        $skill = new Skill();
+        $user->removeSkill($skill); // Aucun effet
+        $this->assertCount(0, $user->getSkills());
+    }
 }

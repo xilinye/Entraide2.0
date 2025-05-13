@@ -2,21 +2,24 @@
 
 namespace App\Tests\Entity;
 
-use App\Entity\{Event, User};
+use App\Entity\{Event, User, Rating};
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class EventTest extends TestCase
 {
     private function createValidEvent(): Event
     {
+        $organizer = new User();
         return (new Event())
             ->setTitle('Meetup Symfony')
             ->setDescription('Conférence sur Symfony')
             ->setStartDate(new \DateTime('+1 day'))
             ->setEndDate(new \DateTime('+2 days'))
             ->setLocation('Paris')
-            ->setMaxAttendees(10);
+            ->setMaxAttendees(10)
+            ->setOrganizer($organizer);
     }
 
     public function testGettersAndSetters(): void
@@ -43,7 +46,7 @@ class EventTest extends TestCase
         $errors = $validator->validate($validEvent);
         $this->assertCount(0, $errors);
 
-        // Test entité invalide
+        // Test entité invalide (sans aucune propriété définie)
         $invalidEvent = new Event();
         $errors = $validator->validate($invalidEvent);
         $this->assertGreaterThan(0, count($errors));
@@ -150,5 +153,62 @@ class EventTest extends TestCase
 
         $this->assertEquals('event.jpg', $event->getImageName());
         $this->assertNull($event->getImageFile());
+    }
+
+    public function testOrganizerIsNotNullValidation(): void
+    {
+        $event = $this->createValidEvent()->setOrganizer(null);
+
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+        $errors = $validator->validate($event);
+
+        $this->assertCount(1, $errors);
+        $this->assertEquals('organizer', $errors[0]->getPropertyPath());
+    }
+
+    public function testStartDateInPastValidation(): void
+    {
+        $event = $this->createValidEvent()
+            ->setStartDate(new \DateTime('-2 days'))
+            ->setEndDate(new \DateTime('+1 day'));
+
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
+
+        $errors = $validator->validate($event);
+
+        $this->assertCount(1, $errors);
+        $this->assertEquals(Assert\GreaterThan::TOO_LOW_ERROR, $errors[0]->getCode());
+    }
+    public function testMaxAttendeesZero(): void
+    {
+        $event = $this->createValidEvent()->setMaxAttendees(0);
+        $this->assertTrue($event->canRegister(new User())); // Vérifie que la limite est désactivée
+    }
+
+    public function testCanRegisterWhenEventIsPast(): void
+    {
+        $event = $this->createValidEvent()
+            ->setStartDate(new \DateTime('-2 days'))
+            ->setEndDate(new \DateTime('-1 day'));
+
+        $this->assertFalse($event->canRegister(new User()));
+    }
+
+    public function testRatingAssociation(): void
+    {
+        $event = $this->createValidEvent();
+        $rating = new Rating();
+
+        $event->addRating($rating);
+        $this->assertSame($event, $rating->getEvent());
+        $this->assertTrue($event->getRatings()->contains($rating));
+    }
+
+    public function testEmptySortedAttendees(): void
+    {
+        $event = $this->createValidEvent();
+        $this->assertEmpty($event->getSortedAttendees());
     }
 }

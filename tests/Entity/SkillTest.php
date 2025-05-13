@@ -236,4 +236,130 @@ class SkillTest extends KernelTestCase
         $this->entityManager->clear();
         parent::tearDown();
     }
+
+    public function testRemoveUserUpdatesBidirectionalRelationship(): void
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+
+        $user = new User();
+        $user->setPseudo('test_user')
+            ->setEmail('test_' . uniqid() . '@example.com')
+            ->setPassword('password');
+
+        $skill = new Skill();
+        $skill->setName('Skill')
+            ->setCategory($category)
+            ->addUser($user);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($skill);
+        $this->entityManager->flush();
+
+        $skill->removeUser($user);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $retrievedUser = $this->entityManager->find(User::class, $user->getId());
+        $this->assertFalse($retrievedUser->getSkills()->contains($skill));
+    }
+
+    public function testUniqueConstraintOnUpdate(): void
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+
+        $skill1 = new Skill();
+        $skill1->setName('Skill')
+            ->setCategory($category);
+        $this->entityManager->persist($skill1);
+        $this->entityManager->flush();
+
+        $skill2 = new Skill();
+        $skill2->setName('Another Skill')
+            ->setCategory($category);
+        $this->entityManager->persist($skill2);
+        $this->entityManager->flush();
+
+        // Tentative de modification pour violer l'unicité
+        $skill2->setName('Skill');
+        $errors = $this->validator->validate($skill2);
+        $this->assertCount(1, $errors);
+    }
+
+    public function testValidNameBoundaries(): void
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+
+        // Test 2 caractères (min)
+        $skill = new Skill();
+        $skill->setName('ab')
+            ->setCategory($category);
+        $this->assertCount(0, $this->validator->validate($skill));
+
+        // Test 255 caractères (max)
+        $skill->setName(str_repeat('a', 255));
+        $this->assertCount(0, $this->validator->validate($skill));
+    }
+
+    public function testNullDescriptionIsValid(): void
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+
+        $skill = new Skill();
+        $skill->setName('Valid Skill')
+            ->setCategory($category)
+            ->setDescription(null);
+
+        $errors = $this->validator->validate($skill);
+        $this->assertCount(0, $errors);
+    }
+
+    public function testSameNameInDifferentCategories(): void
+    {
+        $category1 = new Category();
+        $category1->setName('Category 1');
+        $this->entityManager->persist($category1);
+
+        $category2 = new Category();
+        $category2->setName('Category 2');
+        $this->entityManager->persist($category2);
+
+        $skill1 = new Skill();
+        $skill1->setName('Same Name')
+            ->setCategory($category1);
+
+        $skill2 = new Skill();
+        $skill2->setName('Same Name')
+            ->setCategory($category2);
+
+        $this->assertCount(0, $this->validator->validate($skill1));
+        $this->assertCount(0, $this->validator->validate($skill2));
+    }
+
+    public function testCreatedAtNotUpdatedOnModification(): void
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+
+        $skill = new Skill();
+        $skill->setName('Test Skill')
+            ->setCategory($category);
+        $this->entityManager->persist($skill);
+        $this->entityManager->flush();
+
+        $originalDate = $skill->getCreatedAt();
+
+        $skill->setDescription('Updated description');
+        $this->entityManager->flush();
+
+        $this->assertEquals($originalDate, $skill->getCreatedAt());
+    }
 }

@@ -152,4 +152,79 @@ class MessageTest extends TestCase
         $this->message->setIsRead(true);
         $this->assertTrue($this->message->isRead());
     }
+
+    public function testValidationWithoutImageFile(): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+
+        $message = new Message();
+        $message->setContent('Valid content');
+        $message->setTitle('Valid title');
+        $message->setSender($this->sender);
+        $message->setReceiver($this->receiver);
+
+        $errors = $validator->validate($message);
+        $this->assertCount(0, $errors); // Aucune erreur sans image
+    }
+
+    public function testContentExactMaxLength(): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+
+        $message = new Message();
+        $message->setTitle('Valid title');
+        $message->setSender($this->sender);
+        $message->setReceiver($this->receiver);
+
+        // 2000 caractères (valide)
+        $message->setContent(str_repeat('a', 2000));
+        $errors = $validator->validate($message);
+        $this->assertCount(0, $errors);
+
+        // 2001 caractères (invalide)
+        $message->setContent(str_repeat('a', 2001));
+        $errors = $validator->validate($message);
+        $this->assertGreaterThan(0, count($errors));
+    }
+
+    public function testPrePersistOverridesManualCreatedAt(): void
+    {
+        $message = new Message();
+        $manualDate = new \DateTimeImmutable('2023-01-01');
+        $message->setCreatedAt($manualDate);
+
+        // Déclencher manuellement le PrePersist
+        $message->setCreatedAtValue();
+
+        $this->assertNotEquals($manualDate, $message->getCreatedAt());
+    }
+
+    public function testToStringWithExact50Characters(): void
+    {
+        $content = str_repeat('a', 50);
+        $this->message->setContent($content);
+        $this->assertSame($content . '...', (string)$this->message);
+    }
+
+    public function testPngFileIsValid(): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+
+        $file = new UploadedFile(
+            __DIR__ . '/test_files/valid_image.png',
+            'valid_image.png',
+            'image/png',
+            null,
+            true
+        );
+
+        $this->message->setContent('Valid content');
+        $this->message->setTitle('Valid title');
+        $this->message->setSender($this->sender);
+        $this->message->setReceiver($this->receiver);
+        $this->message->setImageFile($file);
+
+        $errors = $validator->validate($this->message);
+        $this->assertCount(0, $errors);
+    }
 }

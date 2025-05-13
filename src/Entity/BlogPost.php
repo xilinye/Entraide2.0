@@ -37,6 +37,7 @@ class BlogPost
 
     #[ORM\ManyToOne(inversedBy: 'blogPosts')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'auteur est obligatoire")]
     private ?User $author = null;
 
     #[ORM\Column(options: ['default' => 'CURRENT_TIMESTAMP'])]

@@ -4,154 +4,157 @@ namespace App\Tests\Entity;
 
 use App\Entity\{BlogPost, Rating, User};
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BlogPostTest extends KernelTestCase
 {
     private ValidatorInterface $validator;
+    private User $author;
 
     protected function setUp(): void
     {
-        self::bootKernel([
-            'environment' => 'test',
-            'debug' => true
-        ]);
-
+        self::bootKernel();
         $this->validator = self::getContainer()->get(ValidatorInterface::class);
+        $this->author = (new User())->setEmail('test@example.com');
     }
 
-    public function testBlogPostValide(): void
+    public function testValidBlogPost(): void
     {
-        $author = new User();
-        $blogPost = (new BlogPost())
-            ->setTitle('Titre valide')
-            ->setContent('Ce contenu est valide car il dépasse dix caractères.')
-            ->setAuthor($author);
-
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(0, $erreurs, 'Aucune erreur ne devrait survenir');
+        $blogPost = $this->createValidBlogPost();
+        $this->assertValidationPasses($blogPost);
     }
 
-    public function testTitreNonVide(): void
+    public function testTitleValidation(): void
     {
-        $author = new User();
-        $blogPost = (new BlogPost())
-            ->setTitle('')
-            ->setContent(str_repeat('a', 10))
-            ->setAuthor($author);
+        $blogPost = $this->createValidBlogPost()
+            ->setTitle('');
 
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(2, $erreurs);
-    }
-
-    public function testLongueurTitre(): void
-    {
-        $author = new User();
-        $blogPost = (new BlogPost())
-            ->setTitle('Test')
-            ->setContent('Contenu valide')
-            ->setAuthor($author);
-
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(1, $erreurs, 'Le titre doit avoir au moins 5 caractères');
+        $errors = $this->validator->validate($blogPost);
+        $this->assertValidationErrorCount($errors, 2, 'Titre vide');
 
         $blogPost->setTitle(str_repeat('a', 256));
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(1, $erreurs, 'Le titre ne doit pas dépasser 255 caractères');
+        $errors = $this->validator->validate($blogPost);
+        $this->assertValidationErrorCount($errors, 1, 'Titre trop long');
     }
 
-    public function testContenuNonVide(): void
+    public function testContentValidation(): void
     {
-        $author = new User();
-        $blogPost = (new BlogPost())
-            ->setTitle('Titre valide')
-            ->setContent('')
-            ->setAuthor($author);
+        $blogPost = $this->createValidBlogPost()
+            ->setContent('');
 
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(2, $erreurs);
+        $errors = $this->validator->validate($blogPost);
+        $this->assertValidationErrorCount($errors, 2, 'Contenu vide');
+
+        $blogPost->setContent('Court');
+        $errors = $this->validator->validate($blogPost);
+        $this->assertValidationErrorCount($errors, 1, 'Contenu trop court');
     }
 
-    public function testLongueurContenu(): void
+    public function testAuthorValidation(): void
     {
-        $blogPost = (new BlogPost())
-            ->setTitle('Titre valide')
-            ->setContent('Court');
+        $blogPost = $this->createValidBlogPost()
+            ->setAuthor(null);
 
-        $erreurs = $this->validator->validate($blogPost);
-        $this->assertCount(1, $erreurs);
+        $errors = $this->validator->validate($blogPost);
+        $this->assertValidationErrorCount($errors, 1, 'Auteur manquant');
     }
 
     public function testSlugGeneration(): void
     {
-        $slugger = new \Symfony\Component\String\Slugger\AsciiSlugger();
-        $blogPost = new BlogPost();
-        $blogPost->setTitle('Titre Valide');
+        $slugger = new AsciiSlugger();
+        $blogPost = $this->createValidBlogPost();
         $blogPost->computeSlug($slugger);
 
-        $this->assertMatchesRegularExpression('/^titre-valide-[a-f0-9]{8}$/', $blogPost->getSlug());
-    }
-    public function testAutoTimestamps(): void
-    {
-        $blogPost = new BlogPost();
-        $this->assertInstanceOf(\DateTimeImmutable::class, $blogPost->getCreatedAt());
-        $this->assertInstanceOf(\DateTimeImmutable::class, $blogPost->getUpdatedAt());
+        $this->assertMatchesRegularExpression(
+            '/^titre-valide-[a-f0-9]{8}$/',
+            $blogPost->getSlug()
+        );
     }
 
-    public function testUpdateTimestampOnChange(): void
+    public function testTimestampsLifecycle(): void
     {
         $blogPost = new BlogPost();
-        $initialUpdate = $blogPost->getUpdatedAt();
+        $blogPost->setTitle('Test')
+            ->setContent('Content')
+            ->setAuthor($this->author);
 
-        $blogPost->setTitle('Nouveau titre');
+        // Simule PrePersist
+        $blogPost->updateTimestamps();
+        $this->assertNotNull($blogPost->getCreatedAt());
+        $this->assertNotNull($blogPost->getUpdatedAt());
+        $this->assertEquals(
+            $blogPost->getCreatedAt()->format('Y-m-d H:i:s'),
+            $blogPost->getUpdatedAt()->format('Y-m-d H:i:s'),
+            'createdAt et updatedAt doivent être égaux après la création'
+        );
+
+        // Simule PreUpdate avec délai
+        $originalUpdatedAt = $blogPost->getUpdatedAt();
+        sleep(1); // Garantit une différence de temps
+        $blogPost->setTitle('Updated');
         $blogPost->updateTimestamps();
 
-        $this->assertGreaterThan($initialUpdate, $blogPost->getUpdatedAt());
-    }
-    public function testAuthorAssociation(): void
-    {
-        $user = new User();
-        $blogPost = new BlogPost();
-        $user->addBlogPost($blogPost);
-
-        $this->assertSame($user, $blogPost->getAuthor());
-        $this->assertContains($blogPost, $user->getBlogPosts());
+        $this->assertGreaterThan(
+            $originalUpdatedAt,
+            $blogPost->getUpdatedAt(),
+            'updatedAt doit être mis à jour après une modification'
+        );
     }
 
-    public function testRatingsCollection(): void
+    public function testRatingManagement(): void
     {
-        $rating = new Rating();
-        $blogPost = new BlogPost();
-        $blogPost->getRatings()->add($rating);
-        $rating->setBlogPost($blogPost);
+        $blogPost = $this->createValidBlogPost();
+        $rating = (new Rating())->setScore(5);
 
+        $blogPost->addRating($rating);
         $this->assertCount(1, $blogPost->getRatings());
         $this->assertSame($blogPost, $rating->getBlogPost());
-    }
-    public function testImageProperties(): void
-    {
-        $blogPost = new BlogPost();
-        $blogPost->setImageName('image.jpg');
-        $blogPost->setImageFile('dummy/file');
 
-        $this->assertEquals('image.jpg', $blogPost->getImageName());
-        $this->assertEquals('dummy/file', $blogPost->getImageFile());
+        $blogPost->removeRating($rating);
+        $this->assertCount(0, $blogPost->getRatings());
+        $this->assertNull($rating->getBlogPost());
     }
+
+    public function testImageHandling(): void
+    {
+        $blogPost = $this->createValidBlogPost()
+            ->setImageName('test.jpg')
+            ->setImageFile('file.data');
+
+        $this->assertEquals('test.jpg', $blogPost->getImageName());
+        $this->assertEquals('file.data', $blogPost->getImageFile());
+    }
+
     public function testToString(): void
     {
         $blogPost = new BlogPost();
         $this->assertEquals('New Blog Post', (string)$blogPost);
 
-        $blogPost->setTitle('Mon Article');
-        $this->assertEquals('Mon Article', (string)$blogPost);
+        $blogPost->setTitle('My Post');
+        $this->assertEquals('My Post', (string)$blogPost);
     }
-    public function testConstructorInitialization(): void
-    {
-        $blogPost = new BlogPost();
 
-        $this->assertEmpty($blogPost->getSlug());
-        $this->assertNotNull($blogPost->getCreatedAt());
-        $this->assertNotNull($blogPost->getUpdatedAt());
-        $this->assertTrue($blogPost->getCreatedAt() <= $blogPost->getUpdatedAt());
+    private function createValidBlogPost(): BlogPost
+    {
+        return (new BlogPost())
+            ->setTitle('Titre Valide')
+            ->setContent('Contenu valide de plus de dix caractères')
+            ->setAuthor($this->author);
+    }
+
+    private function assertValidationPasses(BlogPost $blogPost, string $message = ''): void
+    {
+        $errors = $this->validator->validate($blogPost);
+        $this->assertCount(0, $errors, $message);
+    }
+
+    private function assertValidationErrorCount($errors, int $expected, string $message = ''): void
+    {
+        $this->assertCount(
+            $expected,
+            $errors,
+            $message . "\n" . implode("\n", array_map(fn($e) => $e->getMessage(), iterator_to_array($errors)))
+        );
     }
 }

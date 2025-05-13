@@ -29,7 +29,7 @@ class ConversationDeletion
     private ?\DateTimeImmutable $deletedAt = null; // Date de suppression
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotNull(message: 'Le titre de la conversation est obligatoire.')] // Ajouté
+    #[Assert\NotNull(message: 'Le titre de la conversation est obligatoire.')]
     #[Assert\Length(max: 255)]
     private ?string $conversationTitle = null;
 

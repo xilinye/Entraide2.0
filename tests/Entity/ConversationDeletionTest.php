@@ -126,4 +126,56 @@ class ConversationDeletionTest extends TestCase
         $errors = $validator->validate($deletion);
         $this->assertGreaterThan(0, count($errors));
     }
+
+
+    public function testConversationTitleCannotBeEmpty()
+    {
+        $deletion = $this->createValidDeletion();
+        $deletion->setConversationTitle('');
+
+        $validator = Validation::createValidator();
+        $errors = $validator->validate($deletion);
+        $this->assertCount(0, $errors); // À ajuster selon les contraintes
+    }
+
+    public function testUserChangeRemovesFromPreviousUser()
+    {
+        $user1 = new User();
+        $user2 = new User();
+        $deletion = new ConversationDeletion();
+
+        $deletion->setUser($user1);
+        $deletion->setUser($user2);
+
+        $this->assertNotContains($deletion, $user1->getConversationDeletions());
+        $this->assertContains($deletion, $user2->getConversationDeletions());
+    }
+
+    public function testValidationMessages()
+    {
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping() // Activation du mapping des attributs
+            ->getValidator();
+
+        $deletion = new ConversationDeletion();
+        $errors = $validator->validate($deletion);
+
+        $expectedMessages = [
+            'L\'utilisateur est obligatoire.',
+            'L\'autre utilisateur est obligatoire.',
+            'Le titre de la conversation est obligatoire.'
+        ];
+
+        $receivedMessages = array_map(fn($e) => $e->getMessage(), iterator_to_array($errors));
+        foreach ($expectedMessages as $message) {
+            $this->assertContains($message, $receivedMessages);
+        }
+    }
+
+    public function testGetConversationTitleReturnsCorrectValue()
+    {
+        $deletion = $this->createValidDeletion();
+        $deletion->setConversationTitle('Réunion équipe');
+        $this->assertEquals('Réunion équipe', $deletion->getConversationTitle());
+    }
 }

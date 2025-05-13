@@ -116,4 +116,31 @@ class ForumResponseTest extends TestCase
         $response->setContent('');
         $this->assertEmpty($response->getContent());
     }
+
+    // Test de suppression d'un Rating non associé
+    public function testRemoveNonExistentRating(): void
+    {
+        $response = new ForumResponse();
+        $rating = new Rating();
+        $response->removeRating($rating); // Aucune erreur ne doit survenir
+        $this->assertCount(0, $response->getRatings());
+    }
+
+    // Test de définition de imageName à null
+    public function testSetImageNameToNull(): void
+    {
+        $response = new ForumResponse();
+        $response->setImageName(null);
+        $this->assertNull($response->getImageName());
+    }
+
+    // Test d'ajout du même Rating deux fois
+    public function testAddSameRatingTwice(): void
+    {
+        $response = new ForumResponse();
+        $rating = new Rating();
+        $response->addRating($rating);
+        $response->addRating($rating); // Ne doit pas ajouter de doublon
+        $this->assertCount(1, $response->getRatings());
+    }
 }
