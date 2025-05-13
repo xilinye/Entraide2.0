@@ -2,7 +2,7 @@
 
 namespace App\Tests\Form;
 
-use App\Entity\BlogPost;
+use App\Entity\{BlogPost, User};
 use App\Form\BlogPostFormType;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormInterface;
@@ -11,14 +11,35 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class BlogPostFormTypeTest extends KernelTestCase
 {
     private FormInterface $form;
+    private User $testUser;
 
     protected function setUp(): void
     {
         self::bootKernel();
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+
+        // Create or retrieve the test user
+        $userRepository = $entityManager->getRepository(User::class);
+        $this->testUser = $userRepository->findOneBy(['email' => 'test@example.com']);
+
+        if (!$this->testUser) {
+            $this->testUser = new User();
+            $this->testUser->setEmail('test@example.com');
+            $this->testUser->setPassword('password');
+            // Set any additional required fields for your User entity
+            $entityManager->persist($this->testUser);
+            $entityManager->flush();
+        }
+
+        // Create a BlogPost with the test user as the author
+        $blogPost = new BlogPost();
+        $blogPost->setAuthor($this->testUser);
+
+        // Initialize the form with the pre-authored BlogPost
         $formFactory = self::getContainer()->get('form.factory');
         $this->form = $formFactory->create(
             BlogPostFormType::class,
-            new BlogPost(),
+            $blogPost,
             ['csrf_protection' => false]
         );
     }
@@ -69,7 +90,7 @@ class BlogPostFormTypeTest extends KernelTestCase
             'imageFile' => $imageFile
         ]);
 
-        $this->assertTrue($this->form->isValid());
+        $this->assertTrue($this->form->isValid(), (string) $this->form->getErrors(true));
     }
 
     public function testImageFileValidationInvalidMimeType(): void

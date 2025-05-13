@@ -43,6 +43,7 @@ class BlogController extends AbstractController
     public function new(Request $request): Response
     {
         $post = new BlogPost();
+        $post->setAuthor($this->getUser());
         $form = $this->createForm(BlogPostFormType::class, $post);
         $form->handleRequest($request);
 

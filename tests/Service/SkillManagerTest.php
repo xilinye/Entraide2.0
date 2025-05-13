@@ -27,7 +27,7 @@ class SkillManagerTest extends TestCase
 
         $this->entityManager->expects($this->once())
             ->method('persist')
-            ->with($skill);
+            ->with($this->identicalTo($skill));
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -42,8 +42,6 @@ class SkillManagerTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('hasSkill')->willReturn($hasSkill);
-        $user->method('addSkill')->willReturnSelf();
-        $user->method('removeSkill')->willReturnSelf();
         return $user;
     }
 
@@ -55,7 +53,7 @@ class SkillManagerTest extends TestCase
 
         $user->expects($this->once())
             ->method('addSkill')
-            ->with($skill);
+            ->with($this->identicalTo($skill));
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -89,7 +87,7 @@ class SkillManagerTest extends TestCase
 
         $user->expects($this->once())
             ->method('removeSkill')
-            ->with($skill);
+            ->with($this->identicalTo($skill));
 
         $this->entityManager->expects($this->once())
             ->method('flush');

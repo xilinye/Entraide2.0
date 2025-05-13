@@ -222,4 +222,103 @@ class UserManagerTest extends TestCase
         $manager = $this->createManager();
         $manager->deleteUser($user);
     }
+
+    public function testHasParticipationsDetectsAllTypes(): void
+    {
+        $user = new User();
+
+        $user->addSentMessage(new Message());
+        $user->addReceivedMessage(new Message());
+        $user->addAttendedEvent(new Event());
+
+        $method = new ReflectionMethod(UserManager::class, 'hasParticipations');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->createManager(), $user));
+    }
+
+    public function testDemoteNonAdminDoesNothing(): void
+    {
+        $user = new User();
+        $user->setRoles(['ROLE_USER']);
+
+        // Définir l'ID de l'utilisateur
+        $reflection = new \ReflectionClass($user);
+        $property = $reflection->getProperty('id');
+        $property->setAccessible(true);
+        $property->setValue($user, 1);
+
+        $currentUser = new User();
+        // ID différent pour currentUser
+        $property->setValue($currentUser, 2);
+
+        $this->em->expects($this->never())->method('flush');
+
+        $manager = $this->createManager();
+        $manager->demoteFromAdmin($user, $currentUser);
+
+        $this->assertNotContains('ROLE_ADMIN', $user->getRoles());
+    }
+    public function testDeleteUserWithoutImages(): void
+    {
+        $user = new User();
+
+        $blogPost = new BlogPost();
+        $forum = new Forum();
+        $event = new Event();
+
+        $user->addBlogPost($blogPost)
+            ->addForum($forum)
+            ->addOrganizedEvent($event);
+
+        $this->filesystem->expects($this->never())->method('remove');
+
+        $this->em->expects($this->exactly(4))->method('remove'); // Correction ici
+
+        $manager = $this->createManager();
+        $manager->deleteUser($user);
+    }
+
+    public function testDeleteUserWithoutProfileImage(): void
+    {
+        $user = new User();
+
+        $this->filesystem->expects($this->never())->method('remove');
+
+        $manager = $this->createManager();
+        $manager->deleteUser($user);
+    }
+
+    public function testDeleteUserWithMultipleContents(): void
+    {
+        $user = new User();
+
+        // Création de multiples contenus avec images
+        $blog1 = (new BlogPost())->setImageName('blog1.jpg');
+        $blog2 = (new BlogPost())->setImageName('blog2.jpg');
+        $forum1 = (new Forum())->setImageName('forum1.jpg');
+        $event1 = (new Event())->setImageName('event1.jpg');
+
+        $user->addBlogPost($blog1)
+            ->addBlogPost($blog2)
+            ->addForum($forum1)
+            ->addOrganizedEvent($event1);
+
+        // Configuration des paths
+        $this->params->method('get')->willReturnMap([
+            ['blog_images_directory', '/dummy/blog'],
+            ['forum_images_directory', '/dummy/forum'],
+            ['event_images_directory', '/dummy/event'],
+            ['profile_images_directory', '/dummy/profile']
+        ]);
+
+        // Vérification suppression des 4 images
+        $this->filesystem->expects($this->exactly(4))->method('remove');
+
+        // Vérification suppression des 4 entités + user
+        $this->em->expects($this->exactly(5))->method('remove');
+
+        $manager = $this->createManager();
+        $manager->deleteUser($user);
+    }
 }
