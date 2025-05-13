@@ -2,59 +2,133 @@
 
 namespace App\Tests\Form;
 
-use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Entity\BlogPost;
+use App\Form\BlogPostFormType;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class BlogPostFormTypeTest extends WebTestCase
+class BlogPostFormTypeTest extends KernelTestCase
 {
-    public function testInvalidImageSubmission(): void
+    private FormInterface $form;
+
+    protected function setUp(): void
     {
-        $client = static::createClient();
+        self::bootKernel();
+        $formFactory = self::getContainer()->get('form.factory');
+        $this->form = $formFactory->create(
+            BlogPostFormType::class,
+            new BlogPost(),
+            ['csrf_protection' => false]
+        );
+    }
 
-        // Créer et persister un utilisateur
-        $entityManager = self::getContainer()->get('doctrine')->getManager();
-        $user = (new User())
-            ->setPseudo('testuser')
-            ->setEmail('test@example.com')
-            ->setPassword('password')
-            ->setIsVerified(true);
+    public function testFormFields(): void
+    {
+        $formView = $this->form->createView();
+        $children = $formView->children;
 
-        $entityManager->persist($user);
-        $entityManager->flush();
+        $this->assertArrayHasKey('title', $children);
+        $this->assertArrayHasKey('content', $children);
+        $this->assertArrayHasKey('imageFile', $children);
+    }
 
-        $client->loginUser($user);
+    public function testImageFileFieldNotMapped(): void
+    {
+        $imageFileField = $this->form->get('imageFile');
+        $this->assertFalse($imageFileField->getConfig()->getOption('mapped'));
+    }
 
-        // Créer un fichier texte
-        $txtPath = sys_get_temp_dir() . '/test-file.txt';
-        file_put_contents($txtPath, 'contenu test');
+    public function testSubmitValidData(): void
+    {
+        $formData = [
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+        ];
+        $this->form->submit($formData);
 
-        // Accéder à la page de création
-        $crawler = $client->request('GET', '/blog/nouveau');
+        $this->assertTrue($this->form->isSynchronized());
+        $this->assertEquals($formData['title'], $this->form->getData()->getTitle());
+        $this->assertEquals($formData['content'], $this->form->getData()->getContent());
+    }
 
-        // Sélectionner le bon bouton
-        $form = $crawler->selectButton('Publier l\'article')->form();
 
-        // Remplir le formulaire
-        $form['blog_post_form[title]'] = 'Titre valide';
-        $form['blog_post_form[content]'] = str_repeat('a', 15); // Contenu valide
-        $form['blog_post_form[imageFile]'] = new UploadedFile(
-            $txtPath,
-            'test.txt',
-            'text/plain',
+    public function testImageFileValidationValidFile(): void
+    {
+        $imageFile = new UploadedFile(
+            __DIR__ . '/../fixtures/valid_image.jpg',
+            'valid_image.jpg',
+            'image/jpeg',
             null,
             true
         );
 
-        // Soumettre
-        $client->submit($form);
+        $this->form->submit([
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+            'imageFile' => $imageFile
+        ]);
 
-        // Vérifier l'erreur
-        $this->assertStringContainsString(
-            'Format d\'image invalide',
-            $client->getResponse()->getContent()
+        $this->assertTrue($this->form->isValid());
+    }
+
+    public function testImageFileValidationInvalidMimeType(): void
+    {
+        $invalidFile = new UploadedFile(
+            __DIR__ . '/../fixtures/invalid_file.pdf',
+            'invalid_file.pdf',
+            'application/pdf',
+            null,
+            true
         );
 
-        unlink($txtPath);
+        $this->form->submit([
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+            'imageFile' => $invalidFile
+        ]);
+
+        $errors = $this->form->get('imageFile')->getErrors();
+        $errorMessages = [];
+        foreach ($errors as $error) {
+            $errorMessages[] = $error->getMessage();
+        }
+
+        $this->assertContains('Format d\'image invalide', $errorMessages);
+    }
+
+    public function testImageFileValidationExceedsMaxSize(): void
+    {
+        $imageFile = new UploadedFile(
+            __DIR__ . '/../fixtures/large_image.jpg',
+            'large_image.jpg',
+            'image/jpeg',
+            null,
+            true
+        );
+
+        $this->form->submit([
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+            'imageFile' => $imageFile
+        ]);
+
+        $errors = $this->form->get('imageFile')->getErrors();
+        $errorMessages = [];
+        foreach ($errors as $error) {
+            $errorMessages[] = $error->getMessage();
+        }
+
+        $this->assertStringContainsString(
+            '5 MB',
+            implode(', ', $errorMessages),
+            'Actual errors: ' . implode(', ', $errorMessages)
+        );
+    }
+
+    public function testDataClassOptionSetCorrectly(): void
+    {
+        $formConfig = $this->form->getConfig();
+        $this->assertEquals(BlogPost::class, $formConfig->getOption('data_class'));
     }
 }
