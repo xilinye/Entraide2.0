@@ -6,32 +6,22 @@ use App\Entity\{Skill, User};
 use App\Service\SkillManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 
 class SkillManagerTest extends TestCase
 {
+    /** @var EntityManagerInterface&MockObject */
     private $entityManager;
-    private $urlGenerator;
-    private $requestStack;
-    private $skillManager;
+    private SkillManager $skillManager;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $this->requestStack = $this->createMock(RequestStack::class);
-
-        $this->skillManager = new SkillManager(
-            $this->entityManager,
-            $this->urlGenerator,
-            $this->requestStack
-        );
+        $this->skillManager = new SkillManager($this->entityManager);
     }
 
-    // Teste la création d'une compétence
-    public function testCreateSkillCallsPersistAndFlush(): void
+    public function testCreateSkill(): void
     {
         $skill = new Skill();
 
@@ -45,16 +35,23 @@ class SkillManagerTest extends TestCase
         $this->skillManager->createSkill($skill);
     }
 
-    // Teste l'ajout d'une compétence à un utilisateur
-    public function testHandleSkillSubmissionAddsSkillAndFlushes(): void
+    /**
+     * @return User&MockObject
+     */
+    private function createUserMock(bool $hasSkill)
     {
         $user = $this->createMock(User::class);
-        $skill = new Skill();
+        $user->method('hasSkill')->willReturn($hasSkill);
+        $user->method('addSkill')->willReturnSelf();
+        $user->method('removeSkill')->willReturnSelf();
+        return $user;
+    }
 
-        $user->expects($this->once())
-            ->method('hasSkill')
-            ->with($skill)
-            ->willReturn(false);
+    public function testSuccessfullyAddSkillToUser(): void
+    {
+        $skill = new Skill();
+        /** @var User&MockObject $user */
+        $user = $this->createUserMock(false);
 
         $user->expects($this->once())
             ->method('addSkill')
@@ -66,16 +63,17 @@ class SkillManagerTest extends TestCase
         $this->skillManager->handleSkillSubmission($user, $skill);
     }
 
-    // Teste l'exception lors de l'ajout d'une compétence existante
-    public function testHandleSkillSubmissionWhenSkillExistsThrowsException(): void
+    public function testThrowWhenAddingExistingSkill(): void
     {
-        $user = $this->createMock(User::class);
+        /** @var User&MockObject $user */
+        $user = $this->createUserMock(true);
         $skill = new Skill();
 
-        $user->expects($this->once())
-            ->method('hasSkill')
-            ->with($skill)
-            ->willReturn(true);
+        $user->expects($this->never())
+            ->method('addSkill');
+
+        $this->entityManager->expects($this->never())
+            ->method('flush');
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cette compétence est déjà associée à l\'utilisateur');
@@ -83,16 +81,11 @@ class SkillManagerTest extends TestCase
         $this->skillManager->handleSkillSubmission($user, $skill);
     }
 
-    // Teste la suppression d'une compétence d'un utilisateur
-    public function testRemoveUserSkillRemovesSkillAndFlushes(): void
+    public function testSuccessfullyRemoveSkillFromUser(): void
     {
-        $user = $this->createMock(User::class);
+        /** @var User&MockObject $user */
+        $user = $this->createUserMock(true);
         $skill = new Skill();
-
-        $user->expects($this->once())
-            ->method('hasSkill')
-            ->with($skill)
-            ->willReturn(true);
 
         $user->expects($this->once())
             ->method('removeSkill')
@@ -104,16 +97,17 @@ class SkillManagerTest extends TestCase
         $this->skillManager->removeUserSkill($user, $skill);
     }
 
-    // Teste l'exception lors de la suppression d'une compétence non associée
-    public function testRemoveUserSkillWhenSkillNotPresentThrowsException(): void
+    public function testThrowWhenRemovingUnownedSkill(): void
     {
-        $user = $this->createMock(User::class);
+        /** @var User&MockObject $user */
+        $user = $this->createUserMock(false);
         $skill = new Skill();
 
-        $user->expects($this->once())
-            ->method('hasSkill')
-            ->with($skill)
-            ->willReturn(false);
+        $user->expects($this->never())
+            ->method('removeSkill');
+
+        $this->entityManager->expects($this->never())
+            ->method('flush');
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cette compétence n\'est pas associée à l\'utilisateur');

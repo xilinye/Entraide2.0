@@ -5,7 +5,6 @@ namespace App\Tests\Entity;
 use App\Entity\{Forum, User, Category, ForumResponse};
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ForumTest extends TestCase
 {

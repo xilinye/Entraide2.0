@@ -2,9 +2,7 @@
 
 namespace App\Tests\Entity;
 
-use App\Entity\Category;
-use App\Entity\Skill;
-use App\Entity\User;
+use App\Entity\{Category, Skill, User};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Validator\Validator\ValidatorInterface;

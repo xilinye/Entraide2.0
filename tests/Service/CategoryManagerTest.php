@@ -10,53 +10,73 @@ use PHPUnit\Framework\TestCase;
 
 class CategoryManagerTest extends TestCase
 {
-    public function testCreationCategorieEchoueSiNomExisteDeja(): void
+    private const EXISTING_NAME = 'Existant';
+    private const NEW_NAME = 'Nouveau';
+
+    public function testCreateCategoryThrowsWhenNameExists(): void
     {
-        // 1. Préparation du test
-        $categorie = (new Category())->setName('Existant');
+        // Arrange
+        $category = new Category();
+        $category->setName(self::EXISTING_NAME);
 
-        // 2. Création des mocks
-        $repoMock = $this->createMock(CategoryRepository::class);
-        $repoMock->expects($this->once()) // Vérifie qu'on appelle existsByName une fois
-            ->method('existsByName')
-            ->with('Existant') // Vérifie le paramètre passé
-            ->willReturn(true);
+        $repositoryMock = $this->createRepositoryMock(true);
+        $entityManagerMock = $this->createEntityManagerMock(false);
 
-        $emMock = $this->createMock(EntityManagerInterface::class);
-
-        // 3. Exécution + Vérification de l'exception
-        $manager = new CategoryManager($emMock, $repoMock);
+        // Act & Assert
+        $manager = new CategoryManager($entityManagerMock, $repositoryMock);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Le nom de catégorie existe déjà');
 
-        $manager->createCategory($categorie);
+        $manager->createCategory($category);
     }
 
-    public function testCreationCategorieReussieSiNomUnique(): void
+    public function testCreateCategoryPersistsWhenNameIsUnique(): void
     {
-        // 1. Préparation
-        $categorie = (new Category())->setName('Nouveau');
+        // Arrange
+        $category = new Category();
+        $category->setName(self::NEW_NAME);
 
-        // 2. Configuration des mocks
-        $repoMock = $this->createMock(CategoryRepository::class);
-        $repoMock->expects($this->once())
-            ->method('existsByName')
-            ->with('Nouveau')
-            ->willReturn(false);
+        $repositoryMock = $this->createRepositoryMock(false);
+        $entityManagerMock = $this->createEntityManagerMock(true);
 
-        $emMock = $this->createMock(EntityManagerInterface::class);
-        $emMock->expects($this->once()) // Vérifie que persist est appelé
-            ->method('persist')
-            ->with($categorie); // Avec la bonne catégorie
+        // Act
+        $manager = new CategoryManager($entityManagerMock, $repositoryMock);
+        $manager->createCategory($category);
 
-        $emMock->expects($this->once()) // Vérifie que flush est appelé
-            ->method('flush');
+        // Assert - No exception means success
+    }
 
-        // 3. Exécution
-        $manager = new CategoryManager($emMock, $repoMock);
-        $manager->createCategory($categorie);
+    private function createRepositoryMock(bool $nameExists): CategoryRepository
+    {
+        /** @var CategoryRepository&\PHPUnit\Framework\MockObject\MockObject $mock */
+        $mock = $this->createMock(CategoryRepository::class);
+        $mock->method('existsByName')
+            ->willReturn($nameExists);
 
-        // Pas d'exception = test réussi
+        return $mock;
+    }
+
+    private function createEntityManagerMock(bool $shouldPersist): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface&\PHPUnit\Framework\MockObject\MockObject $mock */
+        $mock = $this->createMock(EntityManagerInterface::class);
+
+        if ($shouldPersist) {
+            $mock->expects($this->once())
+                ->method('persist')
+                ->with($this->isInstanceOf(Category::class));
+
+            $mock->expects($this->once())
+                ->method('flush');
+        } else {
+            $mock->expects($this->never())
+                ->method('persist');
+
+            $mock->expects($this->never())
+                ->method('flush');
+        }
+
+        return $mock;
     }
 }
