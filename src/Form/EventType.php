@@ -6,7 +6,7 @@ use App\Entity\Event;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\{DateTimeType, IntegerType, FileType};
-use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\{File, Range, NotBlank, NotNull};
 
 class EventType extends AbstractType
 {
@@ -14,7 +14,10 @@ class EventType extends AbstractType
     {
         $builder
             ->add('title', null, [
-                'label' => 'Titre'
+                'label' => 'Titre',
+                'constraints' => [
+                    new NotBlank(['message' => 'Le titre est obligatoire'])
+                ]
             ])
             ->add('description', null, [
                 'label' => 'Description'
@@ -26,8 +29,7 @@ class EventType extends AbstractType
                 'constraints' => [
                     new File([
                         'maxSize' => '5M',
-                        'mimeTypes' => ['image/jpeg', 'image/png'],
-                        'mimeTypesMessage' => 'Format d\'image invalide'
+                        'maxSizeMessage' => 'Sa taille ne doit pas dépasser 5 MB.'
                     ])
                 ]
             ])
@@ -38,7 +40,10 @@ class EventType extends AbstractType
                 'attr' => [
                     'class' => 'datetimepicker',
                     'data-input' => true
-                ]
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'La date de début est obligatoire'])
+                ],
             ])
             ->add('endDate', DateTimeType::class, [
                 'label' => 'Date de fin',
@@ -47,22 +52,34 @@ class EventType extends AbstractType
                 'attr' => [
                     'class' => 'datetimepicker',
                     'data-input' => true
-                ]
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'La date de fin est obligatoire'])
+                ],
             ])
             ->add('location', null, [
-                'label' => 'Lieu'
+                'label' => 'Lieu',
+                'constraints' => [
+                    new NotBlank(['message' => 'Le lieu est obligatoire'])
+                ]
             ])
-            ->add('maxAttendees', IntegerType::class, [
-                'label' => 'Nombre maximum de participants',
-                'required' => false,
-                'help' => '0 pour illimité'
-            ]);
+            ->add(
+                'maxAttendees',
+                IntegerType::class
+            );
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Event::class,
+            'csrf_protection' => $this->isCsrfEnabled(),
         ]);
+    }
+
+    private function isCsrfEnabled(): bool
+    {
+        // Désactive CSRF uniquement en environnement test
+        return $_ENV['APP_ENV'] !== 'test';
     }
 }

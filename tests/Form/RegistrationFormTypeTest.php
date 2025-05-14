@@ -2,29 +2,40 @@
 
 namespace App\Tests\Form;
 
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use App\Form\RegistrationFormType;
 use App\Entity\User;
-use Symfony\Component\Form\FormFactoryInterface;
+use App\Form\RegistrationFormType;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Form\FormInterface;
 
 class RegistrationFormTypeTest extends KernelTestCase
 {
-    private FormFactoryInterface $formFactory;
+    private FormInterface $form;
 
     protected function setUp(): void
     {
         self::bootKernel();
-        $this->formFactory = self::getContainer()->get('form.factory');
+        $formFactory = self::getContainer()->get('form.factory');
+        $this->form = $formFactory->create(RegistrationFormType::class, new User(), [
+            'csrf_protection' => false
+        ]);
+    }
+
+    private function assertFormHasError(FormInterface $form, string $fieldName, string $expectedError): void
+    {
+        $errors = $form->get($fieldName)->getErrors();
+        foreach ($errors as $error) {
+            if ($error->getMessage() === $expectedError) {
+                $this->assertTrue(true);
+                return;
+            }
+        }
+        $this->fail("Expected error '$expectedError' not found for field $fieldName");
     }
 
     public function testValidSubmission(): void
     {
-        $form = $this->formFactory->create(RegistrationFormType::class, new User(), [
-            'csrf_protection' => false
-        ]);
-
         $formData = [
-            'pseudo' => 'ValidUser123',
+            'pseudo' => 'ValidUser_123',
             'email' => 'valid@example.com',
             'plainPassword' => [
                 'first' => 'SecurePass123!',
@@ -33,38 +44,85 @@ class RegistrationFormTypeTest extends KernelTestCase
             'agreeTerms' => true
         ];
 
-        $form->submit($formData);
-
-        $this->assertTrue($form->isValid());
-        $this->assertTrue($form->isSynchronized());
+        $this->form->submit($formData);
+        $this->assertTrue($this->form->isValid());
     }
 
-    public function testInvalidDataScenarios(): void
+    public function provideInvalidCases(): iterable
     {
-        $testCases = [
-            [
-                'data' => [
-                    'pseudo' => 'A', // 2 erreurs (longueur + regex)
-                    'email' => 'invalid', // 1 erreur
-                    'plainPassword' => [
-                        'first' => 'weak', // 2 erreurs (longueur + regex)
-                        'second' => 'weak'  // 1 erreur (doit correspondre si champs différents)
-                    ],
-                    'agreeTerms' => false // 1 erreur
-                ],
-                'expectedErrors' => 7 // Total des erreurs
-            ]
+        yield 'Pseudo trop court' => [
+            ['pseudo' => 'A'],
+            'pseudo',
+            'Votre pseudonyme doit contenir au moins 3 caractères'
         ];
 
-        foreach ($testCases as $case) {
-            $form = $this->formFactory->create(RegistrationFormType::class, new User(), [
-                'csrf_protection' => false
-            ]);
+        yield 'Pseudo trop long' => [
+            ['pseudo' => str_repeat('a', 51)],
+            'pseudo',
+            'Votre pseudonyme ne peut pas dépasser 50 caractères'
+        ];
 
-            $form->submit($case['data']);
+        yield 'Pseudo avec caractères invalides' => [
+            ['pseudo' => 'user@test'],
+            'pseudo',
+            'Seuls les lettres, chiffres et underscores sont autorisés'
+        ];
 
-            $this->assertFalse($form->isValid());
-            $this->assertCount($case['expectedErrors'], $form->getErrors(true));
-        }
+        yield 'Email invalide' => [
+            ['email' => 'invalid-email'],
+            'email',
+            'Cette valeur n\'est pas une adresse email valide.'
+        ];
+
+        yield 'Password trop court' => [
+            ['plainPassword' => ['first' => 'Short1!', 'second' => 'Short1!']],
+            'plainPassword.first',
+            'Votre mot de passe doit contenir au moins 8 caractères'
+        ];
+
+        yield 'Password sans majuscule' => [
+            ['plainPassword' => ['first' => 'lowercase123!', 'second' => 'lowercase123!']],
+            'plainPassword.first',
+            'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
+        ];
+
+        yield 'Password sans caractère spécial' => [
+            ['plainPassword' => ['first' => 'Password123', 'second' => 'Password123']],
+            'plainPassword.first', // <--
+            'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
+        ];
+
+        yield 'Passwords non identiques' => [
+            ['plainPassword' => ['first' => 'Pass123!', 'second' => 'Wrong123!']],
+            'plainPassword',
+            'Les mots de passe doivent correspondre.'
+        ];
+
+        yield 'CGU non acceptées' => [
+            ['agreeTerms' => false],
+            'agreeTerms',
+            'Vous devez accepter les CGU et la politique de confidentialité.'
+        ];
+    }
+
+    /**
+     * @dataProvider provideInvalidCases
+     */
+    public function testInvalidSubmissions(array $formData, string $fieldName, string $expectedError): void
+    {
+        $defaultData = [
+            'pseudo' => 'ValidUser',
+            'email' => 'valid@example.com',
+            'plainPassword' => [
+                'first' => 'ValidPass123!',
+                'second' => 'ValidPass123!'
+            ],
+            'agreeTerms' => true
+        ];
+
+        $mergedData = array_replace_recursive($defaultData, $formData);
+        $this->form->submit($mergedData);
+
+        $this->assertFormHasError($this->form, $fieldName, $expectedError);
     }
 }

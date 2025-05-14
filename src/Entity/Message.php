@@ -17,7 +17,7 @@ class Message
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: "Le contenu ne peut pas être vide.")]
     #[Assert\Length(min: 1, max: 2000)]
     private ?string $content = null;
 
@@ -36,7 +36,7 @@ class Message
     private ?bool $isRead = false;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: "Le titre ne peut pas être vide.")]
     #[Assert\Length(max: 255)]
     private ?string $title = null;
 
@@ -44,9 +44,7 @@ class Message
     private ?string $imageName = null;
 
     #[Assert\File(
-        maxSize: '5M',
-        mimeTypes: ['image/jpeg', 'image/png'],
-        mimeTypesMessage: 'Veuillez télécharger une image JPEG ou PNG (max 5Mo).'
+        maxSize: '5M'
     )]
     private $imageFile;
 

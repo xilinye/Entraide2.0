@@ -31,6 +31,7 @@ class Forum
     private ?User $author = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'forums')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Category $category = null;
 
     #[ORM\Column(type: 'datetime_immutable')]

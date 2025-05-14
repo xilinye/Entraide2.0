@@ -35,6 +35,7 @@ class NewPasswordFormTypeTest extends KernelTestCase
     public function testInvalidPasswordScenarios(): void
     {
         $testCases = [
+            // Mot de passe trop court
             [
                 'data' => [
                     'plainPassword' => [
@@ -42,8 +43,9 @@ class NewPasswordFormTypeTest extends KernelTestCase
                         'second' => 'short'
                     ]
                 ],
-                'expectedErrors' => 2 // Length + regex
+                'expectedErrors' => 2 // Length + Regex
             ],
+            // Mots de passe non identiques
             [
                 'data' => [
                     'plainPassword' => [
@@ -51,7 +53,57 @@ class NewPasswordFormTypeTest extends KernelTestCase
                         'second' => 'Different2!'
                     ]
                 ],
-                'expectedErrors' => 1 // Mismatch
+                'expectedErrors' => 1 // Invalid_message
+            ],
+            // Champs vides
+            [
+                'data' => [
+                    'plainPassword' => [
+                        'first' => '',
+                        'second' => ''
+                    ]
+                ],
+                'expectedErrors' => 1 // NotBlank
+            ],
+            // Regex échoué (manque majuscule/chiffre/caractère spécial)
+            [
+                'data' => [
+                    'plainPassword' => [
+                        'first' => 'password',
+                        'second' => 'password'
+                    ]
+                ],
+                'expectedErrors' => 1 // Regex
+            ],
+            // Manque majuscule
+            [
+                'data' => [
+                    'plainPassword' => [
+                        'first' => 'secure123!',
+                        'second' => 'secure123!'
+                    ]
+                ],
+                'expectedErrors' => 1 // Regex
+            ],
+            // Manque chiffre
+            [
+                'data' => [
+                    'plainPassword' => [
+                        'first' => 'Securepass!',
+                        'second' => 'Securepass!'
+                    ]
+                ],
+                'expectedErrors' => 1 // Regex
+            ],
+            // Manque caractère spécial
+            [
+                'data' => [
+                    'plainPassword' => [
+                        'first' => 'SecurePass123',
+                        'second' => 'SecurePass123'
+                    ]
+                ],
+                'expectedErrors' => 1 // Regex
             ]
         ];
 
@@ -61,7 +113,11 @@ class NewPasswordFormTypeTest extends KernelTestCase
             ]);
             $form->submit($case['data']);
             $this->assertFalse($form->isValid());
-            $this->assertCount($case['expectedErrors'], $form->getErrors(true));
+            $this->assertCount(
+                $case['expectedErrors'],
+                $form->getErrors(true),
+                sprintf('Le scénario "%s" devrait générer %d erreur(s)', json_encode($case['data']), $case['expectedErrors'])
+            );
         }
     }
 }

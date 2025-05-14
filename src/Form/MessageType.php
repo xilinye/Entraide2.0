@@ -23,7 +23,6 @@ class MessageType extends AbstractType
                 'attr' => ['rows' => 5]
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Image (JPEG/PNG)',
                 'required' => false,
                 'mapped' => true,
             ]);

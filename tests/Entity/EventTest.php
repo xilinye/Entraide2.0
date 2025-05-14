@@ -64,7 +64,7 @@ class EventTest extends TestCase
 
         $errors = $validator->validate($event);
         $this->assertCount(1, $errors);
-        $this->assertEquals('La date de fin doit être postérieure à la date de début', $errors[0]->getMessage());
+        $this->assertEquals('La date de fin doit être après la date de début', $errors[0]->getMessage());
     }
 
     public function testMaxAttendeesValidation(): void
@@ -78,7 +78,7 @@ class EventTest extends TestCase
 
         $errors = $validator->validate($event);
         $this->assertCount(1, $errors);
-        $this->assertStringContainsString('Cette valeur doit être positive ou nulle.', $errors[0]->getMessage());
+        $this->assertStringContainsString('Le nombre de participants doit être au moins 1', $errors[0]->getMessage());
     }
 
     public function testCanRegister(): void

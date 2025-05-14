@@ -15,11 +15,13 @@ class BlogPostFormType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'label' => 'Titre',
-                'attr' => ['placeholder' => 'Entrez un titre percutant']
+                'attr' => ['placeholder' => 'Entrez un titre percutant'],
+                'empty_data' => ''
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu',
-                'attr' => ['rows' => 12, 'placeholder' => 'Rédigez votre article ici...']
+                'attr' => ['rows' => 12, 'placeholder' => 'Rédigez votre article ici...'],
+                'empty_data' => ''
             ])
             ->add('imageFile', FileType::class, [
                 'label' => 'Nouvelle image',
@@ -27,9 +29,7 @@ class BlogPostFormType extends AbstractType
                 'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
-                        'mimeTypes' => ['image/jpeg', 'image/png'],
-                        'mimeTypesMessage' => 'Format d\'image invalide'
+                        'maxSize' => '5M'
                     ])
                 ]
             ]);;

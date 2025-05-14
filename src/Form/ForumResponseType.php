@@ -26,9 +26,7 @@ class ForumResponseType extends AbstractType
                 'mapped' => true,
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
-                        'mimeTypes' => ['image/jpeg', 'image/png'],
-                        'mimeTypesMessage' => 'Format d\'image invalide'
+                        'maxSize' => '5M'
                     ])
                 ]
             ]);;

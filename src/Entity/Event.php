@@ -18,12 +18,11 @@ class Event
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire')]
     #[Assert\Length(min: 2, max: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -33,6 +32,10 @@ class Event
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank]
+    #[Assert\GreaterThan(
+        propertyPath: "startDate",
+        message: "La date de fin doit être après la date de début"
+    )]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 255)]
@@ -40,7 +43,7 @@ class Event
     private ?string $location = null;
 
     #[ORM\Column]
-    #[Assert\PositiveOrZero(message: "Cette valeur doit être positive ou nulle.")]
+    #[Assert\Positive(message: 'Le nombre de participants doit être au moins 1')]
     private ?int $maxAttendees = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizedEvents')]
@@ -63,6 +66,7 @@ class Event
     {
         $this->attendees = new ArrayCollection();
         $this->ratings = new ArrayCollection();
+        $this->organizer = new User();
     }
 
     public function getId(): ?int
@@ -114,16 +118,6 @@ class Event
             (!$this->maxAttendees || $this->attendees->count() < $this->maxAttendees);
     }
 
-    #[Assert\Callback]
-    public function validateDates(ExecutionContextInterface $context)
-    {
-        if ($this->startDate && $this->endDate && $this->startDate >= $this->endDate) {
-            $context->buildViolation('La date de fin doit être postérieure à la date de début')
-                ->atPath('endDate')
-                ->addViolation();
-        }
-    }
-
     public function addAttendee(User $attendee): static
     {
         if (!$this->attendees->contains($attendee)) {
@@ -160,7 +154,7 @@ class Event
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): self
+    public function setStartDate(?\DateTimeInterface $startDate): self
     {
         $this->startDate = $startDate;
         return $this;
@@ -171,7 +165,7 @@ class Event
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): self
+    public function setEndDate(?\DateTimeInterface $endDate): self
     {
         $this->endDate = $endDate;
         return $this;
