@@ -22,14 +22,44 @@ class RegistrationFormTypeTest extends KernelTestCase
 
     private function assertFormHasError(FormInterface $form, string $fieldName, string $expectedError): void
     {
-        $errors = $form->get($fieldName)->getErrors();
-        foreach ($errors as $error) {
-            if ($error->getMessage() === $expectedError) {
-                $this->assertTrue(true);
-                return;
+        if ($fieldName === 'plainPassword') {
+            // Vérifie les erreurs globales du formulaire
+            $errors = $form->getErrors(true);
+            foreach ($errors as $error) {
+                if ($error->getMessage() === $expectedError) {
+                    $this->addToAssertionCount(1);
+                    return;
+                }
             }
+            $this->fail("Erreur attendue '$expectedError' non trouvée pour '$fieldName'");
+        } else {
+            // Vérifie les erreurs de champ normal
+            $currentForm = $form;
+            $parts = explode('.', $fieldName);
+
+            foreach ($parts as $part) {
+                if (!$currentForm->has($part)) {
+                    $this->fail("Champ '$part' non trouvé dans le formulaire.");
+                }
+                $currentForm = $currentForm->get($part);
+            }
+
+            $errors = $currentForm->getErrors();
+            foreach ($errors as $error) {
+                if ($error->getMessage() === $expectedError) {
+                    $this->addToAssertionCount(1);
+                    return;
+                }
+            }
+
+            $errorMessages = array_map(fn($e) => $e->getMessage(), iterator_to_array($errors));
+            $this->fail(sprintf(
+                "Erreur attendue '%s' non trouvée pour '%s'. Erreurs trouvées: %s",
+                $expectedError,
+                $fieldName,
+                $errorMessages ? implode(', ', $errorMessages) : 'Aucune'
+            ));
         }
-        $this->fail("Expected error '$expectedError' not found for field $fieldName");
     }
 
     public function testValidSubmission(): void
@@ -88,7 +118,7 @@ class RegistrationFormTypeTest extends KernelTestCase
 
         yield 'Password sans caractère spécial' => [
             ['plainPassword' => ['first' => 'Password123', 'second' => 'Password123']],
-            'plainPassword.first', // <--
+            'plainPassword.first',
             'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
         ];
 
@@ -123,6 +153,8 @@ class RegistrationFormTypeTest extends KernelTestCase
         $mergedData = array_replace_recursive($defaultData, $formData);
         $this->form->submit($mergedData);
 
+        // Vérification cruciale ajoutée
+        $this->assertFalse($this->form->isValid(), 'Le formulaire devrait être invalide');
         $this->assertFormHasError($this->form, $fieldName, $expectedError);
     }
 }
