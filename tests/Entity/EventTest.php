@@ -6,6 +6,7 @@ use App\Entity\{Event, User, Rating};
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 
 class EventTest extends TestCase
 {
@@ -210,5 +211,60 @@ class EventTest extends TestCase
     {
         $event = $this->createValidEvent();
         $this->assertEmpty($event->getSortedAttendees());
+    }
+
+    public function testTitleLengthValidation()
+    {
+        $event = $this->createValidEvent()
+            ->setTitle(str_repeat('a', 256));
+
+        $errors = $this->validate($event);
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString('255 characters or less', $errors[0]->getMessage());
+    }
+
+    public function testEndDateErrorMessage()
+    {
+        $event = $this->createValidEvent()
+            ->setStartDate(new \DateTime('+2 days'))
+            ->setEndDate(new \DateTime('+1 day'));
+
+        $errors = $this->validate($event);
+        $this->assertEquals('La date de fin doit être après la date de début', $errors[0]->getMessage());
+    }
+
+    public function testRatingScoreValidation()
+    {
+        // Créer des utilisateurs valides
+        $organizer = (new User())
+            ->setPseudo('organizer123')
+            ->setEmail('organizer@example.com')
+            ->setPassword('ValidPass123!');
+
+        $attendee = (new User())
+            ->setPseudo('attendee456')
+            ->setEmail('attendee@example.com')
+            ->setPassword('ValidPass456!');
+
+        // Créer une note invalide
+        $rating = (new Rating())
+            ->setRater($organizer)
+            ->setRatedUser($attendee)
+            ->setScore(6)
+            ->setEvent($this->createValidEvent());
+
+        // Valider directement la note
+        $errors = $this->validate($rating);
+
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString('doit être entre 1 et 5', $errors[0]->getMessage());
+    }
+    private function validate($entity): array
+    {
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
+
+        return iterator_to_array($validator->validate($entity));
     }
 }

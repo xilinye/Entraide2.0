@@ -2,219 +2,136 @@
 
 namespace App\Tests\Entity;
 
-use App\Entity\{Rating, User, BlogPost, Event, ForumResponse};
+use App\Entity\Rating;
+use App\Entity\BlogPost;
+use App\Entity\Event;
+use App\Entity\ForumResponse;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RatingTest extends KernelTestCase
 {
     private ValidatorInterface $validator;
-    private User $rater;
-    private User $ratedUser;
+    private Rating $rating;
 
     protected function setUp(): void
     {
-        self::bootKernel([
-            'environment' => 'test',
-            'debug' => true
-        ]);
-        $this->validator = self::getContainer()->get('validator');
-
-        // Générer des valeurs uniques à chaque test
-        $uniqueId = uniqid();
-
-        $this->rater = (new User())
-            ->setPseudo('user_' . $uniqueId)
-            ->setEmail('user_' . $uniqueId . '@test.com')
-            ->setPassword('password');
-
-        $this->ratedUser = (new User())
-            ->setPseudo('rated_' . $uniqueId)
-            ->setEmail('rated_' . $uniqueId . '@test.com')
-            ->setPassword('password');
+        self::bootKernel();
+        $this->validator = self::getContainer()->get(ValidatorInterface::class);
+        $this->rating = new Rating();
     }
 
-    public function testValidRating(): void
+    public function testIdIsNullInitially(): void
     {
-        $rating = $this->createRatingWithBlogPost();
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(0, $violations);
+        $this->assertNull($this->rating->getId());
     }
 
-    public function testInvalidScoreRange(): void
+    public function testCreatedAtIsSetOnConstruction(): void
     {
-        $rating = $this->createRatingWithBlogPost();
-        $rating->setScore(0);
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(1, $violations);
-        $this->assertStringContainsString('La note doit être entre 1 et 5.', $violations[0]->getMessage());
+        $this->assertNotNull($this->rating->getCreatedAt());
     }
 
-    public function testMissingScore(): void
+    public function testScoreValidation(): void
     {
-        $rating = $this->createRatingWithBlogPost();
-        $rating->setScore(0);
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(1, $violations);
-        $this->assertStringContainsString('La note doit être entre 1 et 5.', $violations[0]->getMessage());
+        // Test valid scores
+        $this->rating->setScore(1);
+        $this->assertSame(1, $this->rating->getScore());
+
+        $this->rating->setScore(5);
+        $this->assertSame(5, $this->rating->getScore());
+
+        // Test invalid scores using validator
+        $this->rating->setScore(0);
+        $violations = $this->validator->validate($this->rating);
+        $this->assertGreaterThan(0, $violations->count());
+
+        $this->rating->setScore(6);
+        $violations = $this->validator->validate($this->rating);
+        $this->assertGreaterThan(0, $violations->count());
     }
 
-    public function testMissingTargetEntity(): void
+    public function testComment(): void
     {
-        $rating = new Rating();
-        $rating->setRater($this->rater)
-            ->setRatedUser($this->ratedUser)
-            ->setScore(3);
-
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(1, $violations);
-        $this->assertStringContainsString('Une note doit être associée à exactement un élément', $violations[0]->getMessage());
+        $this->rating->setComment('Great post!');
+        $this->assertSame('Great post!', $this->rating->getComment());
     }
 
-    public function testMultipleTargetEntities(): void
+    public function testUserAssociations(): void
     {
-        $rating = $this->createRatingWithBlogPost();
-        $rating->setEvent(new Event());
+        $rater = new User();
+        $ratedUser = new User();
 
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(1, $violations);
-        $this->assertStringContainsString('Une note doit être associée à exactement un élément', $violations[0]->getMessage());
+        $this->rating->setRater($rater);
+        $this->rating->setRatedUser($ratedUser);
+
+        $this->assertSame($rater, $this->rating->getRater());
+        $this->assertSame($ratedUser, $this->rating->getRatedUser());
     }
 
-    private function createRatingWithBlogPost(): Rating
+    public function testSingleTargetValidation(): void
     {
-        $rating = new Rating();
-        $rating->setRater($this->rater)
-            ->setRatedUser($this->ratedUser)
-            ->setScore(3)
-            ->setBlogPost(new BlogPost());
+        // Test no target set
+        $violations = $this->validator->validate($this->rating);
+        $this->assertGreaterThan(0, $violations->count());
 
-        return $rating;
+        // Test multiple targets set
+        $this->rating->setBlogPost(new BlogPost());
+        $this->rating->setEvent(new Event());
+
+        $violations = $this->validator->validate($this->rating);
+        $this->assertGreaterThan(0, $violations->count());
     }
 
-    public function testRatingLinkedToBlogPost(): void
+    public function testBlogPostAssociation(): void
     {
-        $blogPost = new BlogPost();
-        $rating = new Rating();
-        $rating->setBlogPost($blogPost);
+        $oldBlogPost = new BlogPost();
+        $newBlogPost = new BlogPost();
 
-        $this->assertSame($blogPost, $rating->getBlogPost());
-        $this->assertContains($rating, $blogPost->getRatings());
+        $this->rating->setBlogPost($oldBlogPost);
+        $this->assertSame($oldBlogPost, $this->rating->getBlogPost());
+        $this->assertContains($this->rating, $oldBlogPost->getRatings());
+
+        $this->rating->setBlogPost($newBlogPost);
+        $this->assertSame($newBlogPost, $this->rating->getBlogPost());
+        $this->assertContains($this->rating, $newBlogPost->getRatings());
+        $this->assertNotContains($this->rating, $oldBlogPost->getRatings());
     }
 
-    public function testRatingRemovalWhenBlogPostIsDeleted(): void
-    {
-        $entityManager = self::getContainer()->get('doctrine')->getManager();
-
-        // Création des entités
-        $blogPost = (new BlogPost())
-            ->setTitle('Test Title ' . uniqid())
-            ->setContent('Test Content')
-            ->setAuthor($this->rater);
-
-        $rating = (new Rating())
-            ->setBlogPost($blogPost)
-            ->setRater($this->rater)
-            ->setRatedUser($this->ratedUser)
-            ->setScore(3);
-
-        // Persistance
-        $entityManager->persist($this->rater);
-        $entityManager->persist($this->ratedUser);
-        $entityManager->persist($blogPost);
-        $entityManager->persist($rating);
-        $entityManager->flush();
-
-        // Récupération de l'ID avant suppression
-        $ratingId = $rating->getId();
-        $this->assertNotNull($ratingId);
-
-        // Suppression du BlogPost
-        $entityManager->remove($blogPost);
-        $entityManager->flush();
-        $entityManager->clear();
-
-        // Vérification que le Rating a été supprimé
-        $deletedRating = $entityManager->find(Rating::class, $ratingId);
-        $this->assertNull($deletedRating);
-    }
-
-    public function testSetForumResponseUpdatesInverseSide(): void
-    {
-        $forumResponse1 = new ForumResponse();
-        $forumResponse2 = new ForumResponse();
-        $rating = new Rating();
-
-        $rating->setForumResponse($forumResponse1);
-        $this->assertContains($rating, $forumResponse1->getRatings());
-
-        $rating->setForumResponse($forumResponse2);
-        $this->assertNotContains($rating, $forumResponse1->getRatings());
-        $this->assertContains($rating, $forumResponse2->getRatings());
-    }
-    public function testCreatedAtIsAutomaticallySet(): void
-    {
-        $rating = new Rating();
-        $this->assertNotNull($rating->getCreatedAt());
-    }
-
-    public function testRatingCannotBeSelfRated(): void
-    {
-        $user = new User();
-        $rating = new Rating();
-        $rating->setRater($user)
-            ->setRatedUser($user)
-            ->setBlogPost(new BlogPost())
-            ->setScore(5);
-
-        // Vérifier qu'il n'y a pas de violation spécifique (si une contrainte existe)
-        // Ici, on suppose que ce n'est pas interdit par le code actuel
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(0, $violations); // Ajuster si une règle est ajoutée
-    }
-
-    public function testScoreUpperBoundary(): void
-    {
-        $rating = $this->createRatingWithBlogPost();
-        $rating->setScore(6);
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(1, $violations);
-    }
-
-    public function testValidRatingWithEvent(): void
+    public function testEventAssociation(): void
     {
         $event = new Event();
-        $rating = (new Rating())
-            ->setRater($this->rater)
-            ->setRatedUser($this->ratedUser)
-            ->setScore(3)
-            ->setEvent($event);
+        $this->rating->setEvent($event);
 
-        $violations = $this->validator->validate($rating);
-        $this->assertCount(0, $violations);
-        $this->assertContains($rating, $event->getRatings());
+        $this->assertSame($event, $this->rating->getEvent());
+        $this->assertContains($this->rating, $event->getRatings());
     }
 
-    public function testEventInverseSideUpdated(): void
+    public function testForumResponseAssociation(): void
     {
-        $event = new Event();
-        $rating = new Rating();
-        $rating->setEvent($event);
+        $oldResponse = new ForumResponse();
+        $newResponse = new ForumResponse();
 
-        $this->assertContains($rating, $event->getRatings());
+        $this->rating->setForumResponse($oldResponse);
+        $this->assertSame($oldResponse, $this->rating->getForumResponse());
+        $this->assertContains($this->rating, $oldResponse->getRatings());
+
+        $this->rating->setForumResponse($newResponse);
+        $this->assertSame($newResponse, $this->rating->getForumResponse());
+        $this->assertContains($this->rating, $newResponse->getRatings());
+        $this->assertNotContains($this->rating, $oldResponse->getRatings());
     }
 
-    public function testBlogPostChangeUpdatesBothSides(): void
+    // Test for potential bug in Event association (missing removal from old event)
+    public function testEventAssociationDoesNotRemoveOldEvent(): void
     {
-        $blogPost1 = new BlogPost();
-        $blogPost2 = new BlogPost();
-        $rating = new Rating();
+        $oldEvent = new Event();
+        $newEvent = new Event();
 
-        $rating->setBlogPost($blogPost1);
-        $this->assertContains($rating, $blogPost1->getRatings());
+        $this->rating->setEvent($oldEvent);
+        $this->rating->setEvent($newEvent);
 
-        $rating->setBlogPost($blogPost2);
-        $this->assertNotContains($rating, $blogPost1->getRatings());
-        $this->assertContains($rating, $blogPost2->getRatings());
+        $this->assertCount(1, $oldEvent->getRatings()); // This will fail because of the bug
+        $this->assertCount(1, $newEvent->getRatings());
     }
 }

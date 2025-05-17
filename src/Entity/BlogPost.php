@@ -35,7 +35,10 @@ class BlogPost
     )]
     private ?string $content = null;
 
-    #[ORM\ManyToOne(inversedBy: 'blogPosts')]
+    #[ORM\ManyToOne(
+        inversedBy: 'blogPosts',
+        cascade: ['persist']
+    )]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: "L'auteur est obligatoire")]
     private ?User $author = null;
@@ -49,7 +52,7 @@ class BlogPost
     #[ORM\Column(length: 255, unique: true)]
     private string $slug;
 
-    #[ORM\OneToMany(mappedBy: 'blogPost', targetEntity: Rating::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'blogPost', targetEntity: Rating::class, cascade: ['persist', 'remove'])]
     private Collection $ratings;
 
     #[ORM\Column(length: 255, nullable: true)]

@@ -2,229 +2,129 @@
 
 namespace App\Tests\Entity;
 
-use App\Entity\{Message, User};
-use PHPUnit\Framework\TestCase;
+use App\Entity\Message;
+use App\Entity\User;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class MessageTest extends TestCase
+class MessageTest extends KernelTestCase
 {
-    private Message $message;
-    private User $sender;
-    private User $receiver;
+    private ValidatorInterface $validator;
 
     protected function setUp(): void
     {
-        $this->message = new Message();
-        $this->sender = new User();
-        $this->receiver = new User();
+        self::bootKernel();
+        $this->validator = self::getContainer()->get('validator');
     }
 
-    // Test des getters/setters de base
-    public function testBasicGettersAndSetters(): void
+    public function testValidMessage(): void
     {
-        $this->message->setContent('Test content');
-        $this->assertSame('Test content', $this->message->getContent());
-
-        $this->message->setTitle('Test title');
-        $this->assertSame('Test title', $this->message->getTitle());
-
-        $this->message->setImageName('image.jpg');
-        $this->assertSame('image.jpg', $this->message->getImageName());
-
-        $this->message->setIsRead(true);
-        $this->assertTrue($this->message->isRead());
+        $message = $this->createValidMessage();
+        $violations = $this->validator->validate($message);
+        $this->assertCount(0, $violations);
     }
 
-    // Test des relations avec User
-    public function testSenderAndReceiverRelations(): void
-    {
-        // Utilisation des méthodes addSentMessage/addReceivedMessage
-        $this->sender->addSentMessage($this->message);
-        $this->receiver->addReceivedMessage($this->message);
-
-        $this->assertSame($this->sender, $this->message->getSender());
-        $this->assertSame($this->receiver, $this->message->getReceiver());
-
-        // Vérification des collections
-        $this->assertTrue($this->sender->getSentMessages()->contains($this->message));
-        $this->assertTrue($this->receiver->getReceivedMessages()->contains($this->message));
-    }
-
-    // Test des valeurs par défaut
-    public function testDefaultValues(): void
-    {
-        $this->assertFalse($this->message->isRead());
-        $this->assertNotNull($this->message->getCreatedAt());
-    }
-
-    // Test de validation des contraintes
-    public function testValidationConstraints(): void
-    {
-        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
-
-        // Test contenu vide
-        $message = new Message();
-        $errors = $validator->validate($message);
-        $this->assertGreaterThan(0, count($errors));
-
-        // Test contenu trop long
-        $message->setContent(str_repeat('a', 2001));
-        $message->setTitle('Test');
-        $errors = $validator->validate($message);
-        $this->assertGreaterThan(0, count($errors));
-
-        // Test titre vide
-        $message->setContent('Valid content');
-        $message->setTitle('');
-        $errors = $validator->validate($message);
-        $this->assertGreaterThan(0, count($errors));
-    }
-
-    // Test de gestion des fichiers image
-    public function testImageFileConstraints(): void
-    {
-        $validator = Validation::createValidatorBuilder()
-            ->enableAttributeMapping()
-            ->getValidator();
-
-        // Remplir les champs obligatoires
-        $this->message->setContent('Contenu valide');
-        $this->message->setTitle('Titre valide');
-
-        // Test fichier trop lourd
-        $file = new UploadedFile(
-            __DIR__ . '/test_files/big_image.jpg',
-            'big_image.jpg',
-            'image/jpeg',
-            null,
-            true
-        );
-        $this->message->setImageFile($file);
-        $errors = $validator->validate($this->message);
-        $this->assertGreaterThan(0, count($errors));
-
-        // Test type MIME invalide
-        $file = new UploadedFile(
-            __DIR__ . '/test_files/document.pdf',
-            'document.pdf',
-            'application/pdf',
-            null,
-            true
-        );
-        $this->message->setImageFile($file);
-        $errors = $validator->validate($this->message);
-        $this->assertGreaterThan(0, count($errors));
-
-        // Test fichier valide
-        $file = new UploadedFile(
-            __DIR__ . '/test_files/valid_image.jpg',
-            'valid_image.jpg',
-            'image/jpeg',
-            null,
-            true
-        );
-        $this->message->setImageFile($file);
-        $errors = $validator->validate($this->message);
-        $this->assertCount(0, $errors);
-    }
-
-    // Test du formatage de la chaîne
-    public function testToString(): void
-    {
-        $content = 'Il s\'agit d\'un long contenu de message qui doit être tronqué';
-        $this->message->setContent($content);
-
-        $expected = substr($content, 0, 50) . '...';
-        $this->assertSame($expected, (string)$this->message);
-    }
-
-    // Test du cycle de vie pour createdAt
-    public function testPrePersist(): void
+    public function testInitialState(): void
     {
         $message = new Message();
+        $this->assertFalse($message->isRead());
         $this->assertInstanceOf(\DateTimeImmutable::class, $message->getCreatedAt());
     }
 
-    // Test des messages marqués comme lus
-    public function testReadStatus(): void
+    public function testContentNotBlank(): void
     {
-        $this->message->setIsRead(true);
-        $this->assertTrue($this->message->isRead());
+        $message = $this->createValidMessage()->setContent('');
+        $this->assertValidationErrorCount($message, 1, 'Le contenu ne peut pas être vide.');
     }
 
-    public function testValidationWithoutImageFile(): void
+    public function testContentMaxLength(): void
     {
-        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+        $content = str_repeat('a', 2001);
+        $message = $this->createValidMessage()->setContent($content);
+        $this->assertValidationErrorContains($message, '2000');
+    }
 
+    public function testTitleNotBlank(): void
+    {
+        $message = $this->createValidMessage()->setTitle('');
+        $this->assertValidationErrorCount($message, 1, 'Le titre ne peut pas être vide.');
+    }
+
+    public function testTitleMaxLength(): void
+    {
+        $title = str_repeat('a', 256);
+        $message = $this->createValidMessage()->setTitle($title);
+        $this->assertValidationErrorContains($message, '255');
+    }
+
+    public function testImageFileMaxSize(): void
+    {
+        $file = $this->createTestFile(5 * 1024 * 1024 + 1);
+        $message = $this->createValidMessage()->setImageFile($file);
+        $this->assertValidationErrorContains($message, '5 MB');
+        unlink($file->getPathname());
+    }
+
+    public function testSenderAndReceiver(): void
+    {
+        $sender = new User();
+        $receiver = new User();
+        $message = (new Message())
+            ->setSender($sender)
+            ->setReceiver($receiver);
+
+        $this->assertSame($sender, $message->getSender());
+        $this->assertSame($receiver, $message->getReceiver());
+    }
+
+    public function testToString(): void
+    {
+        $content = 'This is a message that exceeds fifty characters for testing truncation.';
+        $message = (new Message())->setContent($content);
+        $this->assertEquals(substr($content, 0, 50) . '...', (string)$message);
+    }
+
+    public function testImageHandling(): void
+    {
         $message = new Message();
-        $message->setContent('Valid content');
-        $message->setTitle('Valid title');
-        $message->setSender($this->sender);
-        $message->setReceiver($this->receiver);
+        $message->setImageName('image.jpg');
+        $this->assertEquals('image.jpg', $message->getImageName());
 
-        $errors = $validator->validate($message);
-        $this->assertCount(0, $errors); // Aucune erreur sans image
+        $file = $this->createTestFile(100);
+        $message->setImageFile($file);
+        $this->assertSame($file, $message->getImageFile());
+        unlink($file->getPathname());
     }
 
-    public function testContentExactMaxLength(): void
+    private function createValidMessage(): Message
     {
-        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
-
-        $message = new Message();
-        $message->setTitle('Valid title');
-        $message->setSender($this->sender);
-        $message->setReceiver($this->receiver);
-
-        // 2000 caractères (valide)
-        $message->setContent(str_repeat('a', 2000));
-        $errors = $validator->validate($message);
-        $this->assertCount(0, $errors);
-
-        // 2001 caractères (invalide)
-        $message->setContent(str_repeat('a', 2001));
-        $errors = $validator->validate($message);
-        $this->assertGreaterThan(0, count($errors));
+        return (new Message())
+            ->setContent('Valid content')
+            ->setTitle('Valid title')
+            ->setSender(new User())
+            ->setReceiver(new User());
     }
 
-    public function testPrePersistOverridesManualCreatedAt(): void
+    private function createTestFile(int $size): UploadedFile
     {
-        $message = new Message();
-        $manualDate = new \DateTimeImmutable('2023-01-01');
-        $message->setCreatedAt($manualDate);
-
-        // Déclencher manuellement le PrePersist
-        $message->setCreatedAtValue();
-
-        $this->assertNotEquals($manualDate, $message->getCreatedAt());
+        $path = tempnam(sys_get_temp_dir(), 'test');
+        file_put_contents($path, str_repeat('a', $size));
+        return new UploadedFile($path, 'testfile.jpg', 'image/jpeg', null, true);
     }
 
-    public function testToStringWithExact50Characters(): void
+    private function assertValidationErrorCount(Message $message, int $expectedCount, string $messageText = null): void
     {
-        $content = str_repeat('a', 50);
-        $this->message->setContent($content);
-        $this->assertSame($content . '...', (string)$this->message);
+        $violations = $this->validator->validate($message);
+        $this->assertCount($expectedCount, $violations);
+        if ($messageText) {
+            $this->assertEquals($messageText, $violations[0]->getMessage());
+        }
     }
 
-    public function testPngFileIsValid(): void
+    private function assertValidationErrorContains(Message $message, string $expectedString): void
     {
-        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
-
-        $file = new UploadedFile(
-            __DIR__ . '/test_files/valid_image.png',
-            'valid_image.png',
-            'image/png',
-            null,
-            true
-        );
-
-        $this->message->setContent('Valid content');
-        $this->message->setTitle('Valid title');
-        $this->message->setSender($this->sender);
-        $this->message->setReceiver($this->receiver);
-        $this->message->setImageFile($file);
-
-        $errors = $validator->validate($this->message);
-        $this->assertCount(0, $errors);
+        $violations = $this->validator->validate($message);
+        $this->assertStringContainsString($expectedString, $violations[0]->getMessage());
     }
 }

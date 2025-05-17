@@ -87,10 +87,30 @@ class ConversationDeletionTest extends TestCase
 
     private function createValidDeletion(): ConversationDeletion
     {
+        $user = (new User())
+            ->setPseudo('valid_pseudo')
+            ->setEmail('valid@example.com')
+            ->setPassword('ValidPassword123!');
+
+        // Définir l'ID avec réflexion
+        $reflection = new \ReflectionProperty(User::class, 'id');
+        $reflection->setAccessible(true);
+        $reflection->setValue($user, 1);
+
+        $otherUser = (new User())
+            ->setPseudo('other_valid')
+            ->setEmail('other@example.com')
+            ->setPassword('ValidPassword456!');
+
+        // Définir un ID différent pour otherUser
+        $otherUserReflection = new \ReflectionProperty(User::class, 'id');
+        $otherUserReflection->setAccessible(true);
+        $otherUserReflection->setValue($otherUser, 2);
+
         return (new ConversationDeletion())
-            ->setUser(new User())
-            ->setOtherUser(new User())
-            ->setConversationTitle('Discussion importante');
+            ->setUser($user)
+            ->setOtherUser($otherUser)
+            ->setConversationTitle('Titre valide');
     }
 
     public function testToStringRepresentation(): void
@@ -133,9 +153,8 @@ class ConversationDeletionTest extends TestCase
         $deletion = $this->createValidDeletion();
         $deletion->setConversationTitle('');
 
-        $validator = Validation::createValidator();
-        $errors = $validator->validate($deletion);
-        $this->assertCount(0, $errors); // À ajuster selon les contraintes
+        $errors = $this->validate($deletion);
+        $this->assertCount(2, $errors);
     }
 
     public function testUserChangeRemovesFromPreviousUser()
@@ -153,23 +172,19 @@ class ConversationDeletionTest extends TestCase
 
     public function testValidationMessages()
     {
-        $validator = Validation::createValidatorBuilder()
-            ->enableAttributeMapping() // Activation du mapping des attributs
-            ->getValidator();
+        $invalid = new ConversationDeletion();
+        $invalid->setConversationTitle('');
 
-        $deletion = new ConversationDeletion();
-        $errors = $validator->validate($deletion);
+        $errors = $this->validate($invalid);
 
-        $expectedMessages = [
+        $expected = [
             'L\'utilisateur est obligatoire.',
             'L\'autre utilisateur est obligatoire.',
-            'Le titre de la conversation est obligatoire.'
+            'Le titre ne peut pas être vide',
+            'Le titre doit contenir au moins 2 caractères'
         ];
 
-        $receivedMessages = array_map(fn($e) => $e->getMessage(), iterator_to_array($errors));
-        foreach ($expectedMessages as $message) {
-            $this->assertContains($message, $receivedMessages);
-        }
+        $this->assertValidationMessages($errors, $expected);
     }
 
     public function testGetConversationTitleReturnsCorrectValue()
@@ -177,5 +192,83 @@ class ConversationDeletionTest extends TestCase
         $deletion = $this->createValidDeletion();
         $deletion->setConversationTitle('Réunion équipe');
         $this->assertEquals('Réunion équipe', $deletion->getConversationTitle());
+    }
+
+    public function testConversationTitleMaxLengthExceeded()
+    {
+        $deletion = $this->createValidDeletion();
+        $deletion->setConversationTitle(str_repeat('a', 256));
+
+        $errors = $this->validate($deletion);
+        $this->assertCount(1, $errors);
+    }
+
+    public function testSameUserInstanceValidation()
+    {
+        $user = new User();
+        $user->setId(1);
+        $deletion = (new ConversationDeletion())
+            ->setUser($user)
+            ->setOtherUser($user)
+            ->setConversationTitle('Test');
+
+        $errors = $this->validate($deletion);
+
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString(
+            'ne peut pas être avec soi-même',
+            $errors[0]->getMessage()
+        );
+    }
+
+    public function testInvalidFieldTypes()
+    {
+        $deletion = new ConversationDeletion();
+
+        // Test avec des types invalides (doit échouer avant la validation)
+        $this->expectException(\TypeError::class);
+        $invalidUser = (object)['invalid' => 'type']; // Création d'un objet non-User
+        $deletion->setUser($invalidUser);
+    }
+
+    public function testUserRelationshipLifecycle()
+    {
+        $user = new User();
+        $deletion = new ConversationDeletion();
+
+        // Ajout
+        $user->addConversationDeletion($deletion);
+        $this->assertCount(1, $user->getConversationDeletions());
+
+        // Suppression
+        $user->removeConversationDeletion($deletion);
+        $this->assertCount(0, $user->getConversationDeletions());
+    }
+
+    public function testConversationTitleMinLength()
+    {
+        $deletion = $this->createValidDeletion();
+        $deletion->setConversationTitle('A');
+
+        $errors = $this->validate($deletion);
+        $this->assertCount(1, $errors);
+    }
+
+    private function validate($entity): array
+    {
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
+
+        return iterator_to_array($validator->validate($entity));
+    }
+
+    private function assertValidationMessages($errors, array $expected)
+    {
+        $messages = array_map(fn($e) => $e->getMessage(), $errors);
+
+        foreach ($expected as $message) {
+            $this->assertContains($message, $messages);
+        }
     }
 }

@@ -29,8 +29,13 @@ class ConversationDeletion
     private ?\DateTimeImmutable $deletedAt = null; // Date de suppression
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotNull(message: 'Le titre de la conversation est obligatoire.')]
-    #[Assert\Length(max: 255)]
+    #[Assert\NotBlank(message: 'Le titre ne peut pas être vide')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le titre doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $conversationTitle = null;
 
     public function getId(): ?int

@@ -167,4 +167,63 @@ class ForumTest extends TestCase
         $this->assertFalse($oldAuthor->getForums()->contains($forum));
         $this->assertTrue($newAuthor->getForums()->contains($forum));
     }
+
+    // Ajoutez ces méthodes dans la classe ForumTest
+
+    public function testSetSameCategoryNoChange(): void
+    {
+        $category = new Category();
+        $forum = $this->createValidForum()->setCategory($category);
+
+        // On réaffecte la même catégorie
+        $forum->setCategory($category);
+
+        $this->assertSame($category, $forum->getCategory());
+        $this->assertCount(1, $category->getForums());
+    }
+
+    public function testSetSameAuthorNoChange(): void
+    {
+        $user = new User();
+        $forum = $this->createValidForum()->setAuthor($user);
+
+        // On réaffecte le même auteur
+        $forum->setAuthor($user);
+
+        $this->assertSame($user, $forum->getAuthor());
+        $this->assertCount(1, $user->getForums());
+    }
+
+    public function testNewForumHasEmptyResponses(): void
+    {
+        $forum = new Forum();
+        $this->assertCount(0, $forum->getResponses());
+        $this->assertTrue($forum->getResponses()->isEmpty());
+    }
+
+    public function testTitleMaxLengthValidation(): void
+    {
+        $forum = $this->createValidForum()
+            ->setTitle(str_repeat('a', 255)); // 255 caractères exactement
+
+        $errors = $this->validate($forum);
+        $this->assertCount(0, $errors, (string) $errors);
+    }
+
+    public function testMinimalValidContent(): void
+    {
+        $forum = $this->createValidForum()
+            ->setContent('a'); // Contenu minimal valide
+
+        $errors = $this->validate($forum);
+        $this->assertCount(0, $errors);
+    }
+
+    public function testNullCategoryAllowed(): void
+    {
+        $forum = $this->createValidForum()->setCategory(null);
+
+        $errors = $this->validate($forum);
+        $this->assertCount(0, $errors);
+    }
 }

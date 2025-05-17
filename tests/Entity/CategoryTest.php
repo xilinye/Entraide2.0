@@ -3,11 +3,21 @@
 namespace App\Tests\Entity;
 
 use App\Entity\{Category, Skill, Forum};
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class CategoryTest extends TestCase
+class CategoryTest extends KernelTestCase
+
 {
+    private ValidatorInterface $validator;
+
+    protected function setUp(): void
+    {
+        self::bootKernel();
+        $this->validator = self::getContainer()->get('validator');
+    }
+
     public function testGettersAndSetters(): void
     {
         $category = new Category();
@@ -146,5 +156,46 @@ class CategoryTest extends TestCase
         $category2->addForum($forum);
         $this->assertSame($category2, $forum->getCategory());
         $this->assertCount(0, $category1->getForums());
+    }
+
+    public function testNameValidationConstraints()
+    {
+        $category = new Category();
+        $category->setName('A'); // Trop court
+
+        $violations = $this->validator->validate($category);
+        $messages = array_map(fn($v) => $v->getMessage(), iterator_to_array($violations));
+
+        $this->assertCount(1, $violations);
+        $this->assertContains('Le nom doit contenir au moins 2 caractères', $messages);
+    }
+
+    public function testNameLengthBoundaries()
+    {
+        $category = new Category();
+
+        // Longueur minimale (2)
+        $category->setName('Ab');
+        $this->assertCount(0, $this->validator->validate($category));
+
+        // Longueur maximale (50)
+        $category->setName(str_repeat('a', 50));
+        $this->assertCount(0, $this->validator->validate($category));
+    }
+
+    public function testNameNotBlank()
+    {
+        $category = new Category();
+        $category->setName('');
+
+        $violations = $this->validator->validate($category);
+        $messages = array_map(fn($v) => $v->getMessage(), iterator_to_array($violations));
+
+        // On vérifie maintenant 2 violations
+        $this->assertCount(2, $violations);
+
+        // On vérifie la présence des deux messages
+        $this->assertContains('Le nom de la catégorie est obligatoire', $messages);
+        $this->assertContains('Le nom doit contenir au moins 2 caractères', $messages);
     }
 }

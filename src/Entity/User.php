@@ -44,6 +44,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles = ['ROLE_USER'];
 
     #[ORM\Column]
+    #[Assert\Length(
+        min: 8,
+        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+        groups: ['registration']
+    )]
+    #[Assert\NotBlank(groups: ['registration'])]
     private ?string $password = null;
 
     #[ORM\Column(options: ['default' => false])]
@@ -124,6 +130,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getPseudo(): ?string

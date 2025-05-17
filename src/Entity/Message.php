@@ -18,7 +18,7 @@ class Message
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu ne peut pas être vide.")]
-    #[Assert\Length(min: 1, max: 2000)]
+    #[Assert\Length(max: 2000)]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'sentMessages')]
