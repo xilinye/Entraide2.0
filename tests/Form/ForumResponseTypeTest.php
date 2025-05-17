@@ -2,7 +2,7 @@
 
 namespace App\Tests\Form;
 
-use App\Entity\{ForumResponse, User, Forum};
+use App\Entity\ForumResponse;
 use App\Form\ForumResponseType;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;

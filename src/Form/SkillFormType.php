@@ -7,6 +7,7 @@ use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class SkillFormType extends AbstractType
 {
@@ -15,6 +16,11 @@ class SkillFormType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Nom de la compétence',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Le nom de la compétence est obligatoire'
+                    ])
+                ],
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Ex: Symfony, React...'
@@ -24,6 +30,11 @@ class SkillFormType extends AbstractType
                 'class' => Category::class,
                 'choice_label' => 'name',
                 'label' => 'Catégorie associée',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Une catégorie doit être sélectionnée'
+                    ])
+                ],
                 'required' => true,
                 'placeholder' => 'Choisissez une catégorie'
             ]);
