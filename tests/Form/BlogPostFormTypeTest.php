@@ -146,8 +146,10 @@ class BlogPostFormTypeTest extends KernelTestCase
         ]);
 
         $this->assertFalse($this->form->isValid());
-        // Correction du message attendu :
-        $this->assertStringContainsString('Cette valeur ne doit pas être vide.', $this->form->get('title')->getErrors()[0]->getMessage());
+        $this->assertStringContainsString(
+            'Le titre ne peut pas être vide.',
+            $this->form->get('title')->getErrors()[0]->getMessage()
+        );
     }
 
     public function testImageFileIsOptional(): void
@@ -168,11 +170,14 @@ class BlogPostFormTypeTest extends KernelTestCase
     {
         $this->form->submit([
             'title' => 'Titre valide',
-            'content' => '', // Vide
+            'content' => ''
         ]);
 
         $this->assertFalse($this->form->isValid());
-        $this->assertStringContainsString('Cette valeur ne doit pas être vide.', $this->form->get('content')->getErrors()[0]->getMessage());
+        $this->assertStringContainsString(
+            'Le contenu ne peut pas être vide.',
+            $this->form->get('content')->getErrors()[0]->getMessage()
+        );
     }
 
     public function testImageFileValidationValidPngFile(): void

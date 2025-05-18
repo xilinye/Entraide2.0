@@ -19,7 +19,7 @@ class BlogPost
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Le titre ne peut pas être vide.')]
     #[Assert\Length(
         min: 5,
         max: 255,
@@ -28,7 +28,7 @@ class BlogPost
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide.')]
     #[Assert\Length(
         min: 10,
         minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères'
@@ -62,10 +62,11 @@ class BlogPost
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
-        $this->slug = '';
+        $now = new \DateTimeImmutable();
+        $this->createdAt = $now;
+        $this->updatedAt = $now;
         $this->ratings = new ArrayCollection();
+        $this->slug = '';
     }
 
     public function getId(): ?int

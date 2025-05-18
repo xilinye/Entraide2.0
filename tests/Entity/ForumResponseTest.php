@@ -3,11 +3,17 @@
 namespace App\Tests\Entity;
 
 use App\Entity\{ForumResponse, User, Forum, Rating};
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Constraints\{NotBlank, NotNull};
 
-class ForumResponseTest extends TestCase
+class ForumResponseTest extends KernelTestCase
 {
+    protected function setUp(): void
+    {
+        self::bootKernel();
+    }
     public function testInitialization(): void
     {
         $response = new ForumResponse();
@@ -35,7 +41,7 @@ class ForumResponseTest extends TestCase
         $response = new ForumResponse();
         $response->setAuthor($user);
         $this->assertSame($user, $response->getAuthor());
-        $this->assertFalse($user->getForumResponses()->contains($response));
+        $this->assertTrue($user->getForumResponses()->contains($response));
     }
 
     public function testAddForumResponseToUser(): void
@@ -53,7 +59,7 @@ class ForumResponseTest extends TestCase
         $response = new ForumResponse();
         $response->setForum($forum);
         $this->assertSame($forum, $response->getForum());
-        $this->assertFalse($forum->getResponses()->contains($response));
+        $this->assertTrue($forum->getResponses()->contains($response));
     }
 
     public function testAddResponseToForum(): void
@@ -142,5 +148,123 @@ class ForumResponseTest extends TestCase
         $response->addRating($rating);
         $response->addRating($rating); // Ne doit pas ajouter de doublon
         $this->assertCount(1, $response->getRatings());
+    }
+
+    private function validate(ForumResponse $response): array
+    {
+        $validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
+
+        return iterator_to_array($validator->validate($response));
+    }
+
+    public function testValidationConstraints(): void
+    {
+        $response = new ForumResponse();
+        $errors = $this->validate($response);
+
+        $this->assertCount(3, $errors);
+        $this->assertInstanceOf(NotBlank::class, $errors[0]->getConstraint());
+        $this->assertInstanceOf(NotNull::class, $errors[1]->getConstraint());
+        $this->assertInstanceOf(NotNull::class, $errors[2]->getConstraint());
+    }
+
+    public function testFileSizeValidation(): void
+    {
+        // Créer un fichier de 6MB
+        $file = $this->createTempFile(6 * 1024 * 1024);
+        $response = (new ForumResponse())
+            ->setContent('Valid content')
+            ->setAuthor(new User())
+            ->setForum(new Forum())
+            ->setImageFile($file);
+
+        $errors = $this->validate($response);
+        $this->assertCount(1, $errors);
+    }
+
+    public function testBidirectionalAuthorRelationship(): void
+    {
+        $user = new User();
+        $response = new ForumResponse();
+        $user->addForumResponse($response);
+
+        $this->assertSame($user, $response->getAuthor());
+        $this->assertTrue($user->getForumResponses()->contains($response));
+    }
+
+    public function testBidirectionalForumRelationship(): void
+    {
+        $forum = new Forum();
+        $response = new ForumResponse();
+        $forum->addResponse($response);
+
+        $this->assertSame($forum, $response->getForum());
+        $this->assertTrue($forum->getResponses()->contains($response));
+    }
+
+    public function testCascadeRatingRemoval(): void
+    {
+        $response = new ForumResponse();
+        $rating = new Rating();
+        $response->addRating($rating);
+
+        // Simuler la suppression
+        $response->removeRating($rating);
+
+        $this->assertCount(0, $response->getRatings());
+        $this->assertNull($rating->getForumResponse());
+    }
+
+    public function testFrenchValidationMessages(): void
+    {
+        $response = new ForumResponse();
+        $errors = $this->validate($response, 'fr');
+
+        $this->assertStringContainsString('Le contenu ne peut pas être vide', $errors[0]->getMessage());
+    }
+
+    public function testNonNullableRelations(): void
+    {
+        $response = new ForumResponse();
+        $response->setContent('Valid content');
+
+        $errors = $this->validate($response);
+        $this->assertCount(2, $errors);
+    }
+
+    private function createTempFile(int $size): File
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test');
+        $handle = fopen($tempFile, 'w');
+        ftruncate($handle, $size);
+        fclose($handle);
+
+        return new File($tempFile);
+    }
+
+    public function testUpdateAuthorRelationship(): void
+    {
+        $oldAuthor = new User();
+        $newAuthor = new User();
+        $response = new ForumResponse();
+
+        $oldAuthor->addForumResponse($response);
+        $newAuthor->addForumResponse($response);
+
+        $this->assertSame($newAuthor, $response->getAuthor());
+        $this->assertFalse($oldAuthor->getForumResponses()->contains($response));
+    }
+
+    public function testSetSameAuthorTwice(): void
+    {
+        $user = new User();
+        $response = new ForumResponse();
+
+        $user->addForumResponse($response);
+        $user->addForumResponse($response); // Ne doit pas créer de doublon
+
+        $this->assertCount(1, $user->getForumResponses());
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Tests\Form;
 
-use App\Entity\ForumResponse;
+use App\Entity\{ForumResponse, User, Forum};
 use App\Form\ForumResponseType;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -40,7 +40,12 @@ class ForumResponseTypeTest extends KernelTestCase
 
     public function testSubmitValidData(): void
     {
+        $user = new User();
+        $forum = new Forum();
         $forumResponse = new ForumResponse();
+        $forumResponse->setAuthor($user);
+        $forumResponse->setForum($forum);
+
         $form = $this->formFactory->create(ForumResponseType::class, $forumResponse, [
             'csrf_protection' => false,
         ]);
@@ -74,7 +79,12 @@ class ForumResponseTypeTest extends KernelTestCase
 
     public function testImageFileSizeConstraint(): void
     {
+        $user = new User();
+        $forum = new Forum();
         $forumResponse = new ForumResponse();
+        $forumResponse->setAuthor($user);
+        $forumResponse->setForum($forum);
+
         $form = $this->formFactory->create(ForumResponseType::class, $forumResponse, [
             'csrf_protection' => false,
         ]);
@@ -108,7 +118,12 @@ class ForumResponseTypeTest extends KernelTestCase
 
     public function testImageFileIsOptional(): void
     {
+        $user = new User();
+        $forum = new Forum();
         $forumResponse = new ForumResponse();
+        $forumResponse->setAuthor($user);
+        $forumResponse->setForum($forum);
+
         $form = $this->formFactory->create(ForumResponseType::class, $forumResponse, [
             'csrf_protection' => false,
         ]);
@@ -125,7 +140,12 @@ class ForumResponseTypeTest extends KernelTestCase
 
     public function testContentIsRequired(): void
     {
+        $user = new User();
+        $forum = new Forum();
         $forumResponse = new ForumResponse();
+        $forumResponse->setAuthor($user);
+        $forumResponse->setForum($forum);
+
         $form = $this->formFactory->create(ForumResponseType::class, $forumResponse, [
             'csrf_protection' => false,
         ]);
@@ -144,7 +164,12 @@ class ForumResponseTypeTest extends KernelTestCase
 
     public function testSubmitOnlyContent(): void
     {
+        $user = new User();
+        $forum = new Forum();
         $forumResponse = new ForumResponse();
+        $forumResponse->setAuthor($user);
+        $forumResponse->setForum($forum);
+
         $form = $this->formFactory->create(ForumResponseType::class, $forumResponse, [
             'csrf_protection' => false,
         ]);
@@ -182,12 +207,12 @@ class ForumResponseTypeTest extends KernelTestCase
         );
 
         $form->submit([
-            'content' => '', // Champ vide
+            'content' => '',
             'imageFile' => $imageFile,
         ]);
 
         $this->assertTrue($form->isSynchronized());
-        $this->assertFalse($form->isValid()); // Le contenu est requis, donc invalide
+        $this->assertFalse($form->isValid());
         $this->assertNull($forumResponse->getContent());
         $this->assertSame($imageFile, $forumResponse->getImageFile());
 

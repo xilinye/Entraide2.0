@@ -21,12 +21,14 @@ class Message
     #[Assert\Length(max: 2000)]
     private ?string $content = null;
 
-    #[ORM\ManyToOne(inversedBy: 'sentMessages')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'sentMessages', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'expéditeur est requis.")]
     private ?User $sender = null;
 
-    #[ORM\ManyToOne(inversedBy: 'receivedMessages')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'receivedMessages', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Le destinataire est requis.")]
     private ?User $receiver = null;
 
     #[ORM\Column(options: ['default' => 'CURRENT_TIMESTAMP'])]
@@ -124,6 +126,10 @@ class Message
 
     public function __toString(): string
     {
+        if (strlen($this->content) <= 50) {
+            return $this->content;
+        }
+
         return substr($this->content, 0, 50) . '...';
     }
 

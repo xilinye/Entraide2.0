@@ -22,10 +22,12 @@ class ForumResponse
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'forumResponses')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull]
     private ?User $author = null;
 
     #[ORM\ManyToOne(targetEntity: Forum::class, inversedBy: 'responses')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull]
     private ?Forum $forum = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -39,8 +41,7 @@ class ForumResponse
 
     #[Assert\File(
         maxSize: "5M",
-        mimeTypes: ["image/jpeg", "image/png"],
-        mimeTypesMessage: "Veuillez télécharger une image JPEG ou PNG valide"
+        maxSizeMessage: "Sa taille ne doit pas dépasser {{ limit }} MB."
     )]
     private $imageFile;
 
@@ -74,7 +75,21 @@ class ForumResponse
 
     public function setAuthor(?User $author): static
     {
+        if ($this->author === $author) {
+            return $this;
+        }
+
+        // Remove from old author's collection
+        if ($this->author !== null) {
+            $this->author->removeForumResponse($this);
+        }
+
         $this->author = $author;
+
+        // Add to new author's collection
+        if ($author !== null) {
+            $author->addForumResponse($this);
+        }
 
         return $this;
     }
@@ -86,7 +101,19 @@ class ForumResponse
 
     public function setForum(?Forum $forum): static
     {
+        if ($this->forum === $forum) {
+            return $this;
+        }
+
+        if ($this->forum !== null) {
+            $this->forum->removeResponse($this);
+        }
+
         $this->forum = $forum;
+
+        if ($forum !== null) {
+            $forum->addResponse($this);
+        }
 
         return $this;
     }

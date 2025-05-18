@@ -27,17 +27,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         min: 3,
         max: 50,
         minMessage: 'Le pseudo doit contenir au moins {{ limit }} caractères',
-        maxMessage: 'Le pseudo ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'Le pseudo ne peut pas dépasser {{ limit }} caractères',
+        groups: ['registration']
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-Z0-9_]+$/',
-        message: 'Caractères autorisés : lettres, chiffres et underscores'
+        message: 'Caractères autorisés : lettres, chiffres et underscores',
+        groups: ['registration']
     )]
     private ?string $pseudo = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: 'L\'email est obligatoire')]
-    #[Assert\Email(message: 'Format d\'email invalide')]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire', groups: ['registration'])]
+    #[Assert\Email(message: 'Format d\'email invalide', groups: ['registration'])]
     private ?string $email = null;
 
     #[ORM\Column]

@@ -27,7 +27,7 @@ class Rating
     #[ORM\ManyToOne(targetEntity: BlogPost::class, inversedBy: 'ratings')]
     private ?BlogPost $blogPost = null;
 
-    #[ORM\ManyToOne(targetEntity: Event::class)]
+    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'ratings')]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: ForumResponse::class)]
@@ -155,12 +155,21 @@ class Rating
 
     public function setEvent(?Event $event): static
     {
-        if ($this->event !== $event) {
-            $this->event = $event;
-            if ($event !== null) {
-                $event->addRating($this);
-            }
+        if ($this->event === $event) {
+            return $this;
         }
+
+        $oldEvent = $this->event;
+        $this->event = $event;
+
+        if ($oldEvent !== null) {
+            $oldEvent->removeRating($this);
+        }
+
+        if ($event !== null) {
+            $event->addRating($this);
+        }
+
         return $this;
     }
 

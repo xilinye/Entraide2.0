@@ -6,6 +6,7 @@ use App\Entity\{Category, Skill, User};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class SkillTest extends KernelTestCase
 {
@@ -359,5 +360,68 @@ class SkillTest extends KernelTestCase
         $this->entityManager->flush();
 
         $this->assertEquals($originalDate, $skill->getCreatedAt());
+    }
+    /**
+     * @dataProvider invalidNameProvider
+     */
+    public function testNameValidation(string $name, string $expectedError): void
+    {
+        $category = $this->createValidCategory();
+
+        $skill = new Skill();
+        $skill->setName($name)
+            ->setCategory($category);
+
+        $errors = $this->validator->validate($skill);
+        $this->assertValidationError($expectedError, $errors);
+    }
+
+    public function invalidNameProvider(): array
+    {
+        return [
+            'Too short' => ['A', 'Le nom doit contenir au moins 2 caractères'],
+            'Too long' => [str_repeat('a', 256), 'Le nom ne peut pas dépasser 255 caractères'],
+            'Empty' => ['', 'Le nom est obligatoire'],
+        ];
+    }
+
+    private function createValidCategory(): Category
+    {
+        $category = new Category();
+        $category->setName('Test Category');
+        $this->entityManager->persist($category);
+        $this->entityManager->flush();
+        return $category;
+    }
+
+    private function assertValidationError(string $expectedMessage, \Symfony\Component\Validator\ConstraintViolationListInterface $errors): void
+    {
+        $messages = [];
+        foreach ($errors as $error) {
+            $messages[] = $error->getMessage();
+        }
+
+        $this->assertContains(
+            $expectedMessage,
+            $messages,
+            sprintf('Le message d\'erreur "%s" n\'a pas été trouvé dans [%s]', $expectedMessage, implode(', ', $messages))
+        );
+    }
+
+    public function testSettingSameCategoryDoesNothing(): void
+    {
+        $category = $this->createValidCategory();
+        $skill = new Skill();
+        $skill->setName('Test')
+            ->setCategory($category);
+
+        $this->entityManager->persist($skill);
+        $this->entityManager->flush();
+        $initialSkillsCount = count($category->getSkills());
+
+        $skill->setCategory($category);
+        $this->entityManager->flush();
+
+        $this->assertCount($initialSkillsCount, $category->getSkills());
     }
 }

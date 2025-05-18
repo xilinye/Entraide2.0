@@ -168,8 +168,6 @@ class ForumTest extends TestCase
         $this->assertTrue($newAuthor->getForums()->contains($forum));
     }
 
-    // Ajoutez ces méthodes dans la classe ForumTest
-
     public function testSetSameCategoryNoChange(): void
     {
         $category = new Category();

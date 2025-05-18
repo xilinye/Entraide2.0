@@ -3,7 +3,7 @@
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use App\Entity\{BlogPost, User, Rating};
+use App\Entity\{BlogPost, User};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class BlogControllerTest extends WebTestCase
@@ -12,11 +12,14 @@ class BlogControllerTest extends WebTestCase
     private $entityManager;
     private $user;
     private $blogPost;
+    private $uploadsDir;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
+        $container = self::getContainer();
         $this->entityManager = self::getContainer()->get('doctrine')->getManager();
+        $this->uploadsDir = $container->getParameter('blog_images_directory');
 
         // Générer un identifiant unique pour chaque test
         $uniqueId = uniqid();
@@ -137,5 +140,26 @@ class BlogControllerTest extends WebTestCase
         $this->client->submit($form);
 
         $this->assertResponseRedirects('/blog/');
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // Nettoyage avec le chemin stocké
+        if ($this->uploadsDir && is_dir($this->uploadsDir)) {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($this->uploadsDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+            foreach ($files as $file) {
+                $file->isDir() ? rmdir($file->getRealPath()) : unlink($file->getRealPath());
+            }
+        }
+
+        if ($this->entityManager) {
+            $this->entityManager->close();
+            $this->entityManager = null;
+        }
     }
 }

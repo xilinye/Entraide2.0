@@ -8,6 +8,8 @@ composer install permet d'installer les dépendances
 <br>
 <br>commande pour mise à jour : symfony console doctrine:migrations:migrate
 <br>
+<br>commande pour exercuter les commands : docker-compose exec php bin/console app:cleanup-anonymous-user
+<br>
 <br>crée la base de test : docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:database:create"
 <br>
 <br>docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:schema:create"

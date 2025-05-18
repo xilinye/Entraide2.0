@@ -16,6 +16,8 @@ use App\Entity\{
 };
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Validation;
+use Doctrine\ORM\EntityManagerInterface;
 
 class UserTest extends TestCase
 {
@@ -457,5 +459,85 @@ class UserTest extends TestCase
         $skill = new Skill();
         $user->removeSkill($skill); // Aucun effet
         $this->assertCount(0, $user->getSkills());
+    }
+
+    public function testValidationConstraints(): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+
+        $user = new User();
+        $user->setPseudo('a'); // Trop court (3+ caractères requis)
+        $user->setEmail('invalid-email'); // Format invalide
+        $user->setPassword('short'); // 8+ caractères requis
+
+        $violations = $validator->validate($user, null, ['registration']);
+
+        $this->assertCount(3, $violations);
+
+        $messages = [
+            'Le pseudo doit contenir au moins 3 caractères',
+            'Format d\'email invalide',
+            'Le mot de passe doit contenir au moins 8 caractères',
+        ];
+
+        foreach ($violations as $violation) {
+            $this->assertContains($violation->getMessage(), $messages);
+        }
+    }
+    public function testSoftDeleteImpactOnRelations(): void
+    {
+        $user = new User();
+        $event = new Event();
+        $user->addOrganizedEvent($event);
+
+        // Soft delete
+        $user->setDeletedAt(new DateTimeImmutable());
+        $event->setOrganizer(null);
+        // Vérifier que l'événement existe toujours
+        $this->assertCount(1, $user->getOrganizedEvents());
+        $this->assertNull($event->getOrganizer());
+    }
+    public function testPrePersistLifecycleHook(): void
+    {
+        $user = new User();
+        $user->setPseudo('testuser');
+
+        // Simule manuellement le déclenchement du PrePersist
+        $user->setCreatedAtValue();
+
+        $this->assertInstanceOf(
+            DateTimeImmutable::class,
+            $user->getCreatedAt()
+        );
+    }
+
+    public function testMixedRatingTypes(): void
+    {
+        $user = new User();
+
+        $blogRating = new Rating();
+        $blogRating->setBlogPost(new BlogPost())->setScore(4);
+
+        $eventRating = new Rating();
+        $eventRating->setEvent(new Event())->setScore(5);
+
+        $user->getRatingsReceived()->add($blogRating);
+        $user->getRatingsReceived()->add($eventRating);
+
+        $details = $user->getRatingDetails();
+
+        $this->assertEquals(4.0, $details['blog']['average']);
+        $this->assertEquals(5.0, $details['event']['average']);
+        $this->assertEquals(0.0, $details['forum']['average']);
+    }
+    public function testRoleUniqueness(): void
+    {
+        $user = new User();
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ADMIN', 'ROLE_USER']);
+
+        $roles = $user->getRoles();
+
+        $this->assertEqualsCanonicalizing(['ROLE_ADMIN', 'ROLE_USER'], $roles);
+        $this->assertCount(2, $roles);
     }
 }

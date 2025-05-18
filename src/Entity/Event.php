@@ -229,4 +229,15 @@ class Event
         }
         return $this;
     }
+
+    public function removeRating(Rating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // set the owning side to null (unless already changed)
+            if ($rating->getEvent() === $this) {
+                $rating->setEvent(null);
+            }
+        }
+        return $this;
+    }
 }
