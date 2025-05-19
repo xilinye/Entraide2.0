@@ -54,7 +54,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $qb->getQuery()->getResult();
     }
 
-    public function findRecent(int $maxResults): array
+    public function findRecent(int $maxResults = 5): array
     {
         return $this->createQueryBuilder('u')
             ->where('u.deletedAt IS NULL')
@@ -142,8 +142,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findAnonymousUser(): ?User
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.roles LIKE :role')
-            ->setParameter('role', '%ROLE_ANONYMOUS%')
+            ->where('u.email = :email')
+            ->setParameter('email', 'anonymous@example.com')
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

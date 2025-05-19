@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ConversationDeletionRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class ConversationDeletion
 {
     #[ORM\Id]

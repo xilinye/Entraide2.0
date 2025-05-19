@@ -84,7 +84,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: BlogPost::class, mappedBy: 'author', orphanRemoval: true)]
     private Collection $blogPosts;
 
-    #[ORM\OneToMany(targetEntity: ConversationDeletion::class, mappedBy: 'user')]
+    #[ORM\OneToMany(
+        targetEntity: ConversationDeletion::class,
+        mappedBy: 'user',
+        cascade: ['persist']
+    )]
     private Collection $conversationDeletions;
 
     #[ORM\OneToMany(targetEntity: Forum::class, mappedBy: 'author')]
@@ -253,10 +257,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->createdAt;
     }
 
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     public function getSkills(): Collection

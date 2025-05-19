@@ -19,7 +19,12 @@ class CleanupUnverifiedUsersCommandTest extends KernelTestCase
     {
         self::bootKernel();
         $this->em = self::getContainer()->get('doctrine')->getManager();
-        $this->em->getConnection()->beginTransaction();
+
+        // Réinitialisation complète de la base
+        $this->em->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS=0');
+        $this->em->getConnection()->executeStatement('TRUNCATE TABLE user');
+        $this->em->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS=1');
+
         $this->userRepository = $this->em->getRepository(User::class);
         $this->application = new Application(self::$kernel);
     }
@@ -76,42 +81,42 @@ class CleanupUnverifiedUsersCommandTest extends KernelTestCase
         ?\DateTimeInterface $tokenExpiresAt = null
     ): User {
         $user = new User();
-        $user->setEmail(uniqid() . '@test.com')
-            ->setPassword('password')
+        $user->setEmail(uniqid('test') . '@example.com') // Garantie d'unicité
+            ->setPassword(password_hash('password', PASSWORD_DEFAULT))
             ->setIsVerified($isVerified)
-            ->setPseudo('TestUser_' . uniqid());
+            ->setPseudo(uniqid('TestUser_'));
 
-        // Définition de la date de création
-        $reflection = new \ReflectionClass($user);
-        $property = $reflection->getProperty('createdAt');
-        $property->setAccessible(true);
-        $property->setValue($user, $createdAt);
+        // Définition des dates via réflexion
+        $reflector = new \ReflectionClass($user);
 
-        // Gestion explicite de tokenExpiresAt
-        if ($tokenExpiresAt !== null) {
-            $user->setTokenExpiresAt($tokenExpiresAt);
-        } elseif (!$isVerified) {
-            // Comportement par défaut seulement si non vérifié et non spécifié
-            $user->setTokenExpiresAt(
-                \DateTimeImmutable::createFromInterface($createdAt)
+        $createdAtProp = $reflector->getProperty('createdAt');
+        $createdAtProp->setAccessible(true);
+        $createdAtProp->setValue($user, $createdAt);
+
+        if ($tokenExpiresAt || !$isVerified) {
+            $tokenExpiresAtProp = $reflector->getProperty('tokenExpiresAt');
+            $tokenExpiresAtProp->setAccessible(true);
+            $tokenExpiresAtProp->setValue(
+                $user,
+                $tokenExpiresAt ?? \DateTimeImmutable::createFromInterface($createdAt)
                     ->add(new \DateInterval('PT24H'))
             );
         }
 
         $this->em->persist($user);
         $this->em->flush();
+        $this->em->clear(); // Nettoyage du cache
 
         return $user;
     }
 
     public function testCommandWithExactExpirationTime()
     {
-        $expirationTime = (new \DateTimeImmutable())->modify('-1 second');
-
+        $now = new \DateTimeImmutable();
         $this->createUser(
             false,
-            new \DateTimeImmutable('-24 hours'),
-            $expirationTime
+            $now->modify('-24 hours'),
+            $now->modify('-1 second')
         );
 
         $command = $this->application->find('app:cleanup-unverified-users');
@@ -124,15 +129,22 @@ class CleanupUnverifiedUsersCommandTest extends KernelTestCase
 
     public function testCommandWithMissingTokenExpiration()
     {
-        // Utilisateur non vérifié sans tokenExpiresAt (simule un cas d'erreur)
+        // Création de l'utilisateur (détaché à cause du clear())
         $user = $this->createUser(false, new \DateTimeImmutable('-2 days'));
-        $user->setTokenExpiresAt(null);
+
+        // Référencement de l'entité managée
+        $managedUser = $this->userRepository->find($user->getId());
+
+        // Modification de la propriété
+        $managedUser->setTokenExpiresAt(null);
         $this->em->flush();
 
+        // Exécution de la commande
         $command = $this->application->find('app:cleanup-unverified-users');
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
+        // Vérifications
         $this->assertStringContainsString('Supprimé 0 compte(s) expiré(s)', $commandTester->getDisplay());
         $this->assertCount(1, $this->userRepository->findAll());
     }
@@ -151,9 +163,6 @@ class CleanupUnverifiedUsersCommandTest extends KernelTestCase
 
     protected function tearDown(): void
     {
-        if ($this->em->getConnection()->isTransactionActive()) {
-            $this->em->getConnection()->rollback();
-        }
         $this->em->clear();
         parent::tearDown();
     }

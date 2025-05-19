@@ -87,7 +87,7 @@ class BlogPostFormTypeTest extends KernelTestCase
     public function testImageFileValidationValidFile(): void
     {
         $imageFile = new UploadedFile(
-            __DIR__ . '/../fixtures/valid_image.jpg',
+            __DIR__ . '/../fixtures/valid_image.png',
             'valid_image.jpg',
             'image/jpeg',
             null,

@@ -226,6 +226,24 @@
 		padding: 0.25rem 0.75rem;
 		border-radius: 12px;
 	}
+	/* Styles pour les messages d'erreur */
+        .invalid-feedback {
+            display: block;
+            margin-top: 0.5rem;
+            padding: 0.75rem 1rem;
+            background-color: #FFEBEE;
+            color: #B71C1C;
+            border-radius: 8px;
+            border: 1px solid #EF9A9A;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Style des champs invalides */
+        .is-invalid {
+            border-color: #EF9A9A !important;
+            background: #FFF3F3;
+        }
 </style>{% endblock %}{% block body %}
 <div class="container py-5">
 	<div class="message-card">
@@ -245,6 +263,7 @@
                             'placeholder': 'Donnez un titre à votre message...'
                         }
                     }) }}
+					{{ form_errors(form.title) }} 
 			</div>
 
 			<div class="form-group">
@@ -254,12 +273,13 @@
                             'class': 'form-control',
                             'placeholder': 'Écrivez votre message ici...',
                             'rows': 6,
-                            'maxlength': 500
+                            'maxlength': 2000
                         }
                     }) }}
 				<div class="char-counter" id="charCounter">
-					<span id="charCount">0</span>/500
+					<span id="charCount">0</span>/2000
 				</div>
+				{{ form_errors(form.content) }}
 			</div>
 
 			<div class="form-group">
@@ -339,4 +359,17 @@ card.style.opacity = '1';
 card.style.transform = 'translateY(0)';
 }, 100);
 });
+document.querySelectorAll('.invalid-feedback').forEach((error) => {
+        const input = error.previousElementSibling;
+        if (input) {
+            input.classList.add('is-invalid');
+        }
+    });
+
+    // Réinitialiser la validation au moment de la soumission
+    document.querySelector('form').addEventListener('submit', () => {
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.classList.remove('is-invalid');
+        });
+    });
 </script>{% endblock %}

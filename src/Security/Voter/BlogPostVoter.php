@@ -2,8 +2,7 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\BlogPost;
-use App\Entity\User;
+use App\Entity\{BlogPost, User};
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 

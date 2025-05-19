@@ -4,3 +4,6 @@ framework:
     dsn: "null://null"
   session:
     storage_factory_id: session.storage.factory.mock_file
+    enabled: true
+  csrf_protection:
+    enabled: true

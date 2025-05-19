@@ -47,10 +47,12 @@ class MessageRepository extends ServiceEntityRepository
                 'App\Entity\ConversationDeletion',
                 'cd',
                 'WITH',
-                'cd.user = :currentUser AND cd.otherUser = :otherUser'
+                'cd.user = :currentUser 
+            AND cd.otherUser = :otherUser 
+            AND cd.conversationTitle = m.title'
             )
             ->where('(m.sender = :currentUser AND m.receiver = :otherUser) OR (m.sender = :otherUser AND m.receiver = :currentUser)')
-            ->andWhere('cd IS NULL OR m.createdAt > cd.deletedAt')
+            ->andWhere('(cd.deletedAt IS NULL) OR (m.createdAt > cd.deletedAt)')
             ->orderBy('m.createdAt', 'ASC');
 
         $qb->setParameter('currentUser', $currentUser)
