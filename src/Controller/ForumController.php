@@ -43,11 +43,11 @@ class ForumController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $forum = new Forum();
+        $forum->setAuthor($this->getUser());
         $form = $this->createForm(ForumType::class, $forum);
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $forum->setAuthor($this->getUser());
 
             // Gestion de l'image
             $imageFile = $form->get('imageFile')->getData();
@@ -151,12 +151,12 @@ class ForumController extends AbstractController
     public function show(Forum $forum, ForumResponseRepository $forumResponseRepo, Request $request): Response
     {
         $response = new ForumResponse();
+        $response->setForum($forum)
+            ->setAuthor($this->getUser());
         $responseForm = $this->createForm(ForumResponseType::class, $response);
         $responseForm->handleRequest($request);
 
         if ($responseForm->isSubmitted() && $responseForm->isValid()) {
-            $response->setForum($forum)
-                ->setAuthor($this->getUser());
 
             // Gestion de l'image
             $imageFile = $response->getImageFile();
@@ -170,9 +170,6 @@ class ForumController extends AbstractController
                 $response->setImageFile(null);
             }
 
-            $response->setForum($forum)
-                ->setAuthor($this->getUser());
-
             $this->em->persist($response);
             $this->em->flush();
 
@@ -180,7 +177,11 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('app_forum_show', ['id' => $forum->getId()]);
         }
 
-        $responses = $forum->getResponses();
+        // Récupération uniquement des réponses persistées
+        $responses = $forumResponseRepo->findBy(
+            ['forum' => $forum],
+            ['createdAt' => 'DESC']
+        );
         $responseForms = [];
         $averages = [];
 

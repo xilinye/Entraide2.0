@@ -2,9 +2,8 @@
 
 namespace App\Tests\Service;
 
-use App\Entity\Event;
-use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Entity\{Event, User};
+use App\Repository\{UserRepository, ConversationDeletionRepository};
 use App\Service\UserAnonymizer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\AbstractQuery;
@@ -20,6 +19,7 @@ class UserAnonymizerTest extends TestCase
     private $parameterBag;
     private $filesystem;
     private $anonymousUser;
+    private $conversationDeletionRepo;
 
     protected function setUp(): void
     {
@@ -28,6 +28,7 @@ class UserAnonymizerTest extends TestCase
         $this->parameterBag = $this->createMock(ParameterBagInterface::class);
         $this->filesystem = $this->createMock(Filesystem::class);
         $this->anonymousUser = new User();
+        $this->conversationDeletionRepo = $this->createMock(ConversationDeletionRepository::class);
     }
 
     public function testAnonymizeParticipationsCallsFindOrCreateAnonymousUser(): void
@@ -69,26 +70,26 @@ class UserAnonymizerTest extends TestCase
 
     public function testTransferParticipationsUpdatesAllQueries(): void
     {
-        // Setup
         $user = new User();
         $this->configureQueryMock();
 
-        // Liste complète des requêtes attendues
         $expectedQueries = [
-            'UPDATE App\Entity\Message m SET m.sender = :anon',
-            'UPDATE App\Entity\Message m SET m.receiver = :anon',
-            'UPDATE App\Entity\ForumResponse fr SET fr.author = :anon',
-            'UPDATE App\Entity\Rating r SET r.rater = :anon',
-            'UPDATE App\Entity\Rating r SET r.ratedUser = :anon',
-            'UPDATE App\Entity\ConversationDeletion cd SET cd.user = :anon'
+            'SET m.sender = :anon',
+            'SET m.receiver = :anon',
+            'SET fr.author = :anon',
+            'SET r.rater = :anon',
+            'SET r.ratedUser = :anon',
+            'SET cd.user = :anon',
+            'SET cd.otherUser = :anon'
         ];
 
-        // Vérification de toutes les requêtes
-        $this->em->expects($this->exactly(6))
+        $this->em->expects($this->exactly(7))
             ->method('createQuery')
-            ->withConsecutive(...array_map(fn($q) => [$this->stringContains($q)], $expectedQueries));
+            ->withConsecutive(...array_map(
+                fn($q) => [$this->stringContains($q)],
+                $expectedQueries
+            ));
 
-        // Execution
         $this->getAnonymizer()->anonymizeParticipations($user);
     }
 
@@ -103,7 +104,7 @@ class UserAnonymizerTest extends TestCase
         // Création d'un mock de requête dédié
         $queryMock = $this->createMock(AbstractQuery::class);
         $queryMock->method('execute')->willReturn(0);
-        $queryMock->expects($this->exactly(6))
+        $queryMock->expects($this->exactly(7))
             ->method('setParameters')
             ->with($this->callback(function ($params) use ($user) {
                 return $params['anon'] === $this->anonymousUser
@@ -136,7 +137,8 @@ class UserAnonymizerTest extends TestCase
             $this->userRepository,
             $this->em,
             $this->parameterBag,
-            $this->filesystem
+            $this->filesystem,
+            $this->conversationDeletionRepo
         );
     }
 

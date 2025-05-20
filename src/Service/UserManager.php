@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Repository\{UserRepository, ConversationDeletionRepository};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -16,7 +16,8 @@ class UserManager
         private readonly UserAnonymizer $anonymizer,
         private readonly UserRepository $userRepository,
         private readonly ParameterBagInterface $params,
-        private readonly Filesystem $filesystem
+        private readonly Filesystem $filesystem,
+        private readonly ConversationDeletionRepository $conversationDeletionRepo
     ) {}
 
     public function promoteToAdmin(User $user): void
@@ -93,13 +94,16 @@ class UserManager
 
     private function hasParticipations(User $user): bool
     {
+        $otherUserDeletions = $this->conversationDeletionRepo->count(['otherUser' => $user]);
+
         return $user->getSentMessages()->count() > 0 ||
             $user->getReceivedMessages()->count() > 0 ||
             $user->getForumResponses()->count() > 0 ||
             $user->getAttendedEvents()->count() > 0 ||
             $user->getRatingsReceived()->count() > 0 ||
             $user->getRatingsGiven()->count() > 0 ||
-            $user->getConversationDeletions()->count() > 0;
+            $user->getConversationDeletions()->count() > 0
+            || $otherUserDeletions > 0;
     }
 
     private function fullDeleteUser(User $user): void

@@ -196,13 +196,19 @@
 				</div>
 
 				{# Champ fichier séparé #}
-				<div class="custom-file">
-					{{ form_widget(form.imageFile, {
-                    'attr': {'class': 'custom-file-input'},
-                    'label_attr': {'class': 'custom-file-label'}
-                }) }}
-				</div>
-
+<div class="mb-3">
+    {{ form_label(form.imageFile, 'Ajouter une image', {
+        'label_attr': {'class': 'form-label'}
+    }) }}
+    {{ form_widget(form.imageFile, {
+        'attr': {
+            'class': 'form-control',
+            'data-browse': 'Parcourir',
+            'lang': 'fr'
+        }
+    }) }}
+    <div class="form-text">Aucun fichier sélectionné</div>
+</div>
 				{{ form_end(form) }}
 			{% endif %}
 		</div>
@@ -233,5 +239,16 @@ document.querySelector('form').submit();
 }
 });
 });
+// Traduction du file input
+document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const feedback = this.nextElementSibling;
+                if(this.files.length > 0) {
+                    feedback.textContent = this.files[0].name;
+                } else {
+                    feedback.textContent = 'Aucun fichier sélectionné';
+                }
+            });
+        });
 	</script>
 {% endblock %}

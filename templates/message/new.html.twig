@@ -254,7 +254,7 @@
 		</div>
 
 		<div class="message-form">
-			{{ form_start(form) }}
+			{{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
 			<div class="form-group">
 				<label class="form-label">Titre du message</label>
 				{{ form_widget(form.title, {
@@ -296,7 +296,7 @@
 					<img id="imagePreview" class="img-fluid rounded" alt="Aperçu de l'image">
 				</div>
 			</div>
-
+			{{ form_rest(form) }}
 			<div class="d-flex flex-wrap gap-3 justify-content-end btn-group mt-4">
 				<button type="submit" class="btn btn-send">
 					<i class="bi bi-send-fill me-2"></i>Envoyer le message
@@ -308,7 +308,8 @@
 			{{ form_end(form) }}
 		</div>
 	</div>
-</div>{% endblock %}{% block javascripts %}
+</div>{% endblock %}
+{% block javascripts %}
 <script>
 	// Compteur de caractères
 const textarea = document.getElementById('{{ form.content.vars.id }}');

@@ -2,8 +2,8 @@
 
 namespace App\Tests\Service;
 
-use App\Entity\{BlogPost, Event, Forum, Message, User};
-use App\Repository\UserRepository;
+use App\Entity\{BlogPost, Event, Forum, Message, User, ConversationDeletion};
+use App\Repository\{UserRepository, ConversationDeletionRepository};
 use App\Service\UserAnonymizer;
 use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +20,7 @@ class UserManagerTest extends TestCase
     private $userRepository;
     private $params;
     private $filesystem;
+    private $conversationDeletionRepo;
 
     protected function setUp(): void
     {
@@ -28,6 +29,7 @@ class UserManagerTest extends TestCase
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->params = $this->createMock(ParameterBagInterface::class);
         $this->filesystem = $this->createMock(Filesystem::class);
+        $this->conversationDeletionRepo = $this->createMock(ConversationDeletionRepository::class);
     }
 
     private function createManager(): UserManager
@@ -37,7 +39,8 @@ class UserManagerTest extends TestCase
             $this->anonymizer,
             $this->userRepository,
             $this->params,
-            $this->filesystem
+            $this->filesystem,
+            $this->conversationDeletionRepo
         );
     }
 
@@ -320,5 +323,22 @@ class UserManagerTest extends TestCase
 
         $manager = $this->createManager();
         $manager->deleteUser($user);
+    }
+
+    public function testHasParticipationsDetectsConversationDeletionAsOtherUser(): void
+    {
+        $user = new User();
+
+        // Simuler une ConversationDeletion où l'utilisateur est 'otherUser'
+        $conversationDeletion = new ConversationDeletion();
+        $conversationDeletion->setOtherUser($user);
+
+        $this->conversationDeletionRepo->method('count')
+            ->willReturn(1);
+
+        $method = new ReflectionMethod(UserManager::class, 'hasParticipations');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->createManager(), $user));
     }
 }

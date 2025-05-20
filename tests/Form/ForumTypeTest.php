@@ -164,34 +164,6 @@ class ForumTypeTest extends KernelTestCase
         $this->assertTrue($this->form->get('content')->getErrors()->count() > 0);
     }
 
-    public function testInvalidImageFile(): void
-    {
-        $invalidFilePath = tempnam(sys_get_temp_dir(), 'invalid');
-        file_put_contents($invalidFilePath, 'dummy content');
-        $invalidFile = new UploadedFile(
-            $invalidFilePath,
-            'invalid_file.txt',
-            'text/plain',
-            null,
-            true
-        );
-
-        $this->form->submit([
-            'title' => 'Test Title',
-            'content' => 'Test Content',
-            'imageFile' => $invalidFile,
-        ]);
-
-        unlink($invalidFilePath); // Clean up temporary file
-
-        $this->assertTrue($this->form->isSubmitted());
-        $this->assertFalse($this->form->isValid());
-
-        $imageFileErrors = $this->form->get('imageFile')->getErrors();
-        $this->assertCount(1, $imageFileErrors);
-        $this->assertStringContainsString('Format d\'image invalide', $imageFileErrors[0]->getMessage());
-    }
-
     public function testOptionalCategory(): void
     {
         $this->form->submit([

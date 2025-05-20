@@ -133,16 +133,15 @@ class MessageTest extends TestCase
     {
         $message = $this->createValidMessage();
 
-        // Test sender not null
+        // Valide spécifiquement avec le groupe 'persist'
         $message->setSender(null);
-        $violations = $this->validator->validate($message);
+        $violations = $this->validator->validate($message, null, ['persist']);
         $this->assertCount(1, $violations);
         $this->assertEquals('L\'expéditeur est requis.', $violations[0]->getMessage());
 
-        // Test receiver not null
         $message = $this->createValidMessage();
         $message->setReceiver(null);
-        $violations = $this->validator->validate($message);
+        $violations = $this->validator->validate($message, null, ['persist']);
         $this->assertCount(1, $violations);
         $this->assertEquals('Le destinataire est requis.', $violations[0]->getMessage());
     }

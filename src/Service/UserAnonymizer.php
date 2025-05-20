@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Repository\{UserRepository, ConversationDeletionRepository};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -14,7 +14,8 @@ class UserAnonymizer
         private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $em,
         private readonly ParameterBagInterface $params,
-        private readonly Filesystem $filesystem
+        private readonly Filesystem $filesystem,
+        private readonly ConversationDeletionRepository $conversationDeletionRepo
     ) {}
 
     public function anonymizeParticipations(User $user): void
@@ -62,5 +63,12 @@ class UserAnonymizer
         $this->em->createQuery('UPDATE App\Entity\ConversationDeletion cd SET cd.user = :anon WHERE cd.user = :user')
             ->setParameters(['anon' => $anonymousUser, 'user' => $user])
             ->execute();
+
+        // MAJ des ConversationDeletion où l'utilisateur est "otherUser"
+        $this->em->createQuery('
+        UPDATE App\Entity\ConversationDeletion cd 
+        SET cd.otherUser = :anon 
+        WHERE cd.otherUser = :user
+    ')->setParameters(['anon' => $anonymousUser, 'user' => $user])->execute();
     }
 }

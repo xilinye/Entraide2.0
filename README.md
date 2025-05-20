@@ -35,3 +35,4 @@ DATABASE_URL="mysql://entraide_user:mysql_password@127.0.0.1:3306/entraide?serve
 MAILER_DSN=smtp://localhost:1025
 
 APP_TIMEZONE='Europe/Paris'
+<br>code pour debugger : dd($form->getErrors(true));

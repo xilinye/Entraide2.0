@@ -307,7 +307,7 @@
 				<div class="responses mt-5">
 					<h4 class="mb-4 d-flex align-items-center gap-2">
 						<i class="bi bi-chat-dots"></i>
-						{{ forum.responses|length }}
+						{{ responses|length }}
 						réponses
 					</h4>
 
@@ -342,10 +342,9 @@
 					{% endif %}
 
 					<div class="responses">
-						<h4>{{ forum.responses|length }}
-							réponses</h4>
+						<h4>{{ responses|length }} réponses</h4>
 
-						{% for response in forum.responses %}
+						{% for response in responses %}
 							<div class="card mb-4">
 								<div class="card-body">
 									<div class="d-flex justify-content-between align-items-center mb-2">

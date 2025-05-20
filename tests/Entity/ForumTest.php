@@ -50,12 +50,11 @@ class ForumTest extends TestCase
         $invalidForum = new Forum();
         $errors = $validator->validate($invalidForum);
 
-        $this->assertCount(3, $errors);
+        $this->assertCount(2, $errors);
 
         $messages = [
             'title' => 'Le titre ne peut pas être vide',
-            'content' => 'Le contenu ne peut pas être vide',
-            'author' => 'L\'auteur est obligatoire'
+            'content' => 'Le contenu ne peut pas être vide'
         ];
 
         foreach ($errors as $error) {

@@ -23,12 +23,12 @@ class Message
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'sentMessages', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: "L'expéditeur est requis.")]
+    #[Assert\NotNull(message: "L'expéditeur est requis.", groups: ['persist'])] // Ajout du groupe de validation
     private ?User $sender = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'receivedMessages', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: "Le destinataire est requis.")]
+    #[Assert\NotNull(message: "Le destinataire est requis.", groups: ['persist'])] // Ajout du groupe de validation
     private ?User $receiver = null;
 
     #[ORM\Column(options: ['default' => 'CURRENT_TIMESTAMP'])]

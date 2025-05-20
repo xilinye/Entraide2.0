@@ -27,7 +27,6 @@ class Forum
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: "L'auteur est obligatoire")]
     private ?User $author = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'forums')]
