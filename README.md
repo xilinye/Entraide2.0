@@ -1,38 +1,51 @@
-composer install permet d'installer les dépendances
-<br>
-<br>commande pour démarrer le site : symfony serve -d
-<br>
-<br>démarer la base de donnée et simulateur : docker compose up -d
-<br>
-<br>commande pour la base crée sur le local : symfony console doctrine:database:create --if-not-exists
-<br>
-<br>commande pour mise à jour : symfony console doctrine:migrations:migrate
-<br>
-<br>commande pour exercuter les commands : docker-compose exec php bin/console app:cleanup-anonymous-user
-<br>
-<br>crée la base de test : docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:database:create"
-<br>
-<br>docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:schema:create"
-<br>
-<br>lancer les test : docker compose exec php bash -c "APP_ENV=test php ./bin/phpunit -c phpunit.xml.dist"
-<br>
-<br>lancer un test : docker compose exec php bash -c "APP_ENV=test php bin/phpunit tests/Entity/BlogPostTest.php"
-<br>
-<br>Donner le droit à une premier personne : symfony console app:promote-admin exemple@mail.com
-<br>
-<br>url du site : https://127.0.0.1:8000/
-<br>
-<br> url du simulateur : http://localhost:8025/
-<br>
-<br> url de la base de donnée : http://localhost:8080/
-<br>
-<br>Contenu dans .env.local :
-<br>APP_ENV=dev
-APP_DEBUG=1
+# Projet Symfony - Guide d'installation
 
-DATABASE_URL="mysql://entraide_user:mysql_password@127.0.0.1:3306/entraide?serverVersion=8.0"
+## Prérequis
 
-MAILER_DSN=smtp://localhost:1025
+- Docker et Docker Compose
+- PHP 8.1+
+- Composer
 
+## Installation
+
+```bash
+# Installer les dépendances PHP
+composer install
+
+# Démarrer l'infrastructure Docker (base de données + simulateur mail)
+docker compose up -d
+
+# Créer la base de données locale
+symfony console doctrine:database:create --if-not-exists
+
+# Exécuter les migrations
+symfony console doctrine:migrations:migrate
+
+# Démarrer le serveur Symfony
+symfony serve -d
+
+# Nettoyage des utilisateurs anonymes
+docker-compose exec php bin/console app:cleanup-anonymous-user
+
+# Promouvoir un administrateur
+symfony console app:promote-admin exemple@mail.com
+
+# Préparation de l'environnement de test
+docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:database:create"
+docker compose exec php bash -c "APP_ENV=test php bin/console doctrine:schema:create"
+
+# Exécuter tous les tests
+docker compose exec php bash -c "APP_ENV=test php ./bin/phpunit -c phpunit.xml.dist"
+
+# Exécuter un test spécifique
+docker compose exec php bash -c "APP_ENV=test php bin/phpunit tests/Entity/BlogPostTest.php"
+```
+
+# Crée un fichier .env.local avec ce contenu
+
+DATABASE_URL="mysql://entraide_user:mysql_password@database:3306/entraide?serverVersion=8.0"
+MAILER_DSN=smtp://mailer:1025
 APP_TIMEZONE='Europe/Paris'
-<br>code pour debugger : dd($form->getErrors(true));
+
+MERCURE_URL=http://mercure/.well-known/mercure
+MERCURE_PUBLIC_URL=http://localhost:3000/.well-known/mercure
