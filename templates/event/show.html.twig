@@ -77,12 +77,21 @@
 		</div>
 	</div>
 
-	{% if app.user == event.organizer %}
+
 		<section class="mt-5">
 			<h3>Liste des participants ({{ event.attendees|length }}/{{ event.maxAttendees ?? '∞' }})</h3>
 			<div class="list-group">
 				{% for attendee in attendees %}
 					<div class="list-group-item">
+						{% if attendee.profileImage %}
+							<div class="avatar rounded-circle me-3">
+								<img src="{{ asset('uploads/profile/' ~ attendee.profileImage) }}" class="profile-image rounded-circle" alt="Photo de profil">
+							</div>
+						{% else %}
+							<div class="avatar bg-primary text-white rounded-circle me-3">
+								{{ attendee.pseudo|first|upper }}
+							</div>
+						{% endif %}
 						{{ attendee.pseudo }}
 						{% if attendee == app.user %}
 							<span class="badge bg-primary">Vous</span>
@@ -95,7 +104,6 @@
 				{% endfor %}
 			</div>
 		</section>
-	{% endif %}
 	{# Section des notes #}
 	<div class="rating-section mt-5">
 		<div class="average-rating alert alert-info">
@@ -173,6 +181,18 @@
 {% endblock %}
 {% block stylesheets %}
 	<style>
+		.avatar {
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.5rem;
+			font-weight: bold;
+			border: 3px solid white;
+			box-shadow: var(--shadow);
+		}
+
 		.star-rating {
 			display: flex;
 			gap: 5px;
@@ -297,11 +317,13 @@
 			padding: 1rem;
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
+			
 		}
 
 		.badge.bg-primary {
 			background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+			position: absolute;
+			right: 15px;
 		}
 
 		@media(max-width: 768px) {

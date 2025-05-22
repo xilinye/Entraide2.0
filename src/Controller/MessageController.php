@@ -174,10 +174,17 @@ class MessageController extends AbstractController
                 $logger->error('Erreur d\'envoi d\'email: ' . $e->getMessage());
             }
 
+            if ($request->isXmlHttpRequest()) {
+                return $this->render('message/_message_list.html.twig', [
+                    'messages' => $messageRepository->findConversationBetweenUsersByTitle($user, $otherUser, $title),
+                ]);
+            }
+            
             return $this->redirectToRoute('app_message_conversation', [
                 'id' => $otherUser->getId(),
                 'title' => $title
             ]);
+            
         }
 
         $messageRepository->markMessagesAsRead($user, $otherUser);
@@ -192,31 +199,37 @@ class MessageController extends AbstractController
     }
 
     #[Route('/conversation/{id}/delete', name: 'delete_conversation', methods: ['POST'])]
-    public function deleteConversation(Request $request, User $otherUser, EntityManagerInterface $em): Response
-    {
-        $user = $this->getUser();
-        $title = $request->request->get('title');
-
-        if ($this->isCsrfTokenValid('delete_conversation_' . $otherUser->getId() . '_' . $title, $request->request->get('_token'))) {
-            $existingDeletion = $em->getRepository(ConversationDeletion::class)->findOneBy([
-                'user' => $user,
-                'otherUser' => $otherUser,
-                'conversationTitle' => $title
-            ]);
-
-            if (!$existingDeletion) {
-                $deletion = new ConversationDeletion();
-                $deletion->setUser($user)
-                    ->setOtherUser($otherUser)
-                    ->setConversationTitle($title)
-                    ->setDeletedAt(new \DateTimeImmutable());
-
-                $em->persist($deletion);
-                $em->flush();
-            }
-
-            $this->addFlash('success', 'Conversation masquée avec succès');
+    public function deleteConversation(
+        Request $request,
+        User $otherUser,
+        EntityManagerInterface $em,
+        MessageRepository $messageRepository
+    ): Response {
+        $csrfToken = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete_conversation_' . $otherUser->getId(), $csrfToken)) {
+            $this->addFlash('error', 'Jeton de sécurité invalide');
+            return $this->redirectToRoute('app_message_index');
         }
+
+        $user = $this->getUser();
+
+        $existingDeletion = $em->getRepository(ConversationDeletion::class)->findOneBy([
+            'user' => $user,
+            'otherUser' => $otherUser
+        ]);
+
+        if ($existingDeletion) {
+            $existingDeletion->setDeletedAt(new \DateTimeImmutable());
+        } else {
+            $deletion = new ConversationDeletion();
+            $deletion->setUser($user)
+                ->setOtherUser($otherUser)
+                ->setDeletedAt(new \DateTimeImmutable());
+            $em->persist($deletion);
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Conversation masquée avec succès');
 
         return $this->redirectToRoute('app_message_index');
     }

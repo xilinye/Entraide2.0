@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Form\{RegistrationFormType, NewPasswordFormType};
+use App\Form\RegistrationFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -42,6 +42,53 @@ class AuthController extends AbstractController
                 )
             );
 
+
+            $pseudo = $user->getPseudo();
+            $initial = strtoupper(substr($pseudo, 0, 1));
+            
+            $fontSize = 90;
+            $imageWidth = 200;
+            $imageHeight = 200;
+            
+            // Couleurs de fond aléatoires
+            $colors = [
+                [52, 152, 219], [46, 204, 113], [231, 76, 60], [155, 89, 182],
+                [250, 250, 15], [43, 255, 240], [255, 70, 120], [255, 100, 0],
+            ];
+            $bgColor = $colors[array_rand($colors)];
+            
+            // Crée l'image
+            $image = imagecreatetruecolor($imageWidth, $imageHeight);
+            $background = imagecolorallocate($image, $bgColor[0], $bgColor[1], $bgColor[2]);
+            imagefilledrectangle($image, 0, 0, $imageWidth, $imageHeight, $background);
+            
+            $textColor = imagecolorallocate($image, 255, 255, 255);
+            $fontPath = $this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Bold.ttf';
+            
+            // Calcul du bounding box
+            $bbox = imagettfbbox($fontSize, 0, $fontPath, $initial);
+            
+            // Largeur et hauteur du texte
+            $textWidth = $bbox[2] - $bbox[0];
+            $textHeight = $bbox[1] - $bbox[7];
+            
+            // Calcul des positions centrées
+            $x = ($imageWidth / 2) - ($textWidth / 2) - $bbox[0];
+            $y = ($imageHeight / 2) + ($textHeight / 2) - $bbox[1];
+            
+            // Dessine la lettre
+            imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $initial);
+            
+            // Sauvegarde
+            $filename = md5(uniqid()) . '.png';
+            $uploadPath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile/' . $filename;
+            imagepng($image, $uploadPath);
+            imagedestroy($image);
+            
+            $user->setProfileImage($filename);
+            
+            
+    
             // Génération du token de confirmation
             $user->setRegistrationToken(bin2hex(random_bytes(32)));
             $user->setTokenExpiresAt(new \DateTimeImmutable('+24 hours'));
@@ -204,14 +251,10 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_auth_forgot_password_request');
         }
 
-        // Création du formulaire de mot de passe
-        $form = $this->createForm(NewPasswordFormType::class);
-        $form->handleRequest($request);
+        if ($request->isMethod('POST')) {
+            $newPassword = $request->request->get('password');
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $newPassword = $form->get('plainPassword')->getData();
-
-            // Validation et mise à jour
+            // Validation du mot de passe
             $user->setPassword(
                 $passwordHasher->hashPassword($user, $newPassword)
             );
@@ -224,7 +267,7 @@ class AuthController extends AbstractController
         }
 
         return $this->render('auth/reset_password.html.twig', [
-            'form' => $form->createView()
+            'token' => $token
         ]);
     }
 }

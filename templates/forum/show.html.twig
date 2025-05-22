@@ -153,13 +153,14 @@
 		}
 
 		.btn-outline-primary {
-			border: 2px solid #4CAF50;
-			color: #2E7D32;
+			border: 2px solid #1a89f0;
+			color:#1a89f0;
 		}
 
 		.btn-outline-primary:hover {
-			background: #4CAF50;
+			background: #1a89f0;
 			color: white !important;
+			border: 2px solid #1a89f0;
 		}
 
 		.btn-outline-danger {
@@ -238,6 +239,19 @@
 				padding: 1.5rem;
 			}
 		}
+
+		.btn-group .btn:not(.btn:hover){
+			background-color:  #63e668;
+		}
+
+		.btn-outline-warning{
+			border: 2px solid #997c09;
+			color: #997c09;
+		}
+		.btn-outline-warning{
+			background: #997c09;
+		}
+
 	</style>
 {% endblock %}
 
@@ -249,7 +263,15 @@
 					<h1 class="display-5">{{ forum.title }}</h1>
 					<div class="meta">
 						<span class="author-info">
-							<span class="author-avatar">{{ forum.author.pseudo|first|upper }}</span>
+									{% if forum.author.profileImage %}
+										<span class="author-avatar">
+											<img src="{{ asset('uploads/profile/' ~ forum.author.profileImage) }}" class="profile-image rounded-circle" alt="Photo de profil">
+										</span>
+									{% else %}
+										<span class="author-avatar">
+											{{ forum.author.pseudo|first|upper }}
+										</span>
+									{% endif %}
 							{{ forum.author.pseudo }}
 						</span>
 						•
